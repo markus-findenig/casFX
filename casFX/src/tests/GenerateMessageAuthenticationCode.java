@@ -3,10 +3,13 @@ package tests;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
+
+import org.apache.commons.codec.binary.Hex;
 
 public class GenerateMessageAuthenticationCode {
 
@@ -39,6 +42,8 @@ public class GenerateMessageAuthenticationCode {
 					
 			System.out.println(message);
 			System.out.println(String.valueOf(digest));
+			
+			System.out.println(Hex.encodeHexString(digest).toUpperCase());
 
 		} catch (NoSuchAlgorithmException e) {
 			System.out.println("No Such Algorithm:" + e.getMessage());
