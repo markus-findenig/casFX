@@ -145,9 +145,9 @@ public class EncryptionTest {
 			System.out.println("entschluesselter Text: " + decryptedPlain);
 			
 			System.out.println();
-			System.out.println(getKeyPair().getPublic());
+			System.out.println("Public: " + getKeyPair().getPublic());
 			System.out.println();
-			System.out.println(getKeyPair().getPrivate());
+			System.out.println("Private: " + getKeyPair().getPrivate());
 			
 			
 		} catch (Exception e) {
