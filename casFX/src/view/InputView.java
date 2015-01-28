@@ -1,8 +1,13 @@
 package view;
 
+import controller.InputViewController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -97,7 +102,17 @@ public class InputView {
 	private static TextField ak1OutTF;
 	private static Label mpkOutL;
 	private static TextArea mpkOutTA;
+	
+	
+	public MediaPlayer mediaPlayerInput;
+	
+	// BarCharts
+	CategoryAxis xAxis;
+	NumberAxis yAxis;
+	BarChart<String, Number> bc1;
+	static String barChartInput = "barChartInput";
 
+	
 	/**
 	 * InputView
 	 * 
@@ -127,8 +142,9 @@ public class InputView {
 		init();
 		initPlayer1();
 		initPlayer2();
+		initBarChartInput();
 
-		scene = new Scene(grid, 1024, 600);
+		scene = new Scene(grid, 1024, 650);
 		scene.setRoot(grid);
 		show(SimulatorModel.PRIMARY_STAGE);
 
@@ -233,6 +249,10 @@ public class InputView {
 		mpkTA.setMaxSize(240, 45);
 		grid.add(mpkL, 1, 16);
 		grid.add(mpkTA, 2, 16);
+		
+		
+		// BarChar Input Stream
+				     
 
 		// --------------------------------------------------------------------
 		// Transport Stream Header
@@ -395,7 +415,7 @@ public class InputView {
 	// Video Player Input
 	public void initPlayer1() {
 		// create media player 1 fx
-		MediaPlayer mediaPlayerInput = new MediaPlayer(model.mediaInput);
+		mediaPlayerInput = new MediaPlayer(model.mediaInput);
 		MediaControl mediaControl = new MediaControl(mediaPlayerInput, true);
 		GridPane.setColumnSpan(mediaControl, 3);
 		GridPane.setRowSpan(mediaControl, 8);
@@ -418,6 +438,21 @@ public class InputView {
 		grid.add(mediaControlOutput, 16, 4);
 	}
 
+	// BarChar Input Stream
+	public void initBarChartInput() {
+		xAxis = new CategoryAxis();
+		yAxis = new NumberAxis();
+		bc1 = new BarChart<String, Number>(xAxis, yAxis);
+		GridPane.setColumnSpan(bc1, 3);
+		GridPane.setRowSpan(bc1, 2);
+		bc1.setData(model.observableArrayList);
+		//bc1.setScaleX(0.5);
+		//bc1.setScaleY(0.5);
+		//bc1.setMaxSize(10, 10);
+		//bc1.setMinSize(60, 20);
+		grid.add(bc1, 0, 17);
+	}
+	
 	public TextField getCwTimeTF() {
 		return cwTimeTF;
 	}

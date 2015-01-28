@@ -2,6 +2,9 @@ package model;
 
 import java.io.File;
 
+import javafx.collections.ObservableList;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.media.Media;
 import javafx.stage.Stage;
 
@@ -27,6 +30,8 @@ public class SimulatorModel {
 	// ECM CW
 	public String ecmControlWordOdd;
 	public String ecmControlWordEven;
+
+	public ObservableList<XYChart.Series<String, Number>> observableArrayList;
 	
 	
 	public SimulatorModel(Stage primaryStage) {

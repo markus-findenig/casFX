@@ -3,10 +3,14 @@ package controller;
 import java.io.File;
 import java.security.SecureRandom;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.TextField;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
 import model.SimulatorModel;
 import view.InputView;
@@ -24,6 +28,9 @@ public class InputViewController {
 		// instance with dummy file video
 		setInputFile(new File("resorces\\5seconds.mp4"));
 
+		// TODO dummy Data
+		this.model.observableArrayList = getChartData();
+		
 		this.view = new InputView(model);
 
 		MenuEventHandler menuEventHandler = new MenuEventHandler();
@@ -31,6 +38,8 @@ public class InputViewController {
 		// Eventhandler registrieren
 		view.getOpen().setOnAction(menuEventHandler);
 		view.getExit().setOnAction(menuEventHandler);
+		
+		
 
 		// view.getAddBtn().setOnAction(new addBtnEventHandler());
 		// view.getOkBtn().setOnAction(new OkBtnEventHandler());
@@ -77,6 +86,13 @@ public class InputViewController {
 				view.initPlayer1();
 				// view.initPlayer2();
 				// view.init();
+				
+								
+				Status status = view.mediaPlayerInput.getStatus();
+				if (status == Status.PLAYING) {
+					
+					
+				}
 
 			}
 
@@ -104,5 +120,23 @@ public class InputViewController {
 		sb.setLength(length);
 		return sb.toString().toUpperCase();
 	}
+	
+	public ObservableList<XYChart.Series<String, Number>> getChartData() {
+        int aValue = 254;
+
+        ObservableList<XYChart.Series<String, Number>> observableArrayList = FXCollections.observableArrayList();
+        //model.observableArrayList = FXCollections.observableArrayList();
+        Series<String, Number> aSeries = new Series<String, Number>();
+
+        //aSeries.setName("a");
+
+        
+        for (int i = 0; i < 254; i++) {
+            aSeries.getData().add(new XYChart.Data(Integer.toString(i), aValue));
+            aValue = (int) (aValue + Math.random() - 1);
+        }
+        observableArrayList.addAll(aSeries);
+        return observableArrayList;
+    }
 
 }
