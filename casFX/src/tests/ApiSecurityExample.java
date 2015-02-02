@@ -15,11 +15,12 @@ public class ApiSecurityExample {
 
 			byte[] key = secret.getBytes();
 			
-			Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-			SecretKeySpec secret_key = new SecretKeySpec(key, "HmacSHA256");
-			sha256_HMAC.init(secret_key);
+			// HmacSHA1, HmacSHA256
+			Mac mac = Mac.getInstance("HmacSHA1");
+			SecretKeySpec secret_key = new SecretKeySpec(key, mac.getAlgorithm());
+			mac.init(secret_key);
 			
-			byte[] macbytes = sha256_HMAC.doFinal(message.getBytes());
+			byte[] macbytes = mac.doFinal(message.getBytes());
 
 			String out = null;
 			
@@ -38,7 +39,7 @@ public class ApiSecurityExample {
 			System.out.println();
 			System.out.println("Hex.encodeHexString( message.getBytes()"+ Hex.encodeHexString( message.getBytes() ) );
 			
-			String hash = Base64.encodeBase64String(sha256_HMAC.doFinal(message.getBytes()));
+			String hash = Base64.encodeBase64String(mac.doFinal(message.getBytes()));
 			
 			System.out.println(macbytes);
 			

@@ -41,7 +41,7 @@ public class ComputeMAC {
 
 		String out = String.format("%02x ", new BigInteger(1, string.getBytes("UTF-8")));
 
-		System.out.println("MAC(in hex):: " + macbytes);
+		System.out.println("MAC(lenght):: " + macbytes.length);
 		System.out.println("MAC(in hex):: " + out);
 
 	}
