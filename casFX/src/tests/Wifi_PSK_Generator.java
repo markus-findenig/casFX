@@ -9,6 +9,13 @@ import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * Wi-Fi Protected Access (WPA)
+ * Pre-shared key (PSK) Generator
+ * 
+ * http://jorisvr.nl/wpapsk.html
+ * 
+ */
 public class Wifi_PSK_Generator {
 
 	public static void main(String[] args) throws InvalidKeySpecException, NoSuchAlgorithmException {
