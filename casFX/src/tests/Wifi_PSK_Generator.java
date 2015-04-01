@@ -15,6 +15,8 @@ import javax.crypto.spec.SecretKeySpec;
  * 
  * http://jorisvr.nl/wpapsk.html
  * 
+ * WIFI_WPA_PMK - PMK (Pairwise Master Key)
+ * 
  */
 public class Wifi_PSK_Generator {
 
