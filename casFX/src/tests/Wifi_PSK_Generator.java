@@ -22,8 +22,8 @@ public class Wifi_PSK_Generator {
 
 	public static void main(String[] args) throws InvalidKeySpecException, NoSuchAlgorithmException {
 
-		String ssid = "zero";
-		String passphrase = "Ud8w3rB7a2";
+		String ssid = "one";
+		String passphrase = "password";
 
 		//String Key = PBKDF2(passphrase, ssid, 4096, 256);
 		
