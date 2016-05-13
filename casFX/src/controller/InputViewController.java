@@ -28,7 +28,7 @@ public class InputViewController {
 		// instance with dummy file video
 		setInputFile(new File("resorces\\5seconds.mp4"));
 
-		// TODO dummy Data
+		// TODO dummy Data for BarChart
 		this.model.observableArrayList = getChartData();
 		
 		this.view = new InputView(model);
@@ -122,7 +122,7 @@ public class InputViewController {
 	}
 	
 	public ObservableList<XYChart.Series<String, Number>> getChartData() {
-        int aValue = 254;
+        int aValue = 128; // Byte Array 128
 
         ObservableList<XYChart.Series<String, Number>> observableArrayList = FXCollections.observableArrayList();
         //model.observableArrayList = FXCollections.observableArrayList();
@@ -131,7 +131,7 @@ public class InputViewController {
         //aSeries.setName("a");
 
         
-        for (int i = 0; i < 254; i++) {
+        for (int i = 0; i < 127; i++) {
             aSeries.getData().add(new XYChart.Data(Integer.toString(i), aValue));
             aValue = (int) (aValue + Math.random() - 1);
         }

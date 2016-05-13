@@ -442,6 +442,10 @@ public class InputView {
 	public void initBarChartInput() {
 		xAxis = new CategoryAxis();
 		yAxis = new NumberAxis();
+		
+		xAxis.setLabel("X");	// Beschriftung
+		yAxis.setLabel("Y");
+		
 		bc1 = new BarChart<String, Number>(xAxis, yAxis);
 		GridPane.setColumnSpan(bc1, 3);
 		GridPane.setRowSpan(bc1, 2);

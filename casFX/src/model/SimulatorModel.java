@@ -25,12 +25,14 @@ public class SimulatorModel {
 	// actual CW
 	public String controlWord;
 	
+	// Time for CW period of validity
 	public int cwTime;
 	
 	// ECM CW
 	public String ecmControlWordOdd;
 	public String ecmControlWordEven;
 
+	// Dummy Array for BarChart
 	public ObservableList<XYChart.Series<String, Number>> observableArrayList;
 	
 	
