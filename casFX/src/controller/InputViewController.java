@@ -59,16 +59,7 @@ public class InputViewController {
 				File inputFile = fileChooser.showOpenDialog(SimulatorModel.PRIMARY_STAGE);
 				if (inputFile != null) {
 					setInputFile(inputFile);
-
 				}
-
-				// model.cwTime =
-				// Integer.parseInt(InputView.getCwTimeTF().toString());
-				// model.controlWord = InputView.setCwTimeTF("10");
-
-				// get cw Time
-				// model.cwTime =
-				// Integer.parseInt(view.getCwTimeTF().getText());
 
 				// set cw
 				view.getCwTF().setText(getRandomHex(16));
@@ -84,17 +75,13 @@ public class InputViewController {
 				view.initPlayer1();
 				// view.initPlayer2();
 				// view.init();
-
+				
+				// Update CW
 				Status status = view.mediaPlayerInput.getStatus();
-				
-				//System.out.println(status);
-			
-				//if (status == Status.PAUSED) {
-				while (status == Status.PLAYING) {
-					
+				if (status == Status.PLAYING) {
+					// set cw
+					view.getCwTF().setText(getRandomHex(16));
 				}
-				
-
 
 			}
 
@@ -108,6 +95,7 @@ public class InputViewController {
 
 	/**
 	 * Setze die Parameter im Model für die Input Datei
+	 * 
 	 * @param inputFile
 	 */
 	public void setInputFile(File inputFile) {
@@ -118,8 +106,10 @@ public class InputViewController {
 	}
 
 	/**
-	 * Erzeugt eine Random Hex Nummer 
-	 * @param length Länge der Random Hex Nummer
+	 * Erzeugt eine Random Hex Nummer
+	 * 
+	 * @param length
+	 *            Länge der Random Hex Nummer
 	 * @return Gibt eine Random Hex Nummer der Länge length zurück.
 	 */
 	public String getRandomHex(int length) {
