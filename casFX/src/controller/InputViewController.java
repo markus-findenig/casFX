@@ -30,7 +30,7 @@ public class InputViewController {
 
 		// TODO dummy Data for BarChart
 		this.model.observableArrayList = getChartData();
-		
+
 		this.view = new InputView(model);
 
 		MenuEventHandler menuEventHandler = new MenuEventHandler();
@@ -38,8 +38,6 @@ public class InputViewController {
 		// Eventhandler registrieren
 		view.getOpen().setOnAction(menuEventHandler);
 		view.getExit().setOnAction(menuEventHandler);
-		
-		
 
 		// view.getAddBtn().setOnAction(new addBtnEventHandler());
 		// view.getOkBtn().setOnAction(new OkBtnEventHandler());
@@ -86,13 +84,17 @@ public class InputViewController {
 				view.initPlayer1();
 				// view.initPlayer2();
 				// view.init();
-				
-								
+
 				Status status = view.mediaPlayerInput.getStatus();
-				if (status == Status.PLAYING) {
-					
+				
+				//System.out.println(status);
+			
+				//if (status == Status.PAUSED) {
+				while (status == Status.PLAYING) {
 					
 				}
+				
+
 
 			}
 
@@ -104,6 +106,10 @@ public class InputViewController {
 		}
 	}
 
+	/**
+	 * Setze die Parameter im Model für die Input Datei
+	 * @param inputFile
+	 */
 	public void setInputFile(File inputFile) {
 		model.inputFile = inputFile;
 		model.mediaInputUrl = inputFile.toURI().toString();
@@ -111,6 +117,11 @@ public class InputViewController {
 
 	}
 
+	/**
+	 * Erzeugt eine Random Hex Nummer 
+	 * @param length Länge der Random Hex Nummer
+	 * @return Gibt eine Random Hex Nummer der Länge length zurück.
+	 */
 	public String getRandomHex(int length) {
 		SecureRandom randomService = new SecureRandom();
 		StringBuilder sb = new StringBuilder();
@@ -120,23 +131,22 @@ public class InputViewController {
 		sb.setLength(length);
 		return sb.toString().toUpperCase();
 	}
-	
+
 	public ObservableList<XYChart.Series<String, Number>> getChartData() {
-        int aValue = 128; // Byte Array 128
+		int aValue = 128; // Byte Array 128
 
-        ObservableList<XYChart.Series<String, Number>> observableArrayList = FXCollections.observableArrayList();
-        //model.observableArrayList = FXCollections.observableArrayList();
-        Series<String, Number> aSeries = new Series<String, Number>();
+		ObservableList<XYChart.Series<String, Number>> observableArrayList = FXCollections.observableArrayList();
+		// model.observableArrayList = FXCollections.observableArrayList();
+		Series<String, Number> aSeries = new Series<String, Number>();
 
-        //aSeries.setName("a");
+		// aSeries.setName("a");
 
-        
-        for (int i = 0; i < 127; i++) {
-            aSeries.getData().add(new XYChart.Data(Integer.toString(i), aValue));
-            aValue = (int) (aValue + Math.random() - 1);
-        }
-        observableArrayList.addAll(aSeries);
-        return observableArrayList;
-    }
+		for (int i = 0; i < 127; i++) {
+			aSeries.getData().add(new XYChart.Data(Integer.toString(i), aValue));
+			aValue = (int) (aValue + Math.random() - 1);
+		}
+		observableArrayList.addAll(aSeries);
+		return observableArrayList;
+	}
 
 }

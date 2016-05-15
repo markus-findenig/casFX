@@ -413,7 +413,7 @@ public class InputView {
 	}
 
 	// Video Player Input
-	public void initPlayer1() {
+	public Runnable initPlayer1() {
 		// create media player 1 fx
 		mediaPlayerInput = new MediaPlayer(model.mediaInput);
 		MediaControl mediaControl = new MediaControl(mediaPlayerInput, true);
@@ -423,6 +423,7 @@ public class InputView {
 		mediaControl.setPrefSize(300, 225);
 		mediaControl.setMaxSize(300, 225);
 		grid.add(mediaControl, 1, 4);
+		return null;
 	}
 
 	// Video Player Output
