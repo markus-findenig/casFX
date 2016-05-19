@@ -37,7 +37,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.geometry.Insets;
@@ -65,15 +64,16 @@ public class MediaControl extends BorderPane {
     private Label playTime;
     private Slider volumeSlider;
     private HBox mediaBar;
+    private Button playButton;
 
     /**
      * MediaControl
      * 
-     * @param mp MediaPlayer
-     * @param control set true if active Control Buttons
+     * @param mediaPlayer - Media Player
+     * @param control - set true if active Control Buttons
      */
-    public MediaControl(final MediaPlayer mp, boolean control) {
-        this.mp = mp;
+    public MediaControl(final MediaPlayer mediaPlayer, boolean control) {
+        this.mp = mediaPlayer;
         setStyle("-fx-background-color: #bfc2c7;");
         mediaView = new MediaView(mp);
         
@@ -94,7 +94,7 @@ public class MediaControl extends BorderPane {
         BorderPane.setAlignment(mediaBar, Pos.CENTER);
 
         if (control) {
-        	final Button playButton = new Button(">");
+        	playButton = new Button(">");
         	playButton.setMinWidth(30);
             playButton.setOnAction(new EventHandler<ActionEvent>() {
                 public void handle(ActionEvent e) {
@@ -277,4 +277,8 @@ public class MediaControl extends BorderPane {
             }
         }
     }
+    
+    public Button getPlayButton() {
+		return playButton;
+	}
 }

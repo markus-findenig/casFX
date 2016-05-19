@@ -45,7 +45,8 @@ public class EmbeddedMediaPlayer extends Application {
 
     //private File file = new File("E:\\Users\\Videos\\Test\\TheSimpsonsMovie-1080pTrailer.mp4");
     
-	private File file = new File("E:\\Users\\Videos\\Test\\stream.mp4");
+	//private File file = new File("E:\\Users\\Videos\\Test\\stream.mp4");
+	private File file = new File("");
 	
 	private final String MEDIA_URL = file.toURI().toString();
 	

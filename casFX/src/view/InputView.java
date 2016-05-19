@@ -1,13 +1,11 @@
 package view;
 
-import controller.InputViewController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -28,6 +26,8 @@ public class InputView {
 
 	private Scene scene;
 	public GridPane grid;
+	
+	private SimulatorModel model;
 
 	// Menu
 	final Menu menu1 = new Menu("File");
@@ -37,7 +37,9 @@ public class InputView {
 	final MenuItem open = new MenuItem("Open");
 
 	final MenuItem exit = new MenuItem("Exit");
-	private SimulatorModel model;
+	
+	final MenuItem test = new MenuItem("Run Test Funktion");
+	
 
 	// Video Input Informations
 	private static Label videoTypeL;
@@ -103,8 +105,9 @@ public class InputView {
 	private static Label mpkOutL;
 	private static TextArea mpkOutTA;
 	
-	
+	// Media Player
 	public MediaPlayer mediaPlayerInput;
+	public MediaPlayer mediaPlayerOutput;
 	
 	// BarCharts
 	CategoryAxis xAxis;
@@ -138,10 +141,12 @@ public class InputView {
 
 		menu1.getItems().add(open);
 		menu1.getItems().add(exit);
+		
+		menu3.getItems().add(test);
 
 		init();
-		initPlayer1();
-		initPlayer2();
+		initPlayerInput();
+		initPlayerOutput();
 		initBarChartInput();
 
 		scene = new Scene(grid, 1024, 650);
@@ -163,6 +168,11 @@ public class InputView {
 	public MenuItem getExit() {
 		return exit;
 	}
+	
+	public MenuItem test() {
+		return test;
+	}
+
 
 	public void init() {
 
@@ -413,7 +423,7 @@ public class InputView {
 	}
 
 	// Video Player Input
-	public Runnable initPlayer1() {
+	public void initPlayerInput() {
 		// create media player 1 fx
 		mediaPlayerInput = new MediaPlayer(model.mediaInput);
 		MediaControl mediaControl = new MediaControl(mediaPlayerInput, true);
@@ -423,13 +433,12 @@ public class InputView {
 		mediaControl.setPrefSize(300, 225);
 		mediaControl.setMaxSize(300, 225);
 		grid.add(mediaControl, 1, 4);
-		return null;
 	}
 
 	// Video Player Output
-	public void initPlayer2() {
+	public void initPlayerOutput() {
 		// create media player 2 fx
-		MediaPlayer mediaPlayerOutput = new MediaPlayer(model.mediaInput);
+		mediaPlayerOutput = new MediaPlayer(model.mediaOutput);
 		MediaControl mediaControlOutput = new MediaControl(mediaPlayerOutput, true);
 		GridPane.setColumnSpan(mediaControlOutput, 3);
 		GridPane.setRowSpan(mediaControlOutput, 8);
@@ -482,4 +491,5 @@ public class InputView {
 		return ak1OutTF;
 	}
 
+	
 }

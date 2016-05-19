@@ -3,8 +3,10 @@ package controller;
 import java.io.File;
 import java.security.SecureRandom;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.chart.XYChart;
@@ -12,6 +14,7 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
+
 import model.SimulatorModel;
 import view.InputView;
 
@@ -21,26 +24,50 @@ public class InputViewController {
 	private SimulatorModel model;
 
 	// View
-	private InputView view;
-
-	public InputViewController(SimulatorModel model) {
-		this.model = model;
+	private static InputView view;
+	
+	/**
+	 * Constructor InputViewController
+	 * @param simulatorModel - Simulator Model
+	 */
+	public InputViewController(SimulatorModel simulatorModel) {
+		this.model = simulatorModel;
 		// instance with dummy file video
 		setInputFile(new File("resorces\\5seconds.mp4"));
+		setOutputFile(new File("resorces\\5seconds.mp4"));
 
 		// TODO dummy Data for BarChart
-		this.model.observableArrayList = getChartData();
+		model.observableArrayList = getChartData();
 
-		this.view = new InputView(model);
+		view = new InputView(model);
 
 		MenuEventHandler menuEventHandler = new MenuEventHandler();
 
-		// Eventhandler registrieren
+		// Menu Eventhandler registrieren
 		view.getOpen().setOnAction(menuEventHandler);
 		view.getExit().setOnAction(menuEventHandler);
 
-		// view.getAddBtn().setOnAction(new addBtnEventHandler());
-		// view.getOkBtn().setOnAction(new OkBtnEventHandler());
+		//CasEventHandler casEventHandler = new CasEventHandler();
+		
+		// Test Function
+		view.test().setOnAction(event -> {
+            Task<Void> task = new Task<Void>() {
+                @Override 
+                public Void call() throws Exception {
+                	Status status = view.mediaPlayerInput.getStatus();
+					while (status == Status.PLAYING) {
+						model.controlWord = getRandomHex(16);
+						updateMessage(model.controlWord);
+                        model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
+                        Thread.sleep(model.cwTime*1000); // time in seconds
+                    }
+                    return null;
+                }
+            };
+            task.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
+            new Thread(task).start();
+        });
+
 	}
 
 	public void show() {
@@ -61,28 +88,38 @@ public class InputViewController {
 					setInputFile(inputFile);
 				}
 
-				// set cw
-				view.getCwTF().setText(getRandomHex(16));
+				// set 64 bit Control Word
+				model.controlWord = getRandomHex(16);
+				view.getCwTF().setText(model.controlWord);
 
-				// set ak0 and ak1 for input and output
-				String ak0 = getRandomHex(32);
-				String ak1 = getRandomHex(32);
-				view.getAk0TF().setText(ak0);
-				view.getAk1TF().setText(ak1);
-				view.getAk0OutTF().setText(ak0);
-				view.getAk1OutTF().setText(ak1);
+				// set 128 bit Authorization Keys input and output
+				model.authorizationKey0 = getRandomHex(32);
+				model.authorizationKey1 = getRandomHex(32);
+				view.getAk0TF().setText(model.authorizationKey0);
+				view.getAk1TF().setText(model.authorizationKey1);
+				view.getAk0OutTF().setText(model.authorizationKey0);
+				view.getAk1OutTF().setText(model.authorizationKey1);
 
-				view.initPlayer1();
+				// view.initPlayer1();
 				// view.initPlayer2();
 				// view.init();
-				
-				// Update CW
-				Status status = view.mediaPlayerInput.getStatus();
-				if (status == Status.PLAYING) {
-					// set cw
-					view.getCwTF().setText(getRandomHex(16));
-				}
 
+				// Video Player Input
+				Task<Void> taskInitPlayerInput = new Task<Void>() {
+					@Override
+					protected Void call() throws Exception {
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								view.initPlayerInput();
+							}
+						});
+						return null;
+					}
+				};
+				// start the task
+				new Thread(taskInitPlayerInput).start();
+				
 			}
 
 			// Exit
@@ -93,26 +130,67 @@ public class InputViewController {
 		}
 	}
 
+//	class CasEventHandler implements EventHandler<ActionEvent> {
+//
+//		@Override
+//		public void handle(ActionEvent event) {
+//
+//			
+//			// Update CW
+//			if (event.getSource() ==  view.test()) {
+//		
+//
+//				Task<Void> taskSetCW = new Task<Void>() {
+//					@Override
+//					protected Void call() throws Exception {
+//						Status status = view.mediaPlayerInput.getStatus();
+//						while (status == Status.PLAYING) {
+//							// set cw
+//							//view.getCwTF().setText(getRandomHex(16));
+//							updateMessage(getRandomHex(16));
+//							int waitTime = Integer.parseInt(view.getCwTimeTF().toString());
+//							
+//							Thread.sleep(1000);
+//						}
+//						return null;
+//					}
+//				};
+//				taskSetCW.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
+//				// start the background task
+//				new Thread(taskSetCW).start();
+//			}
+//		}
+//	}
+
 	/**
 	 * Setze die Parameter im Model für die Input Datei
 	 * 
-	 * @param inputFile
+	 * @param inputFile - Input File
 	 */
 	public void setInputFile(File inputFile) {
 		model.inputFile = inputFile;
 		model.mediaInputUrl = inputFile.toURI().toString();
 		model.mediaInput = new Media(model.mediaInputUrl);
+	}
 
+	/**
+	 * Setze die Parameter im Model für die Output Datei
+	 * 
+	 * @param outputFile - Output File
+	 */
+	public void setOutputFile(File outputFile) {
+		model.inputFile = outputFile;
+		model.mediaOutputUrl = outputFile.toURI().toString();
+		model.mediaOutput = new Media(model.mediaOutputUrl);
 	}
 
 	/**
 	 * Erzeugt eine Random Hex Nummer
 	 * 
-	 * @param length
-	 *            Länge der Random Hex Nummer
+	 * @param length - Länge der Random Hex Nummer
 	 * @return Gibt eine Random Hex Nummer der Länge length zurück.
 	 */
-	public String getRandomHex(int length) {
+	public static String getRandomHex(int length) {
 		SecureRandom randomService = new SecureRandom();
 		StringBuilder sb = new StringBuilder();
 		while (sb.length() < length) {
@@ -122,6 +200,7 @@ public class InputViewController {
 		return sb.toString().toUpperCase();
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ObservableList<XYChart.Series<String, Number>> getChartData() {
 		int aValue = 128; // Byte Array 128
 
