@@ -22,7 +22,8 @@ public class SimulatorModel {
 	public Media mediaOutput;
 	
 	// actual CW
-	public String controlWord;
+	public String controlWordInput;
+	public String controlWordOutput;
 	
 	// Time for CW period of validity
 	public int cwTime;
@@ -31,9 +32,11 @@ public class SimulatorModel {
 	public String ecmControlWordOdd;
 	public String ecmControlWordEven;
 	
-	// Authorization Keys 
-	public String authorizationKey0;
-	public String authorizationKey1;
+	// Authorization Keys for Input and Output Player
+	public String authorizationInputKey0;
+	public String authorizationInputKey1;
+	public String authorizationOutputKey0;
+	public String authorizationOutputKey1;
 	
 
 	// Dummy Array for BarChart

@@ -28,6 +28,7 @@ public class InputViewController {
 	
 	/**
 	 * Constructor InputViewController
+	 * 
 	 * @param simulatorModel - Simulator Model
 	 */
 	public InputViewController(SimulatorModel simulatorModel) {
@@ -56,8 +57,8 @@ public class InputViewController {
                 public Void call() throws Exception {
                 	Status status = view.mediaPlayerInput.getStatus();
 					while (status == Status.PLAYING) {
-						model.controlWord = getRandomHex(16);
-						updateMessage(model.controlWord);
+						model.controlWordInput = getRandomHex(16);
+						updateMessage(model.controlWordInput);
                         model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
                         Thread.sleep(model.cwTime*1000); // time in seconds
                     }
@@ -67,12 +68,12 @@ public class InputViewController {
             task.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
             new Thread(task).start();
         });
-
 	}
 
 	public void show() {
 		view.show(model.getPrimaryStage());
 	}
+
 
 	class MenuEventHandler implements EventHandler<ActionEvent> {
 
@@ -88,17 +89,17 @@ public class InputViewController {
 					setInputFile(inputFile);
 				}
 
-				// set 64 bit Control Word
-				model.controlWord = getRandomHex(16);
-				view.getCwTF().setText(model.controlWord);
+				// set 64 bit Control Word Input
+				model.controlWordInput = getRandomHex(16);
+				view.getCwTF().setText(model.controlWordInput);
 
 				// set 128 bit Authorization Keys input and output
-				model.authorizationKey0 = getRandomHex(32);
-				model.authorizationKey1 = getRandomHex(32);
-				view.getAk0TF().setText(model.authorizationKey0);
-				view.getAk1TF().setText(model.authorizationKey1);
-				view.getAk0OutTF().setText(model.authorizationKey0);
-				view.getAk1OutTF().setText(model.authorizationKey1);
+				model.authorizationInputKey0 = model.authorizationOutputKey0 = getRandomHex(32);
+				model.authorizationInputKey1 = model.authorizationOutputKey1 = getRandomHex(32);
+				view.getAk0InTF().setText(model.authorizationInputKey0);
+				view.getAk1InTF().setText(model.authorizationInputKey1);
+				view.getAk0OutTF().setText(model.authorizationInputKey0);
+				view.getAk1OutTF().setText(model.authorizationInputKey1);
 
 				// view.initPlayer1();
 				// view.initPlayer2();
@@ -119,7 +120,6 @@ public class InputViewController {
 				};
 				// start the task
 				new Thread(taskInitPlayerInput).start();
-				
 			}
 
 			// Exit

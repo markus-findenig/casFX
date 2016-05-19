@@ -459,6 +459,7 @@ public class InputView {
 		bc1 = new BarChart<String, Number>(xAxis, yAxis);
 		GridPane.setColumnSpan(bc1, 3);
 		GridPane.setRowSpan(bc1, 2);
+		bc1.setMaxWidth(350);
 		bc1.setData(model.observableArrayList);
 		//bc1.setScaleX(0.5);
 		//bc1.setScaleY(0.5);
@@ -475,11 +476,11 @@ public class InputView {
 		return cwTF;
 	}
 
-	public TextField getAk0TF() {
+	public TextField getAk0InTF() {
 		return ak0TF;
 	}
 
-	public TextField getAk1TF() {
+	public TextField getAk1InTF() {
 		return ak1TF;
 	}
 

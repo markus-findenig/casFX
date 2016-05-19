@@ -32,6 +32,7 @@
 
 package app;
 
+import controller.InputViewController;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
