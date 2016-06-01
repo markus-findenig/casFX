@@ -3,6 +3,7 @@ package controller;
 import java.io.File;
 import java.security.SecureRandom;
 
+import app.MediaControl;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +13,7 @@ import javafx.event.EventHandler;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
 
@@ -25,11 +27,12 @@ public class InputViewController {
 
 	// View
 	private static InputView view;
-	
+
 	/**
 	 * Constructor InputViewController
 	 * 
-	 * @param simulatorModel - Simulator Model
+	 * @param simulatorModel
+	 *            - Simulator Model
 	 */
 	public InputViewController(SimulatorModel simulatorModel) {
 		this.model = simulatorModel;
@@ -47,33 +50,44 @@ public class InputViewController {
 		// Menu Eventhandler registrieren
 		view.getOpen().setOnAction(menuEventHandler);
 		view.getExit().setOnAction(menuEventHandler);
-
-		//CasEventHandler casEventHandler = new CasEventHandler();
 		
+		
+
+		CasEventHandler casEventHandler = new CasEventHandler();
+		
+		//view.getInputPlayerButton().setOnAction(casEventHandler);
+
+				
+//		Status statusPlaying = view.mediaPlayerInput.getStatus().PLAYING;
+//
+//		//view.mediaPlayerInput.getPlayButton();
+//		
+//		MediaPlayer mp = new MediaPlayer(null);
+//		mp.getCurrentCount();
+
 		// Test Function
 		view.test().setOnAction(event -> {
-            Task<Void> task = new Task<Void>() {
-                @Override 
-                public Void call() throws Exception {
-                	Status status = view.mediaPlayerInput.getStatus();
+			Task<Void> task = new Task<Void>() {
+				@Override
+				public Void call() throws Exception {
+					Status status = view.mediaPlayerInput.getStatus();
 					while (status == Status.PLAYING) {
 						model.controlWordInput = getRandomHex(16);
 						updateMessage(model.controlWordInput);
-                        model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
-                        Thread.sleep(model.cwTime*1000); // time in seconds
-                    }
-                    return null;
-                }
-            };
-            task.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
-            new Thread(task).start();
-        });
+						model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
+						Thread.sleep(model.cwTime * 1000); // time in seconds
+					}
+					return null;
+				}
+			};
+			task.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
+			new Thread(task).start();
+		});
 	}
 
 	public void show() {
 		view.show(model.getPrimaryStage());
 	}
-
 
 	class MenuEventHandler implements EventHandler<ActionEvent> {
 
@@ -120,6 +134,7 @@ public class InputViewController {
 				};
 				// start the task
 				new Thread(taskInitPlayerInput).start();
+				
 			}
 
 			// Exit
@@ -130,42 +145,54 @@ public class InputViewController {
 		}
 	}
 
-//	class CasEventHandler implements EventHandler<ActionEvent> {
-//
-//		@Override
-//		public void handle(ActionEvent event) {
-//
-//			
-//			// Update CW
-//			if (event.getSource() ==  view.test()) {
-//		
-//
-//				Task<Void> taskSetCW = new Task<Void>() {
-//					@Override
-//					protected Void call() throws Exception {
-//						Status status = view.mediaPlayerInput.getStatus();
-//						while (status == Status.PLAYING) {
-//							// set cw
-//							//view.getCwTF().setText(getRandomHex(16));
-//							updateMessage(getRandomHex(16));
-//							int waitTime = Integer.parseInt(view.getCwTimeTF().toString());
-//							
-//							Thread.sleep(1000);
-//						}
-//						return null;
-//					}
-//				};
-//				taskSetCW.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
-//				// start the background task
-//				new Thread(taskSetCW).start();
-//			}
-//		}
-//	}
+	class CasEventHandler implements EventHandler<ActionEvent> {
+
+		@Override
+		public void handle(ActionEvent event) {
+			
+
+			// Update CW
+			if (event.getSource() == view.mediaPlayerInput.getStatus().PLAYING) {
+				System.out.println("CasEventHandler");
+				Status status = view.mediaPlayerInput.getStatus();
+				System.out.println(status);
+				Task<Void> taskSetCW = new Task<Void>() {
+					@Override
+					protected Void call() throws Exception {
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								while (status == Status.PLAYING) {
+									// set cw
+									// view.getCwTF().setText(getRandomHex(16));
+									updateMessage(getRandomHex(16));
+									model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
+									try {
+										Thread.sleep(model.cwTime * 1000); // time in seconds
+										System.out.println(model.cwTime);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+								}
+							}
+						});
+						return null;
+					}
+				};
+				// start the task
+				taskSetCW.messageProperty()
+						.addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
+				// start the background task
+				new Thread(taskSetCW).start();
+			}
+		}
+	}
 
 	/**
 	 * Setze die Parameter im Model für die Input Datei
 	 * 
-	 * @param inputFile - Input File
+	 * @param inputFile
+	 *            - Input File
 	 */
 	public void setInputFile(File inputFile) {
 		model.inputFile = inputFile;
@@ -176,7 +203,8 @@ public class InputViewController {
 	/**
 	 * Setze die Parameter im Model für die Output Datei
 	 * 
-	 * @param outputFile - Output File
+	 * @param outputFile
+	 *            - Output File
 	 */
 	public void setOutputFile(File outputFile) {
 		model.inputFile = outputFile;
@@ -187,7 +215,8 @@ public class InputViewController {
 	/**
 	 * Erzeugt eine Random Hex Nummer
 	 * 
-	 * @param length - Länge der Random Hex Nummer
+	 * @param length
+	 *            - Länge der Random Hex Nummer
 	 * @return Gibt eine Random Hex Nummer der Länge length zurück.
 	 */
 	public static String getRandomHex(int length) {
@@ -218,4 +247,39 @@ public class InputViewController {
 		return observableArrayList;
 	}
 
+	
+	public static void setControlWord() {
+		
+		Task<Void> taskSetCW = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						Status status = view.mediaPlayerInput.getStatus();
+						System.out.println("setControlWord" + status);
+						while (status == Status.PLAYING) {
+							// set cw
+							// view.getCwTF().setText(getRandomHex(16));
+							updateMessage(getRandomHex(16));
+
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							status = view.mediaPlayerInput.getStatus();
+						}
+					}
+				});
+				return null;
+			}
+		};
+		// start the task
+		taskSetCW.messageProperty()
+				.addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
+		// start the background task
+		new Thread(taskSetCW).start();
+	}
+	
 }

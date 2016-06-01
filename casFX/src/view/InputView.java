@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -20,6 +21,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import model.SimulatorModel;
+import uk.co.caprica.vlcj.test.info.MediaInfoTest;
 import app.MediaControl;
 
 public class InputView {
@@ -39,8 +41,8 @@ public class InputView {
 	final MenuItem exit = new MenuItem("Exit");
 	
 	final MenuItem test = new MenuItem("Run Test Funktion");
-	
 
+	
 	// Video Input Informations
 	private static Label videoTypeL;
 	private static TextField videoTypeTF;
@@ -433,6 +435,7 @@ public class InputView {
 		mediaControl.setPrefSize(300, 225);
 		mediaControl.setMaxSize(300, 225);
 		grid.add(mediaControl, 1, 4);
+		//setInputPlayerButton(mediaControl.playButton);
 	}
 
 	// Video Player Output

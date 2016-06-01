@@ -32,7 +32,6 @@
 
 package app;
 
-import controller.InputViewController;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -55,7 +54,7 @@ import javafx.util.Duration;
 
 public class MediaControl extends BorderPane {
 
-    private MediaPlayer mp;
+	private MediaPlayer mp;
     private MediaView mediaView;
     private final boolean repeat = false;
     private boolean stopRequested = false;
@@ -114,6 +113,7 @@ public class MediaControl extends BorderPane {
                             mp.seek(mp.getStartTime());
                             atEndOfMedia = false;
                         }
+                        // status PLAYING
                         mp.play();
                     } else {
                         mp.pause();
@@ -279,7 +279,4 @@ public class MediaControl extends BorderPane {
         }
     }
     
-    public Button getPlayButton() {
-		return playButton;
-	}
 }
