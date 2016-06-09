@@ -55,228 +55,216 @@ import javafx.util.Duration;
 public class MediaControl extends BorderPane {
 
 	private MediaPlayer mp;
-    private MediaView mediaView;
-    private final boolean repeat = false;
-    private boolean stopRequested = false;
-    private boolean atEndOfMedia = false;
-    private Duration duration;
-    private Slider timeSlider;
-    private Label playTime;
-    private Slider volumeSlider;
-    private HBox mediaBar;
-    private Button playButton;
+	private MediaView mediaView;
+	private final boolean repeat = false;
+	private boolean stopRequested = false;
+	private boolean atEndOfMedia = false;
+	private Duration duration;
+	private Slider timeSlider;
+	private Label playTime;
+	private Slider volumeSlider;
+	private HBox mediaBar;
+	private Button playButton;
 
-    /**
-     * MediaControl
-     * 
-     * @param mediaPlayer - Media Player
-     * @param control - set true if active Control Buttons
-     */
-    public MediaControl(final MediaPlayer mediaPlayer, boolean control) {
-        this.mp = mediaPlayer;
-        setStyle("-fx-background-color: #bfc2c7;");
-        mediaView = new MediaView(mp);
-        
-        // TODO Größe vom Video fix einstellen
-        mediaView.setFitWidth(300);
-        mediaView.setFitHeight(225);
-    
-        
-        Pane mvPane = new Pane() {
-        };
-        mvPane.getChildren().add(mediaView);
-        mvPane.setStyle("-fx-background-color: black;");
-        setCenter(mvPane);
+	/**
+	 * MediaControl
+	 * 
+	 * @param mediaPlayer
+	 *            - Media Player
+	 */
+	public MediaControl(final MediaPlayer mediaPlayer) {
+		this.mp = mediaPlayer;
+		setStyle("-fx-background-color: #bfc2c7;");
+		mediaView = new MediaView(mp);
+		// Lautstärke auf 0
+		mp.setVolume(0);
 
-        mediaBar = new HBox();
-        mediaBar.setAlignment(Pos.CENTER);
-        mediaBar.setPadding(new Insets(5, 10, 5, 10));
-        BorderPane.setAlignment(mediaBar, Pos.CENTER);
+		// TODO Größe vom Video fix einstellen
+		mediaView.setFitWidth(300);
+		mediaView.setFitHeight(225);
 
-        if (control) {
-        	playButton = new Button(">");
-        	playButton.setMinWidth(30);
-            playButton.setOnAction(new EventHandler<ActionEvent>() {
-                public void handle(ActionEvent e) {
-                    Status status = mp.getStatus();
+		Pane mvPane = new Pane() {
+		};
+		mvPane.getChildren().add(mediaView);
+		mvPane.setStyle("-fx-background-color: black;");
+		setCenter(mvPane);
 
-                    if (status == Status.UNKNOWN || status == Status.HALTED) {
-                        // don't do anything in these states
-                        return;
-                    }
+		mediaBar = new HBox();
+		mediaBar.setAlignment(Pos.CENTER);
+		mediaBar.setPadding(new Insets(5, 10, 5, 10));
+		BorderPane.setAlignment(mediaBar, Pos.CENTER);
 
-                    if (status == Status.PAUSED
-                            || status == Status.READY
-                            || status == Status.STOPPED) {
-                        // rewind the movie if we're sitting at the end
-                        if (atEndOfMedia) {
-                            mp.seek(mp.getStartTime());
-                            atEndOfMedia = false;
-                        }
-                        // status PLAYING
-                        mp.play();
-                    } else {
-                        mp.pause();
-                    }
-                }
-            });
-            mp.currentTimeProperty().addListener(new InvalidationListener() {
-                public void invalidated(Observable ov) {
-                    updateValues();
-                }
-            });
+		playButton = new Button(">");
+		playButton.setMinWidth(30);
+		playButton.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				Status status = mp.getStatus();
 
-            mp.setOnPlaying(new Runnable() {
-                public void run() {
-                    if (stopRequested) {
-                        mp.pause();
-                        stopRequested = false;
-                    } else {
-                        playButton.setText("||");
-                    }
-                }
-            });
+				if (status == Status.UNKNOWN || status == Status.HALTED) {
+					// don't do anything in these states
+					return;
+				}
 
-            mp.setOnPaused(new Runnable() {
-                public void run() {
-                    System.out.println("onPaused");
-                    playButton.setText(">");
-                }
-            });
+				if (status == Status.PAUSED || status == Status.READY || status == Status.STOPPED) {
+					// rewind the movie if we're sitting at the end
+					if (atEndOfMedia) {
+						mp.seek(mp.getStartTime());
+						atEndOfMedia = false;
+					}
+					// status PLAYING
+					mp.play();
+				} else {
+					mp.pause();
+				}
+			}
+		});
+		mp.currentTimeProperty().addListener(new InvalidationListener() {
+			public void invalidated(Observable ov) {
+				updateValues();
+			}
+		});
 
-            mp.setOnReady(new Runnable() {
-                public void run() {
-                    duration = mp.getMedia().getDuration();
-                    updateValues();
-                }
-            });
+		mp.setOnPlaying(new Runnable() {
+			public void run() {
+				if (stopRequested) {
+					mp.pause();
+					stopRequested = false;
+				} else {
+					playButton.setText("||");
+				}
+			}
+		});
 
-            mp.setCycleCount(repeat ? MediaPlayer.INDEFINITE : 1);
-            mp.setOnEndOfMedia(new Runnable() {
-                public void run() {
-                    if (!repeat) {
-                        playButton.setText(">");
-                        stopRequested = true;
-                        atEndOfMedia = true;
-                    }
-                }
-            });
+		mp.setOnPaused(new Runnable() {
+			public void run() {
+				//System.out.println("onPaused");
+				playButton.setText(">");
+			}
+		});
 
-            mediaBar.getChildren().add(playButton);
-            // Add spacer
-            Label spacer = new Label("   ");
-            mediaBar.getChildren().add(spacer);
+		mp.setOnReady(new Runnable() {
+			public void run() {
+				duration = mp.getMedia().getDuration();
+				updateValues();
+			}
+		});
 
-            // Add Time label
-            Label timeLabel = new Label("Time: ");
-            timeLabel.setMinWidth(100);
-            mediaBar.getChildren().add(timeLabel);
+		mp.setCycleCount(repeat ? MediaPlayer.INDEFINITE : 1);
+		mp.setOnEndOfMedia(new Runnable() {
+			public void run() {
+				if (!repeat) {
+					playButton.setText(">");
+					stopRequested = true;
+					atEndOfMedia = true;
+				}
+			}
+		});
 
-            // Add time slider
-            timeSlider = new Slider();
-            HBox.setHgrow(timeSlider, Priority.ALWAYS);
-            timeSlider.setMinWidth(50);
-            timeSlider.setMaxWidth(Double.MAX_VALUE);
-            timeSlider.valueProperty().addListener(new InvalidationListener() {
-                public void invalidated(Observable ov) {
-                    if (timeSlider.isValueChanging()) {
-                        // multiply duration by percentage calculated by slider position
-                        mp.seek(duration.multiply(timeSlider.getValue() / 100.0));
-                    }
-                }
-            });
-            mediaBar.getChildren().add(timeSlider);
+		mediaBar.getChildren().add(playButton);
+		// Add spacer
+		Label spacer = new Label("   ");
+		mediaBar.getChildren().add(spacer);
 
-            // Add Play label
-            playTime = new Label();
-            playTime.setPrefWidth(130);
-            playTime.setMinWidth(50);
-            mediaBar.getChildren().add(playTime);
+		// Add Time label
+		Label timeLabel = new Label("Time: ");
+		timeLabel.setMinWidth(100);
+		mediaBar.getChildren().add(timeLabel);
 
-            // Add the volume label
-            Label volumeLabel = new Label("Vol: ");
-            mediaBar.getChildren().add(volumeLabel);
+		// Add time slider
+		timeSlider = new Slider();
+		HBox.setHgrow(timeSlider, Priority.ALWAYS);
+		timeSlider.setMinWidth(50);
+		timeSlider.setMaxWidth(Double.MAX_VALUE);
+		timeSlider.valueProperty().addListener(new InvalidationListener() {
+			public void invalidated(Observable ov) {
+				if (timeSlider.isValueChanging()) {
+					// multiply duration by percentage calculated by slider
+					// position
+					mp.seek(duration.multiply(timeSlider.getValue() / 100.0));
+				}
+			}
+		});
+		mediaBar.getChildren().add(timeSlider);
 
-            // Add Volume slider
-            volumeSlider = new Slider();
-            volumeSlider.setPrefWidth(70);
-            volumeSlider.setMaxWidth(Region.USE_PREF_SIZE);
-            volumeSlider.setMinWidth(30);
-            volumeSlider.valueProperty().addListener(new InvalidationListener() {
-                public void invalidated(Observable ov) {
-                    if (volumeSlider.isValueChanging()) {
-                        mp.setVolume(volumeSlider.getValue() / 100.0);
-                    }
-                }
-            });
-            mediaBar.getChildren().add(volumeSlider);
+		// Add Play label
+		playTime = new Label();
+		playTime.setPrefWidth(130);
+		playTime.setMinWidth(50);
+		mediaBar.getChildren().add(playTime);
 
-            setBottom(mediaBar);
-        }
-        
-        
-    }
+		// Add the volume label
+		Label volumeLabel = new Label("Vol: ");
+		mediaBar.getChildren().add(volumeLabel);
 
-    protected void updateValues() {
-        if (playTime != null && timeSlider != null && volumeSlider != null) {
-            Platform.runLater(new Runnable() {
-                @SuppressWarnings("deprecation")
+		// Add Volume slider
+		volumeSlider = new Slider();
+		volumeSlider.setPrefWidth(70);
+		volumeSlider.setMaxWidth(Region.USE_PREF_SIZE);
+		volumeSlider.setMinWidth(30);
+		volumeSlider.valueProperty().addListener(new InvalidationListener() {
+			public void invalidated(Observable ov) {
+				if (volumeSlider.isValueChanging()) {
+					mp.setVolume(volumeSlider.getValue() / 100.0);
+				}
+			}
+		});
+		mediaBar.getChildren().add(volumeSlider);
+
+		setBottom(mediaBar);
+
+	}
+
+	protected void updateValues() {
+		if (playTime != null && timeSlider != null && volumeSlider != null) {
+			Platform.runLater(new Runnable() {
+				@SuppressWarnings("deprecation")
 				public void run() {
-                    Duration currentTime = mp.getCurrentTime();
-                    playTime.setText(formatTime(currentTime, duration));
-                    timeSlider.setDisable(duration.isUnknown());
-                    if (!timeSlider.isDisabled()
-                            && duration.greaterThan(Duration.ZERO)
-                            && !timeSlider.isValueChanging()) {
-                        timeSlider.setValue(currentTime.divide(duration).toMillis()
-                                * 100.0);
-                    }
-                    if (!volumeSlider.isValueChanging()) {
-                        volumeSlider.setValue((int) Math.round(mp.getVolume()
-                                * 100));
-                    }
-                }
-            });
-        }
-    }
+					Duration currentTime = mp.getCurrentTime();
+					playTime.setText(formatTime(currentTime, duration));
+					timeSlider.setDisable(duration.isUnknown());
+					if (!timeSlider.isDisabled() && duration.greaterThan(Duration.ZERO)
+							&& !timeSlider.isValueChanging()) {
+						timeSlider.setValue(currentTime.divide(duration).toMillis() * 100.0);
+					}
+					if (!volumeSlider.isValueChanging()) {
+						volumeSlider.setValue((int) Math.round(mp.getVolume() * 100));
+					}
+				}
+			});
+		}
+	}
 
-    private static String formatTime(Duration elapsed, Duration duration) {
-        int intElapsed = (int) Math.floor(elapsed.toSeconds());
-        int elapsedHours = intElapsed / (60 * 60);
-        if (elapsedHours > 0) {
-            intElapsed -= elapsedHours * 60 * 60;
-        }
-        int elapsedMinutes = intElapsed / 60;
-        int elapsedSeconds = intElapsed - elapsedHours * 60 * 60
-                - elapsedMinutes * 60;
+	private static String formatTime(Duration elapsed, Duration duration) {
+		int intElapsed = (int) Math.floor(elapsed.toSeconds());
+		int elapsedHours = intElapsed / (60 * 60);
+		if (elapsedHours > 0) {
+			intElapsed -= elapsedHours * 60 * 60;
+		}
+		int elapsedMinutes = intElapsed / 60;
+		int elapsedSeconds = intElapsed - elapsedHours * 60 * 60 - elapsedMinutes * 60;
 
-        if (duration.greaterThan(Duration.ZERO)) {
-            int intDuration = (int) Math.floor(duration.toSeconds());
-            int durationHours = intDuration / (60 * 60);
-            if (durationHours > 0) {
-                intDuration -= durationHours * 60 * 60;
-            }
-            int durationMinutes = intDuration / 60;
-            int durationSeconds = intDuration - durationHours * 60 * 60
-                    - durationMinutes * 60;
-            if (durationHours > 0) {
-                return String.format("%d:%02d:%02d/%d:%02d:%02d",
-                        elapsedHours, elapsedMinutes, elapsedSeconds,
-                        durationHours, durationMinutes, durationSeconds);
-            } else {
-                return String.format("%02d:%02d/%02d:%02d",
-                        elapsedMinutes, elapsedSeconds, durationMinutes,
-                        durationSeconds);
-            }
-        } else {
-            if (elapsedHours > 0) {
-                return String.format("%d:%02d:%02d", elapsedHours,
-                        elapsedMinutes, elapsedSeconds);
-            } else {
-                return String.format("%02d:%02d", elapsedMinutes,
-                        elapsedSeconds);
-            }
-        }
-    }
-    
+		if (duration.greaterThan(Duration.ZERO)) {
+			int intDuration = (int) Math.floor(duration.toSeconds());
+			int durationHours = intDuration / (60 * 60);
+			if (durationHours > 0) {
+				intDuration -= durationHours * 60 * 60;
+			}
+			int durationMinutes = intDuration / 60;
+			int durationSeconds = intDuration - durationHours * 60 * 60 - durationMinutes * 60;
+			if (durationHours > 0) {
+				return String.format("%d:%02d:%02d/%d:%02d:%02d", elapsedHours, elapsedMinutes, elapsedSeconds,
+						durationHours, durationMinutes, durationSeconds);
+			} else {
+				return String.format("%02d:%02d/%02d:%02d", elapsedMinutes, elapsedSeconds, durationMinutes,
+						durationSeconds);
+			}
+		} else {
+			if (elapsedHours > 0) {
+				return String.format("%d:%02d:%02d", elapsedHours, elapsedMinutes, elapsedSeconds);
+			} else {
+				return String.format("%02d:%02d", elapsedMinutes, elapsedSeconds);
+			}
+		}
+	}
+
 }

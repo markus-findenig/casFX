@@ -2,21 +2,33 @@ package controller;
 
 import java.io.File;
 import java.security.SecureRandom;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
+
+import com.sun.javafx.collections.MappingChange.Map;
 
 import app.MediaControl;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Toggle;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
-
+import javafx.util.converter.LocalDateTimeStringConverter;
 import model.SimulatorModel;
 import view.InputView;
 
@@ -37,8 +49,8 @@ public class InputViewController {
 	public InputViewController(SimulatorModel simulatorModel) {
 		this.model = simulatorModel;
 		// instance with dummy file video
-		setInputFile(new File("resorces\\5seconds.mp4"));
-		setOutputFile(new File("resorces\\5seconds.mp4"));
+		setInputFile(new File("resorces\\dummy.mp4"));
+		setOutputFile(new File("resorces\\dummy.mp4"));
 
 		// TODO dummy Data for BarChart
 		model.observableArrayList = getChartData();
@@ -50,38 +62,40 @@ public class InputViewController {
 		// Menu Eventhandler registrieren
 		view.getOpen().setOnAction(menuEventHandler);
 		view.getExit().setOnAction(menuEventHandler);
-		
-		
 
-		CasEventHandler casEventHandler = new CasEventHandler();
-		
-		//view.getInputPlayerButton().setOnAction(casEventHandler);
-
-				
-//		Status statusPlaying = view.mediaPlayerInput.getStatus().PLAYING;
-//
-//		//view.mediaPlayerInput.getPlayButton();
-//		
-//		MediaPlayer mp = new MediaPlayer(null);
-//		mp.getCurrentCount();
+		view.getRadioButtonGroup().selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+			public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
+			}
+		});
 
 		// Test Function
 		view.test().setOnAction(event -> {
-			Task<Void> task = new Task<Void>() {
-				@Override
-				public Void call() throws Exception {
-					Status status = view.mediaPlayerInput.getStatus();
-					while (status == Status.PLAYING) {
-						model.controlWordInput = getRandomHex(16);
-						updateMessage(model.controlWordInput);
-						model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
-						Thread.sleep(model.cwTime * 1000); // time in seconds
-					}
-					return null;
-				}
-			};
-			task.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
-			new Thread(task).start();
+			
+			
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
+			LocalDateTime dateTime = LocalDateTime.now();
+			String formattedDateTime = dateTime.format(formatter);
+			
+			System.out.println(formattedDateTime);
+			
+			
+			// Task<Void> task = new Task<Void>() {
+			// @Override
+			// public Void call() throws Exception {
+			// Status status = view.mediaPlayerInput.getStatus();
+			// while (status == Status.PLAYING) {
+			// model.controlWordInput = getRandomHex(16);
+			// updateMessage(model.controlWordInput);
+			// model.cwTime =
+			// Integer.parseInt(view.getCwTimeTF().getText().toString());
+			// Thread.sleep(model.cwTime * 1000); // time in seconds
+			// }
+			// return null;
+			// }
+			// };
+			// task.messageProperty().addListener((obs, oldMessage, newMessage)
+			// -> view.getCwTF().setText(newMessage));
+			// new Thread(task).start();
 		});
 	}
 
@@ -115,11 +129,7 @@ public class InputViewController {
 				view.getAk0OutTF().setText(model.authorizationInputKey0);
 				view.getAk1OutTF().setText(model.authorizationInputKey1);
 
-				// view.initPlayer1();
-				// view.initPlayer2();
-				// view.init();
-
-				// Video Player Input
+				// Video Player Input Initialisieren
 				Task<Void> taskInitPlayerInput = new Task<Void>() {
 					@Override
 					protected Void call() throws Exception {
@@ -127,14 +137,50 @@ public class InputViewController {
 							@Override
 							public void run() {
 								view.initPlayerInput();
+
+								// TODO
+								view.getVideoResolutionTF()
+										.setText(model.mediaInput.getWidth() + "x" + model.mediaInput.getHeight());
 							}
 						});
 						return null;
 					}
 				};
 				// start the task
-				new Thread(taskInitPlayerInput).start();
+				Thread thInitPlayerInput = new Thread(taskInitPlayerInput);
+				thInitPlayerInput.setDaemon(true);
+				thInitPlayerInput.start();
+
+				// view.getVideoResolutionTF().setText(model.mediaInput.getWidth()
+				// + "x" + model.mediaInput.getHeight());
+
+				// setze das CW in dem Input Player
+				setControlWord();
 				
+
+				//setECM();
+
+				// Video Player Output Initialisieren
+				Task<Void> taskInitPlayerOutput = new Task<Void>() {
+					@Override
+					protected Void call() throws Exception {
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								// view.getOutputPlayer().getOnPlaying();
+								setOutputFile(model.inputFile);
+								view.initPlayerOutput();
+
+							}
+						});
+						return null;
+					}
+				};
+				// start the task
+				Thread thInitPlayerOutput = new Thread(taskInitPlayerOutput);
+				thInitPlayerOutput.setDaemon(true);
+				thInitPlayerOutput.start();
+
 			}
 
 			// Exit
@@ -143,49 +189,7 @@ public class InputViewController {
 			}
 
 		}
-	}
 
-	class CasEventHandler implements EventHandler<ActionEvent> {
-
-		@Override
-		public void handle(ActionEvent event) {
-			
-
-			// Update CW
-			if (event.getSource() == view.mediaPlayerInput.getStatus().PLAYING) {
-				System.out.println("CasEventHandler");
-				Status status = view.mediaPlayerInput.getStatus();
-				System.out.println(status);
-				Task<Void> taskSetCW = new Task<Void>() {
-					@Override
-					protected Void call() throws Exception {
-						Platform.runLater(new Runnable() {
-							@Override
-							public void run() {
-								while (status == Status.PLAYING) {
-									// set cw
-									// view.getCwTF().setText(getRandomHex(16));
-									updateMessage(getRandomHex(16));
-									model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
-									try {
-										Thread.sleep(model.cwTime * 1000); // time in seconds
-										System.out.println(model.cwTime);
-									} catch (InterruptedException e) {
-										e.printStackTrace();
-									}
-								}
-							}
-						});
-						return null;
-					}
-				};
-				// start the task
-				taskSetCW.messageProperty()
-						.addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
-				// start the background task
-				new Thread(taskSetCW).start();
-			}
-		}
 	}
 
 	/**
@@ -207,7 +211,7 @@ public class InputViewController {
 	 *            - Output File
 	 */
 	public void setOutputFile(File outputFile) {
-		model.inputFile = outputFile;
+		model.outputFile = outputFile;
 		model.mediaOutputUrl = outputFile.toURI().toString();
 		model.mediaOutput = new Media(model.mediaOutputUrl);
 	}
@@ -229,6 +233,11 @@ public class InputViewController {
 		return sb.toString().toUpperCase();
 	}
 
+	/**
+	 * Dummy Funktion zum Befüllen der BarCharts
+	 * 
+	 * @return
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ObservableList<XYChart.Series<String, Number>> getChartData() {
 		int aValue = 128; // Byte Array 128
@@ -247,39 +256,134 @@ public class InputViewController {
 		return observableArrayList;
 	}
 
-	
-	public static void setControlWord() {
-		
-		Task<Void> taskSetCW = new Task<Void>() {
+	/**
+	 * Aktualisiert das Control Word in der GUI anhand der Zeit im Timer
+	 * Eingabefeld.
+	 */
+	public void setControlWord() {
+		Task<String> taskSetCW = new Task<String>() {
 			@Override
-			protected Void call() throws Exception {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						Status status = view.mediaPlayerInput.getStatus();
-						System.out.println("setControlWord" + status);
-						while (status == Status.PLAYING) {
-							// set cw
-							// view.getCwTF().setText(getRandomHex(16));
-							updateMessage(getRandomHex(16));
-
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-							status = view.mediaPlayerInput.getStatus();
+			protected String call() throws Exception {
+				// erster Status
+				Status mpStatus = view.mediaPlayerInput.getStatus();
+				String rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
+			
+				while (!isCancelled()) {
+					if (mpStatus == Status.PLAYING) {
+						// setzte das CW
+						model.controlWordInput = getRandomHex(16);
+						// hole die Zeit vom Timer Eingabefeld
+						model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
+						//updateMessage(model.controlWordInput);
+						
+						// Radio Button Status setzen
+						if (rbStatus == "00") {
+							model.ecmWorkKeyId = "00";
+						} else {
+							model.ecmWorkKeyId = "01";
 						}
+						
+						// ECM Date/Time setzen
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
+						LocalDateTime dateTime = LocalDateTime.now();
+						model.ecmDateTime = dateTime.format(formatter);
+						
+						
+						// GUI updaten
+						view.getCwTF().setText(model.controlWordInput);
+						view.getECM().setText(model.ecmWorkKeyId);
+						view.getECMDateTime().setText(model.ecmDateTime);
+						
+//						Platform.runLater(new Runnable() {
+//							public void run() {
+//								view.getECM().setText(model.ecmWorkKeyId);
+//						}
+//						});
+	                	
+	                	
+//						// UI updaten
+//			            Platform.runLater(new Runnable() {
+//			                @Override
+//			                public void run() {
+//			                    // entsprechende UI Komponente updaten
+//			                	if (view.getRadioButtonGroup().getSelectedToggle().getUserData().toString() == "ak0InRB") {
+//									model.ecmWorkKeyId = "00";
+//								} else {
+//									model.ecmWorkKeyId = "01";
+//								}
+//			                	view.getECM().setText(model.ecmWorkKeyId);
+//			                }
+//			            });
+
+			            
+						
+						
+						// Thread wait
+						try {
+							// time in seconds
+							Thread.sleep(model.cwTime * 1000);
+						} catch (InterruptedException interrupted) {
+						}
+					} else {
+						// Thread beenden
+						isCancelled();
 					}
-				});
+					// Status jedes mal überprüfen
+					mpStatus = view.mediaPlayerInput.getStatus();
+					rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
+				}
+				// return model.controlWordInput;
 				return null;
 			}
+
 		};
+		// Setze in der GUI das CW
+//		taskSetCW.messageProperty().addListener((obs, oldMessage, newMessage) -> {
+//				view.getCwTF().setText(newMessage);
+//		});
+		
 		// start the task
-		taskSetCW.messageProperty()
-				.addListener((obs, oldMessage, newMessage) -> view.getCwTF().setText(newMessage));
-		// start the background task
-		new Thread(taskSetCW).start();
+		Thread thSetCW = new Thread(taskSetCW);
+		thSetCW.setDaemon(true);
+		thSetCW.start();
 	}
-	
+
+	private void setECM() {
+		Task<String> taskSetECM = new Task<String>() {
+			@Override
+			protected String call() throws Exception {
+				System.out.println("setECM");
+				// erster Media Player Status
+				Status status = view.mediaPlayerInput.getStatus();
+				while (!isCancelled()) {
+					if (status == Status.PLAYING) {
+
+						if (view.getRadioButtonGroup().getSelectedToggle().getUserData().toString() == "ak0InRB") {
+							model.ecmWorkKeyId = "00";
+							updateMessage(model.ecmWorkKeyId);
+						} else {
+							model.ecmWorkKeyId = "01";
+							updateMessage(model.ecmWorkKeyId);
+						}
+
+					} else {
+						// Thread beenden
+						isCancelled();
+					}
+					// Status jedes mal überprüfen
+					status = view.mediaPlayerInput.getStatus();
+				}
+				return model.ecmWorkKeyId;
+			}
+
+		};
+		// Setze in der GUI das CW
+		taskSetECM.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getECM().setText(newMessage));
+
+		// start the task
+		Thread thSetECM = new Thread(taskSetECM);
+		thSetECM.setDaemon(true);
+		thSetECM.start();
+
+	}
 }

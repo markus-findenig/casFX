@@ -66,7 +66,7 @@ public class EmbeddedMediaPlayer extends Application {
         mediaPlayer.setAutoPlay(true);
         
         
-        MediaControl mediaControl = new MediaControl(mediaPlayer, true);
+        MediaControl mediaControl = new MediaControl(mediaPlayer);
         scene.setRoot(mediaControl);
 
         primaryStage.setScene(scene);

@@ -1,5 +1,6 @@
 package view;
 
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -19,6 +20,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.Stage;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.test.info.MediaInfoTest;
@@ -56,16 +58,17 @@ public class InputView {
 	private static TextField cwTimeTF;
 
 	// ECM Input Keys
-	private static Label cwL;
-	private static TextField cwTF;
-	private static Label ak0L;
-	private static TextField ak0TF;
-	private static Label ak1L;
-	private static TextField ak1TF;
-	private static Label mpkL;
-	private static TextArea mpkTA;
-	private static RadioButton ak0RB;
-	private static RadioButton ak1RB;
+	private static Label cwInL;
+	private static TextField cwInTF;
+	private static Label ak0InL;
+	private static TextField ak0InTF;
+	private static Label ak1InL;
+	private static TextField ak1InTF;
+	private static Label mpkInL;
+	private static TextArea mpkInTA;
+	private static ToggleGroup groupRB;
+	private static RadioButton ak0InRB;
+	private static RadioButton ak1InRB;
 
 	// Transport Stream Header
 	private static Label tsScramblingControlL;
@@ -80,10 +83,10 @@ public class InputView {
 	private static TextField ecmBroadcastIdTF;
 	private static Label ecmWorkKeyIdL;
 	private static TextField ecmWorkKeyIdTF;
-	private static Label ecmScramblingKeyOddL;
-	private static TextField ecmScramblingKeyOddTF;
-	private static Label ecmScramblingKeyEvenL;
-	private static TextField ecmScramblingKeyEvenTF;
+	private static Label ecmCwOddL;
+	private static TextField ecmCwOddTF;
+	private static Label ecmCwEvenL;
+	private static TextField ecmCwEvenTF;
 	private static Label ecmProgramTypeL;
 	private static TextField ecmProgramTypeTF;
 	private static Label ecmDateTimeL;
@@ -109,7 +112,9 @@ public class InputView {
 	
 	// Media Player
 	public MediaPlayer mediaPlayerInput;
+	public MediaControl mediaControlInput;
 	public MediaPlayer mediaPlayerOutput;
+	public MediaControl mediaControlOutput;
 	
 	// BarCharts
 	CategoryAxis xAxis;
@@ -221,46 +226,48 @@ public class InputView {
 		grid.add(cwTimeTF, 2, 12);
 
 		// ECM Input Keys
-		cwL = new Label("CW:");
-		cwTF = new TextField("0123456789ABCDEF");
-		cwTF.setStyle("-fx-background-color: transparent;");
-		cwTF.setEditable(false);
-		cwTF.setTooltip(new Tooltip("Control Word (64 bit)"));
-		grid.add(cwL, 1, 13);
-		grid.add(cwTF, 2, 13);
+		cwInL = new Label("CW:");
+		cwInTF = new TextField("0123456789ABCDEF");
+		cwInTF.setStyle("-fx-background-color: transparent;");
+		cwInTF.setEditable(false);
+		cwInTF.setTooltip(new Tooltip("Control Word (64 bit)"));
+		grid.add(cwInL, 1, 13);
+		grid.add(cwInTF, 2, 13);
 
-		final ToggleGroup groupRB = new ToggleGroup();
-		ak0RB = new RadioButton();
-		ak1RB = new RadioButton();
-		ak0RB.setToggleGroup(groupRB);
-		ak1RB.setToggleGroup(groupRB);
-		ak0RB.setSelected(true);
-		grid.add(ak0RB, 0, 14);
-		grid.add(ak1RB, 0, 15);
+		groupRB = new ToggleGroup();
+		ak0InRB = new RadioButton();
+		ak1InRB = new RadioButton();
+		ak0InRB.setToggleGroup(groupRB);
+		ak1InRB.setToggleGroup(groupRB);
+		ak0InRB.setUserData("00");
+		ak1InRB.setUserData("01");
+		ak0InRB.setSelected(true);
+		grid.add(ak0InRB, 0, 14);
+		grid.add(ak1InRB, 0, 15);
 
-		ak0L = new Label("AK 00:");
-		ak0TF = new TextField("00112233445566778899AABBCCDDEEFF");
-		ak0TF.setEditable(true);
-		ak0TF.setTooltip(new Tooltip("Authorization Key 0 (128 bit)"));
-		ak0TF.setMinWidth(230);
-		grid.add(ak0L, 1, 14);
-		grid.add(ak0TF, 2, 14);
+		ak0InL = new Label("AK 00:");
+		ak0InTF = new TextField("00112233445566778899AABBCCDDEEFF");
+		ak0InTF.setEditable(true);
+		ak0InTF.setTooltip(new Tooltip("Authorization Key 0 (128 bit)"));
+		ak0InTF.setMinWidth(230);
+		grid.add(ak0InL, 1, 14);
+		grid.add(ak0InTF, 2, 14);
 
-		ak1L = new Label("AK 01:");
-		ak1TF = new TextField("FFEEDDCCBBAA99887766554433221100");
-		ak1TF.setEditable(true);
-		ak1TF.setTooltip(new Tooltip("Authorization Key 1 (128 bit)"));
-		ak1TF.setMinWidth(230);
-		grid.add(ak1L, 1, 15);
-		grid.add(ak1TF, 2, 15);
+		ak1InL = new Label("AK 01:");
+		ak1InTF = new TextField("FFEEDDCCBBAA99887766554433221100");
+		ak1InTF.setEditable(true);
+		ak1InTF.setTooltip(new Tooltip("Authorization Key 1 (128 bit)"));
+		ak1InTF.setMinWidth(230);
+		grid.add(ak1InL, 1, 15);
+		grid.add(ak1InTF, 2, 15);
 
-		mpkL = new Label("MPK:");
-		mpkTA = new TextArea("00112233445566778899AABBCCDDEEFF\nFFEEDDCCBBAA99887766554433221100");
-		mpkTA.setEditable(false);
-		mpkTA.setTooltip(new Tooltip("Master Private Key (256 bit) \nMPK is not currently in use."));
-		mpkTA.setMaxSize(240, 45);
-		grid.add(mpkL, 1, 16);
-		grid.add(mpkTA, 2, 16);
+		mpkInL = new Label("MPK:");
+		mpkInTA = new TextArea("00112233445566778899AABBCCDDEEFF\nFFEEDDCCBBAA99887766554433221100");
+		mpkInTA.setEditable(false);
+		mpkInTA.setTooltip(new Tooltip("Master Private Key (256 bit) \nMPK is not currently in use."));
+		mpkInTA.setMaxSize(240, 45);
+		grid.add(mpkInL, 1, 16);
+		grid.add(mpkInTA, 2, 16);
 		
 		
 		// BarChar Input Stream
@@ -273,7 +280,7 @@ public class InputView {
 		tsScramblingControlTF.setStyle("-fx-background-color: transparent;");
 		tsScramblingControlTF.setEditable(false);
 		tsScramblingControlTF.setTooltip(new Tooltip("00: No scrambling\n" + "01: Not defined\n"
-				+ "10: Scrambled (even key)\n" + "11: Scrambled (odd key) "));
+				+ "10: Control Word (even key)\n" + "11: Control Word (odd key) "));
 		grid.add(tsScramblingControlL, 8, 2);
 		grid.add(tsScramblingControlTF, 9, 2);
 
@@ -311,27 +318,27 @@ public class InputView {
 		grid.add(ecmWorkKeyIdL, 8, 7);
 		grid.add(ecmWorkKeyIdTF, 9, 7);
 
-		ecmScramblingKeyOddL = new Label("CW (odd):");
-		ecmScramblingKeyOddTF = new TextField("0123456789ABCDEF");
-		ecmScramblingKeyOddTF.setEditable(false);
-		ecmScramblingKeyOddTF.setStyle("-fx-background-color: transparent;");
-		ecmScramblingKeyOddTF.setTooltip(new Tooltip("Scrambling key odd (64 bit)"));
-		grid.add(ecmScramblingKeyOddL, 8, 8);
-		grid.add(ecmScramblingKeyOddTF, 9, 8);
+		ecmCwOddL = new Label("CW (odd):");
+		ecmCwOddTF = new TextField("0123456789ABCDEF");
+		ecmCwOddTF.setEditable(false);
+		ecmCwOddTF.setStyle("-fx-background-color: transparent;");
+		ecmCwOddTF.setTooltip(new Tooltip("Scrambling key odd (64 bit)"));
+		grid.add(ecmCwOddL, 8, 8);
+		grid.add(ecmCwOddTF, 9, 8);
 
-		ecmScramblingKeyEvenL = new Label("CW (even)");
-		ecmScramblingKeyEvenTF = new TextField("FEDCBA9876543210");
-		ecmScramblingKeyEvenTF.setEditable(false);
-		ecmScramblingKeyEvenTF.setStyle("-fx-background-color: transparent;");
-		ecmScramblingKeyEvenTF.setTooltip(new Tooltip("Scrambling key even (64 bit)"));
-		grid.add(ecmScramblingKeyEvenL, 8, 9);
-		grid.add(ecmScramblingKeyEvenTF, 9, 9);
+		ecmCwEvenL = new Label("CW (even)");
+		ecmCwEvenTF = new TextField("FEDCBA9876543210");
+		ecmCwEvenTF.setEditable(false);
+		ecmCwEvenTF.setStyle("-fx-background-color: transparent;");
+		ecmCwEvenTF.setTooltip(new Tooltip("Scrambling key even (64 bit)"));
+		grid.add(ecmCwEvenL, 8, 9);
+		grid.add(ecmCwEvenTF, 9, 9);
 
 		ecmProgramTypeL = new Label("Program type:");
 		ecmProgramTypeTF = new TextField("C8");
 		ecmProgramTypeTF.setEditable(false);
 		ecmProgramTypeTF.setStyle("-fx-background-color: transparent;");
-		ecmScramblingKeyEvenTF.setTooltip(new Tooltip("Program type (8 bit)"));
+		ecmCwEvenTF.setTooltip(new Tooltip("Program type (8 bit)"));
 		grid.add(ecmProgramTypeL, 8, 10);
 		grid.add(ecmProgramTypeTF, 9, 10);
 
@@ -424,34 +431,41 @@ public class InputView {
 
 	}
 
-	// Video Player Input
+	/**
+	 * Video Player Input
+	 */
 	public void initPlayerInput() {
 		// create media player 1 fx
 		mediaPlayerInput = new MediaPlayer(model.mediaInput);
-		MediaControl mediaControl = new MediaControl(mediaPlayerInput, true);
-		GridPane.setColumnSpan(mediaControl, 3);
-		GridPane.setRowSpan(mediaControl, 8);
-		mediaControl.setMinSize(300, 225);
-		mediaControl.setPrefSize(300, 225);
-		mediaControl.setMaxSize(300, 225);
-		grid.add(mediaControl, 1, 4);
-		//setInputPlayerButton(mediaControl.playButton);
+		mediaControlInput = new MediaControl(mediaPlayerInput);
+		GridPane.setColumnSpan(mediaControlInput, 3);
+		GridPane.setRowSpan(mediaControlInput, 8);
+		mediaControlInput.setMinSize(300, 225);
+		mediaControlInput.setPrefSize(300, 225);
+		mediaControlInput.setMaxSize(300, 225);
+		grid.add(mediaControlInput, 1, 4);
+		
 	}
 
-	// Video Player Output
+	/**
+	 * Video Player Output
+	 */
 	public void initPlayerOutput() {
 		// create media player 2 fx
 		mediaPlayerOutput = new MediaPlayer(model.mediaOutput);
-		MediaControl mediaControlOutput = new MediaControl(mediaPlayerOutput, true);
+		mediaControlOutput = new MediaControl(mediaPlayerOutput);
 		GridPane.setColumnSpan(mediaControlOutput, 3);
 		GridPane.setRowSpan(mediaControlOutput, 8);
 		mediaControlOutput.setMinSize(300, 225);
 		mediaControlOutput.setPrefSize(300, 225);
 		mediaControlOutput.setMaxSize(300, 225);
 		grid.add(mediaControlOutput, 16, 4);
+		
 	}
 
-	// BarChar Input Stream
+	/**
+	 * BarChar Input Stream
+	 */
 	public void initBarChartInput() {
 		xAxis = new CategoryAxis();
 		yAxis = new NumberAxis();
@@ -471,20 +485,24 @@ public class InputView {
 		grid.add(bc1, 0, 17);
 	}
 	
+	public TextField getVideoResolutionTF() {
+		return videoResolutionTF;
+	}
+		
 	public TextField getCwTimeTF() {
 		return cwTimeTF;
 	}
 
 	public TextField getCwTF() {
-		return cwTF;
+		return cwInTF;
 	}
 
 	public TextField getAk0InTF() {
-		return ak0TF;
+		return ak0InTF;
 	}
 
 	public TextField getAk1InTF() {
-		return ak1TF;
+		return ak1InTF;
 	}
 
 	public TextField getAk0OutTF() {
@@ -494,6 +512,21 @@ public class InputView {
 	public TextField getAk1OutTF() {
 		return ak1OutTF;
 	}
+	
+	public ToggleGroup getRadioButtonGroup() {
+		return groupRB;
+	}
 
+	public MediaPlayer getOutputPlayer() {
+		return mediaPlayerOutput;
+	}
+
+	public TextField getECM() {
+		return ecmWorkKeyIdTF;
+	}
+
+	public TextField getECMDateTime() {
+		return ecmDateTimeTF;
+	}
 	
 }
