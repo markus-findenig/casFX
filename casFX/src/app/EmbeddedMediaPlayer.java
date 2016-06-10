@@ -43,14 +43,17 @@ public class EmbeddedMediaPlayer extends Application {
 
     //private static final String MEDIA_URL = "http://download.oracle.com/otndocs/products/javafx/oow2010-2.flv";
 
-    //private File file = new File("E:\\Users\\Videos\\Test\\TheSimpsonsMovie-1080pTrailer.mp4");
+    //private File file = new File("D:\\Users\\Videos\\Test\\TheSimpsonsMovie-1080pTrailer.mp4");
     
-	//private File file = new File("E:\\Users\\Videos\\Test\\stream.mp4");
+	//private File file = new File("D:\\Users\\Videos\\Test\\stream.mp4");
 	private File file = new File("");
 	
-	private final String MEDIA_URL = file.toURI().toString();
+	//private final String MEDIA_URL = file.toURI().toString();
 	
-
+	private final String MEDIA_URL = "http://127.0.0.1:7777/videoCAS.mp4";
+	
+	// Note the 127.0.0.1 here, localhost will NOT work!
+	//Media myMedia = new Media("http://127.0.0.1:7777/something.m3u8")
 		
     @Override
     public void start(Stage primaryStage) {
