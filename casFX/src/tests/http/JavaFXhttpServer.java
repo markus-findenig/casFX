@@ -6,6 +6,8 @@ import java.net.InetSocketAddress;
 public class JavaFXhttpServer {
 
 	public static void main(String[] args) {
+		
+		
 	
 	// Creates a server on localhost, port 7777, runs on background thread
 	// Note that Media does not recognize localhost, you'll have to use 127.0.0.1

@@ -521,11 +521,11 @@ public class InputView {
 		return mediaPlayerOutput;
 	}
 
-	public TextField getECM() {
+	public TextField getEcmWorkKey() {
 		return ecmWorkKeyIdTF;
 	}
 
-	public TextField getECMDateTime() {
+	public TextField getEcmDateTime() {
 		return ecmDateTimeTF;
 	}
 	

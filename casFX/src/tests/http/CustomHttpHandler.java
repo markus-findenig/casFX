@@ -7,7 +7,7 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class CustomHttpHandler {
+public class CustomHttpHandler implements HttpHandler {
 	private String rootDirectory;
 
 	public CustomHttpHandler(String rootDirectory) {

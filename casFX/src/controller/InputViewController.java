@@ -270,11 +270,14 @@ public class InputViewController {
 			
 				while (!isCancelled()) {
 					if (mpStatus == Status.PLAYING) {
+						
 						// setzte das CW
 						model.controlWordInput = getRandomHex(16);
+						//updateMessage(model.controlWordInput);
+						
 						// hole die Zeit vom Timer Eingabefeld
 						model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
-						//updateMessage(model.controlWordInput);
+						
 						
 						// Radio Button Status setzen
 						if (rbStatus == "00") {
@@ -291,8 +294,9 @@ public class InputViewController {
 						
 						// GUI updaten
 						view.getCwTF().setText(model.controlWordInput);
-						view.getECM().setText(model.ecmWorkKeyId);
-						view.getECMDateTime().setText(model.ecmDateTime);
+						view.getEcmWorkKey().setText(model.ecmWorkKeyId);
+						view.getEcmDateTime().setText(model.ecmDateTime);
+						
 						
 //						Platform.runLater(new Runnable() {
 //							public void run() {
@@ -348,42 +352,5 @@ public class InputViewController {
 		thSetCW.start();
 	}
 
-	private void setECM() {
-		Task<String> taskSetECM = new Task<String>() {
-			@Override
-			protected String call() throws Exception {
-				System.out.println("setECM");
-				// erster Media Player Status
-				Status status = view.mediaPlayerInput.getStatus();
-				while (!isCancelled()) {
-					if (status == Status.PLAYING) {
-
-						if (view.getRadioButtonGroup().getSelectedToggle().getUserData().toString() == "ak0InRB") {
-							model.ecmWorkKeyId = "00";
-							updateMessage(model.ecmWorkKeyId);
-						} else {
-							model.ecmWorkKeyId = "01";
-							updateMessage(model.ecmWorkKeyId);
-						}
-
-					} else {
-						// Thread beenden
-						isCancelled();
-					}
-					// Status jedes mal überprüfen
-					status = view.mediaPlayerInput.getStatus();
-				}
-				return model.ecmWorkKeyId;
-			}
-
-		};
-		// Setze in der GUI das CW
-		taskSetECM.messageProperty().addListener((obs, oldMessage, newMessage) -> view.getECM().setText(newMessage));
-
-		// start the task
-		Thread thSetECM = new Thread(taskSetECM);
-		thSetECM.setDaemon(true);
-		thSetECM.start();
-
-	}
+	
 }
