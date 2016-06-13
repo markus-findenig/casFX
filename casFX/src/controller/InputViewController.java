@@ -2,33 +2,23 @@ package controller;
 
 import java.io.File;
 import java.security.SecureRandom;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
 
-import com.sun.javafx.collections.MappingChange.Map;
-
-import app.MediaControl;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Toggle;
 import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
-import javafx.util.converter.LocalDateTimeStringConverter;
 import model.SimulatorModel;
 import view.InputView;
 
@@ -118,16 +108,24 @@ public class InputViewController {
 				}
 
 				// set 64 bit Control Word Input
-				model.controlWordInput = getRandomHex(16);
-				view.getCwTF().setText(model.controlWordInput);
+				model.setControlWordInput(getRandomHex(16));
+				//view.getCwTF().setText(model.controlWordInput);
 
 				// set 128 bit Authorization Keys input and output
-				model.authorizationInputKey0 = model.authorizationOutputKey0 = getRandomHex(32);
-				model.authorizationInputKey1 = model.authorizationOutputKey1 = getRandomHex(32);
-				view.getAk0InTF().setText(model.authorizationInputKey0);
-				view.getAk1InTF().setText(model.authorizationInputKey1);
-				view.getAk0OutTF().setText(model.authorizationInputKey0);
-				view.getAk1OutTF().setText(model.authorizationInputKey1);
+				String key0 = getRandomHex(32);
+				String key1 = getRandomHex(32);
+				
+				// setze Authorizations Keys im Model
+				model.setAuthorizationInputKey0(key0);
+				model.setAuthorizationOutputKey0(key0);
+				model.setAuthorizationInputKey1(key1);
+				model.setAuthorizationOutputKey1(key1);
+				
+				// Update GUI
+				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
+				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
+				view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
+				view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
 
 				// Video Player Input Initialisieren
 				Task<Void> taskInitPlayerInput = new Task<Void>() {
@@ -140,7 +138,7 @@ public class InputViewController {
 
 								// TODO
 								view.getVideoResolutionTF()
-										.setText(model.mediaInput.getWidth() + "x" + model.mediaInput.getHeight());
+										.setText(model.getMediaInput().getWidth() + "x" + model.getMediaInput().getHeight());
 							}
 						});
 						return null;
@@ -168,7 +166,7 @@ public class InputViewController {
 							@Override
 							public void run() {
 								// view.getOutputPlayer().getOnPlaying();
-								setOutputFile(model.inputFile);
+								setOutputFile(model.getInputFile());
 								view.initPlayerOutput();
 
 							}
@@ -199,9 +197,9 @@ public class InputViewController {
 	 *            - Input File
 	 */
 	public void setInputFile(File inputFile) {
-		model.inputFile = inputFile;
-		model.mediaInputUrl = inputFile.toURI().toString();
-		model.mediaInput = new Media(model.mediaInputUrl);
+		model.setInputFile(inputFile);
+		model.setMediaInputUrl(inputFile.toURI().toString());
+		model.setMediaInput(new Media(model.getMediaInputUrl()));
 	}
 
 	/**
@@ -211,9 +209,9 @@ public class InputViewController {
 	 *            - Output File
 	 */
 	public void setOutputFile(File outputFile) {
-		model.outputFile = outputFile;
-		model.mediaOutputUrl = outputFile.toURI().toString();
-		model.mediaOutput = new Media(model.mediaOutputUrl);
+		model.setOutputFile(outputFile);
+		model.setMediaOutputUrl(outputFile.toURI().toString());
+		model.setMediaOutput(new Media(model.getMediaOutputUrl()));
 	}
 
 	/**
@@ -265,44 +263,46 @@ public class InputViewController {
 			@Override
 			protected String call() throws Exception {
 				// erster Status
-				Status mpStatus = view.mediaPlayerInput.getStatus();
+				Status mpStatus = view.getMediaPlayerInput().getStatus();
 				String rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
+				LocalDateTime dateTime;
+				// Datum Formatieren
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
 			
 				while (!isCancelled()) {
 					if (mpStatus == Status.PLAYING) {
 						
 						// setzte das CW
-						model.controlWordInput = getRandomHex(16);
-						//updateMessage(model.controlWordInput);
+						model.setControlWordInput(getRandomHex(16));
 						
 						// hole die Zeit vom Timer Eingabefeld
-						model.cwTime = Integer.parseInt(view.getCwTimeTF().getText().toString());
-						
+						model.setCwTime(Integer.parseInt(view.getCwTimeTF().getText().toString()));
 						
 						// Radio Button Status setzen
 						if (rbStatus == "00") {
-							model.ecmWorkKeyId = "00";
+							model.setEcmWorkKeyId("00");
 						} else {
-							model.ecmWorkKeyId = "01";
+							model.setEcmWorkKeyId("01");
 						}
 						
 						// ECM Date/Time setzen
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
-						LocalDateTime dateTime = LocalDateTime.now();
-						model.ecmDateTime = dateTime.format(formatter);
+						dateTime = LocalDateTime.now();
+						model.setEcmDateTime(dateTime.format(formatter));
 						
 						
 						// GUI updaten
-						view.getCwTF().setText(model.controlWordInput);
-						view.getEcmWorkKey().setText(model.ecmWorkKeyId);
-						view.getEcmDateTime().setText(model.ecmDateTime);
+						//view.getCwTF().setText(model.controlWordInput);
+						//view.getEcmWorkKey().setText(model.ecmWorkKeyId);
+						//view.getEcmDateTime().setText(model.ecmDateTime);
 						
 						
-//						Platform.runLater(new Runnable() {
-//							public void run() {
-//								view.getECM().setText(model.ecmWorkKeyId);
-//						}
-//						});
+						Platform.runLater(new Runnable() {
+							public void run() {
+								view.getCwTF().setText(model.getControlWordInput());
+								view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
+								view.getEcmDateTime().setText(model.getEcmDateTime());
+						}
+						});
 	                	
 	                	
 //						// UI updaten
@@ -325,7 +325,7 @@ public class InputViewController {
 						// Thread wait
 						try {
 							// time in seconds
-							Thread.sleep(model.cwTime * 1000);
+							Thread.sleep(model.getCwTime() * 1000);
 						} catch (InterruptedException interrupted) {
 						}
 					} else {
@@ -333,7 +333,7 @@ public class InputViewController {
 						isCancelled();
 					}
 					// Status jedes mal überprüfen
-					mpStatus = view.mediaPlayerInput.getStatus();
+					mpStatus = view.getMediaPlayerInput().getStatus();
 					rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
 				}
 				// return model.controlWordInput;

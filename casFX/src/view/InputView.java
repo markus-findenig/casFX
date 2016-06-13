@@ -1,13 +1,11 @@
 package view;
 
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -20,10 +18,8 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.Stage;
 import model.SimulatorModel;
-import uk.co.caprica.vlcj.test.info.MediaInfoTest;
 import app.MediaControl;
 
 public class InputView {
@@ -34,15 +30,15 @@ public class InputView {
 	private SimulatorModel model;
 
 	// Menu
-	final Menu menu1 = new Menu("File");
-	final Menu menu2 = new Menu("Options");
-	final Menu menu3 = new Menu("Help");
+	private final Menu menu1 = new Menu("File");
+	private final Menu menu2 = new Menu("Options");
+	private final Menu menu3 = new Menu("Help");
 
-	final MenuItem open = new MenuItem("Open");
+	private final MenuItem open = new MenuItem("Open");
 
-	final MenuItem exit = new MenuItem("Exit");
+	private final MenuItem exit = new MenuItem("Exit");
 	
-	final MenuItem test = new MenuItem("Run Test Funktion");
+	private final MenuItem test = new MenuItem("Run Test Funktion");
 
 	
 	// Video Input Informations
@@ -111,10 +107,10 @@ public class InputView {
 	private static TextArea mpkOutTA;
 	
 	// Media Player
-	public MediaPlayer mediaPlayerInput;
-	public MediaControl mediaControlInput;
-	public MediaPlayer mediaPlayerOutput;
-	public MediaControl mediaControlOutput;
+	private MediaPlayer mediaPlayerInput;
+	private MediaControl mediaControlInput;
+	private MediaPlayer mediaPlayerOutput;
+	private MediaControl mediaControlOutput;
 	
 	// BarCharts
 	CategoryAxis xAxis;
@@ -205,7 +201,7 @@ public class InputView {
 		grid.add(videoCodecTF, 2, 2);
 
 		videoResolutionL = new Label("Resolution:");
-		videoResolutionTF = new TextField(model.mediaInput.getWidth() + "x" + model.mediaInput.getHeight());
+		videoResolutionTF = new TextField(model.getMediaInput().getWidth() + "x" + model.getMediaInput().getHeight());
 		videoResolutionTF.setStyle("-fx-background-color: transparent;");
 		videoResolutionTF.setEditable(false);
 		grid.add(videoResolutionL, 1, 3);
@@ -436,8 +432,8 @@ public class InputView {
 	 */
 	public void initPlayerInput() {
 		// create media player 1 fx
-		mediaPlayerInput = new MediaPlayer(model.mediaInput);
-		mediaControlInput = new MediaControl(mediaPlayerInput);
+		setMediaPlayerInput(new MediaPlayer(model.getMediaInput()));
+		mediaControlInput = new MediaControl(getMediaPlayerInput());
 		GridPane.setColumnSpan(mediaControlInput, 3);
 		GridPane.setRowSpan(mediaControlInput, 8);
 		mediaControlInput.setMinSize(300, 225);
@@ -452,7 +448,7 @@ public class InputView {
 	 */
 	public void initPlayerOutput() {
 		// create media player 2 fx
-		mediaPlayerOutput = new MediaPlayer(model.mediaOutput);
+		mediaPlayerOutput = new MediaPlayer(model.getMediaOutput());
 		mediaControlOutput = new MediaControl(mediaPlayerOutput);
 		GridPane.setColumnSpan(mediaControlOutput, 3);
 		GridPane.setRowSpan(mediaControlOutput, 8);
@@ -527,6 +523,14 @@ public class InputView {
 
 	public TextField getEcmDateTime() {
 		return ecmDateTimeTF;
+	}
+
+	public MediaPlayer getMediaPlayerInput() {
+		return mediaPlayerInput;
+	}
+
+	public void setMediaPlayerInput(MediaPlayer mediaPlayerInput) {
+		this.mediaPlayerInput = mediaPlayerInput;
 	}
 	
 }
