@@ -266,7 +266,7 @@ public class InputViewController {
 				Status mpStatus = view.getMediaPlayerInput().getStatus();
 				String rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
 				LocalDateTime dateTime;
-				// Datum Formatieren
+				// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
 			
 				while (!isCancelled()) {
@@ -291,10 +291,9 @@ public class InputViewController {
 						
 						
 						// GUI updaten
-						//view.getCwTF().setText(model.controlWordInput);
-						//view.getEcmWorkKey().setText(model.ecmWorkKeyId);
-						//view.getEcmDateTime().setText(model.ecmDateTime);
-						
+//						view.getCwTF().setText(model.getControlWordInput());
+//						view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
+//						view.getEcmDateTime().setText(model.getEcmDateTime());
 						
 						Platform.runLater(new Runnable() {
 							public void run() {
