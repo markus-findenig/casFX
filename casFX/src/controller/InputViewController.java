@@ -1,9 +1,19 @@
 package controller;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -19,9 +29,13 @@ import javafx.scene.control.Toggle;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
+
 import model.SimulatorModel;
 import view.InputView;
 
+/**
+ * Input View Controller
+ */
 public class InputViewController {
 
 	// Model
@@ -29,9 +43,19 @@ public class InputViewController {
 
 	// View
 	private static InputView view;
+	
+	// Player Threads
+	private Thread thInitPlayerInput;
+	private Thread thInitPlayerOutput;
+	
+	// Encryption Thread
+	private Thread thActivateEncryption;
+	
+	// ECM Payload
+	private String payload;
 
 	/**
-	 * Constructor InputViewController
+	 * Input View Controller
 	 * 
 	 * @param simulatorModel
 	 *            - Simulator Model
@@ -47,11 +71,14 @@ public class InputViewController {
 
 		view = new InputView(model);
 
-		MenuEventHandler menuEventHandler = new MenuEventHandler();
+		CasEventHandler casEventHandler = new CasEventHandler();
 
-		// Menu Eventhandler registrieren
-		view.getOpen().setOnAction(menuEventHandler);
-		view.getExit().setOnAction(menuEventHandler);
+		// Cas Event handler registrieren
+		view.getOpen().setOnAction(casEventHandler);
+		view.getExit().setOnAction(casEventHandler);
+
+		// Encryption Toggle Button registrieren
+		view.getEncryption().setOnAction(casEventHandler);
 
 		view.getRadioButtonGroup().selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
@@ -60,15 +87,13 @@ public class InputViewController {
 
 		// Test Function
 		view.test().setOnAction(event -> {
-			
-			
+
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
 			LocalDateTime dateTime = LocalDateTime.now();
 			String formattedDateTime = dateTime.format(formatter);
-			
+
 			System.out.println(formattedDateTime);
-			
-			
+
 			// Task<Void> task = new Task<Void>() {
 			// @Override
 			// public Void call() throws Exception {
@@ -93,34 +118,57 @@ public class InputViewController {
 		view.show(model.getPrimaryStage());
 	}
 
-	class MenuEventHandler implements EventHandler<ActionEvent> {
+	class CasEventHandler implements EventHandler<ActionEvent> {
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public void handle(ActionEvent event) {
+
+			// Encryption State ON (true) or OFF (false)
+			if (event.getSource() == view.getEncryption()) {
+				// get Toggle Button State
+				if (view.getEncryption().isSelected()) {
+					view.getEncryption().setText("ON");
+					model.setEncryptionState(true);
+					// set scrambling, CW odd
+					model.setScramblingControl("11");
+					// run Encryption
+					activateEncryption();
+				} else {
+					// stop Encryption Thread
+					thActivateEncryption.stop();
+					view.getEncryption().setText("OFF");
+					model.setEncryptionState(false);
+					// no scrambling
+					model.setScramblingControl("00");
+					view.getScramblingControlTF().setText("00");
+					
+				}
+			}
 
 			// Input Video Open
 			if (event.getSource() == view.getOpen()) {
 				FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle("Open Resource File");
-				File inputFile = fileChooser.showOpenDialog(SimulatorModel.PRIMARY_STAGE);
+				File inputFile = fileChooser.showOpenDialog(model.getPrimaryStage());
 				if (inputFile != null) {
 					setInputFile(inputFile);
 				}
 
 				// set 64 bit Control Word Input
 				model.setControlWordInput(getRandomHex(16));
-				//view.getCwTF().setText(model.controlWordInput);
+				// view.getCwTF().setText(model.controlWordInput);
 
 				// set 128 bit Authorization Keys input and output
 				String key0 = getRandomHex(32);
 				String key1 = getRandomHex(32);
-				
+
 				// setze Authorizations Keys im Model
 				model.setAuthorizationInputKey0(key0);
 				model.setAuthorizationOutputKey0(key0);
 				model.setAuthorizationInputKey1(key1);
 				model.setAuthorizationOutputKey1(key1);
-				
+
 				// Update GUI
 				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
 				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
@@ -136,27 +184,15 @@ public class InputViewController {
 							public void run() {
 								view.initPlayerInput();
 
-								// TODO
-								view.getVideoResolutionTF()
-										.setText(model.getMediaInput().getWidth() + "x" + model.getMediaInput().getHeight());
 							}
 						});
 						return null;
 					}
 				};
 				// start the task
-				Thread thInitPlayerInput = new Thread(taskInitPlayerInput);
+				thInitPlayerInput = new Thread(taskInitPlayerInput);
 				thInitPlayerInput.setDaemon(true);
 				thInitPlayerInput.start();
-
-				// view.getVideoResolutionTF().setText(model.mediaInput.getWidth()
-				// + "x" + model.mediaInput.getHeight());
-
-				// setze das CW in dem Input Player
-				setControlWord();
-				
-
-				//setECM();
 
 				// Video Player Output Initialisieren
 				Task<Void> taskInitPlayerOutput = new Task<Void>() {
@@ -175,7 +211,7 @@ public class InputViewController {
 					}
 				};
 				// start the task
-				Thread thInitPlayerOutput = new Thread(taskInitPlayerOutput);
+				thInitPlayerOutput = new Thread(taskInitPlayerOutput);
 				thInitPlayerOutput.setDaemon(true);
 				thInitPlayerOutput.start();
 
@@ -183,6 +219,12 @@ public class InputViewController {
 
 			// Exit
 			if (event.getSource() == view.getExit()) {
+				// stop all Threads
+				thActivateEncryption.stop();
+				thInitPlayerOutput.stop();
+				thInitPlayerInput.stop();
+				// GUI exit
+				Platform.exit();
 				System.exit(0);
 			}
 
@@ -230,6 +272,75 @@ public class InputViewController {
 		sb.setLength(length);
 		return sb.toString().toUpperCase();
 	}
+	
+	/**
+	 * Erzeugt einen MAC (4 Bytes) von der ECM Payload.
+	 * @return Gibt einen MAC in Hex zurück.
+	 * @throws Exception
+	 */
+	public String getMAC() {
+		payload = 
+		model.getEcmHeader() + 
+		model.getEcmProtocol() +
+		model.getEcmBroadcastId() +
+		model.getEcmWorkKeyId() + 
+		model.getEcmCwOdd() + 
+		model.getEcmCwEven() +
+		model.getEcmProgramType() + 
+		model.getEcmDateTime() + 
+		model.getEcmRecordControl() +
+		model.getEcmVariablePart();
+		
+		String ecmWorkKey = null;
+		String macString = null;
+
+		if (model.getEcmWorkKeyId() == "00") {
+			ecmWorkKey = model.getAuthorizationInputKey0();
+		} else {
+			ecmWorkKey = model.getAuthorizationInputKey1();
+		}
+
+		byte[] decodedKey = Base64.getDecoder().decode(ecmWorkKey);
+		SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "HmacSHA1");
+
+		// ALG_DES_MAC4_ISO9797_M1
+		try {
+			Mac mac = Mac.getInstance(originalKey.getAlgorithm());
+			mac.init(originalKey);
+
+			// get the string as UTF-8 bytes
+			byte[] b = payload.getBytes("UTF-8");
+			// create a digest from the byte array
+			byte[] digest = mac.doFinal(b);
+
+			// cut lsb to 4 bytes in hex
+			macString = String.format("%02X ", new BigInteger(1, digest.toString().substring(4, 8).getBytes("UTF-8")));
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("No Such Algorithm:" + e.getMessage());
+
+		} catch (UnsupportedEncodingException e) {
+			System.out.println("Unsupported Encoding:" + e.getMessage());
+
+		} catch (InvalidKeyException e) {
+			System.out.println("Invalid Key:" + e.getMessage());
+
+		}
+
+		return macString;
+
+	}
+	
+	/**
+	 * Erzeugt einen Cyclic Redundancy Check (CRC) vom aktuellen ECM Payload.
+	 * 
+	 * @return Gibt den CRC anhand der aktuellen ECM Payload zurück.
+	 */
+	public String getCRC() {
+		java.util.zip.CRC32 x = new java.util.zip.CRC32();
+		byte[] bytes = payload.getBytes(Charset.forName("UTF-8"));
+		x.update(bytes);
+		return Long.toHexString(x.getValue()).toUpperCase();
+	}
 
 	/**
 	 * Dummy Funktion zum Befüllen der BarCharts
@@ -255,11 +366,12 @@ public class InputViewController {
 	}
 
 	/**
-	 * Aktualisiert das Control Word in der GUI anhand der Zeit im Timer
-	 * Eingabefeld.
+	 * Aktiviert die Verschlüsselung Aktualisiert das Control Word in der GUI
+	 * anhand der Zeit im Timer Eingabefeld.
 	 */
-	public void setControlWord() {
-		Task<String> taskSetCW = new Task<String>() {
+	public void activateEncryption() {
+		Task<String> taskActivateEncryption = new Task<String>() {
+			
 			@Override
 			protected String call() throws Exception {
 				// erster Status
@@ -268,88 +380,107 @@ public class InputViewController {
 				LocalDateTime dateTime;
 				// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
-			
+				
 				while (!isCancelled()) {
-					if (mpStatus == Status.PLAYING) {
+					if (model.getEncryptionState() == true && mpStatus == Status.PLAYING) {
 						
+						// erzeuge ein cw
+						String cw = getRandomHex(16);
 						// setzte das CW
-						model.setControlWordInput(getRandomHex(16));
+						model.setControlWordInput(cw);
+
+						// Scrambling Control Pointer for CW even
+						if (model.getScramblingControl() == "10") {
+							model.setEcmCwEven(cw);
+						}
+						// Scrambling Control Pointer for CW odd
+						else {
+							model.setEcmCwOdd(cw);
+							
+						}
+
 						
 						// hole die Zeit vom Timer Eingabefeld
 						model.setCwTime(Integer.parseInt(view.getCwTimeTF().getText().toString()));
-						
+
 						// Radio Button Status setzen
 						if (rbStatus == "00") {
 							model.setEcmWorkKeyId("00");
 						} else {
 							model.setEcmWorkKeyId("01");
 						}
+
 						
+
 						// ECM Date/Time setzen
 						dateTime = LocalDateTime.now();
 						model.setEcmDateTime(dateTime.format(formatter));
+
+						// setze ECM MAC
+						model.setEcmMac(getMAC());
 						
+						// setze ECM CRC
+						model.setEcmCrc(getCRC());
 						
 						// GUI updaten
-//						view.getCwTF().setText(model.getControlWordInput());
-//						view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
-//						view.getEcmDateTime().setText(model.getEcmDateTime());
-						
 						Platform.runLater(new Runnable() {
 							public void run() {
 								view.getCwTF().setText(model.getControlWordInput());
+								
+								view.getScramblingControlTF().setText(model.getScramblingControl());
 								view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
+								
+								view.getEcmCwOddTF().setText(model.getEcmCwOdd());
+								view.getEcmCwEvenTF().setText(model.getEcmCwEven());
+								
 								view.getEcmDateTime().setText(model.getEcmDateTime());
-						}
+							
+								view.getEcmMacTF().setText(model.getEcmMac());
+								view.getEcmCrcTF().setText(model.getEcmCrc());
+							}
+							
+							
 						});
-	                	
-	                	
-//						// UI updaten
-//			            Platform.runLater(new Runnable() {
-//			                @Override
-//			                public void run() {
-//			                    // entsprechende UI Komponente updaten
-//			                	if (view.getRadioButtonGroup().getSelectedToggle().getUserData().toString() == "ak0InRB") {
-//									model.ecmWorkKeyId = "00";
-//								} else {
-//									model.ecmWorkKeyId = "01";
-//								}
-//			                	view.getECM().setText(model.ecmWorkKeyId);
-//			                }
-//			            });
+						
+						
 
-			            
-						
-						
 						// Thread wait
 						try {
 							// time in seconds
 							Thread.sleep(model.getCwTime() * 1000);
+							
+							// Scrambling Control switch
+							if (model.getScramblingControl() == "10") {
+								model.setScramblingControl("11");
+							} else {
+								model.setScramblingControl("10");
+							}
+							
 						} catch (InterruptedException interrupted) {
+							 break;
 						}
 					} else {
+						// no scrambling
+						model.setScramblingControl("00");
 						// Thread beenden
 						isCancelled();
+						
 					}
 					// Status jedes mal überprüfen
 					mpStatus = view.getMediaPlayerInput().getStatus();
 					rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
+					
 				}
-				// return model.controlWordInput;
 				return null;
 			}
-
 		};
-		// Setze in der GUI das CW
-//		taskSetCW.messageProperty().addListener((obs, oldMessage, newMessage) -> {
-//				view.getCwTF().setText(newMessage);
-//		});
 		
 		// start the task
-		Thread thSetCW = new Thread(taskSetCW);
-		thSetCW.setDaemon(true);
-		thSetCW.start();
+		thActivateEncryption = new Thread(taskActivateEncryption);
+		thActivateEncryption.setDaemon(true);
+		thActivateEncryption.start();
 	}
-
 	
+
+
 }

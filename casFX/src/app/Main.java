@@ -14,7 +14,7 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			// session scope /application scope Beans initialisieren!
+			// session scope/application scope Beans initialisieren!
 			// muss von Controller zu Controller weitergegeben werden
 			SimulatorModel dataBean = new SimulatorModel(primaryStage);
 

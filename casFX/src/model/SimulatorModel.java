@@ -12,17 +12,15 @@ import javafx.stage.Stage;
  */
 public class SimulatorModel {
 
-	public static Stage PRIMARY_STAGE = null;
+	private static Stage PRIMARY_STAGE = null;
 
+	// Encryption State ON (true) or OFF (false)
+	private boolean encryptionState = false;
+	
 	// Video Input File
 	private File inputFile;
 	private String mediaInputUrl;
 	private Media mediaInput;
-	
-	// Video Input Informations
-	private String videoInputType;
-	private String videoInputCodec;
-	private String videoInputResolution;
 	
 	// Video Output File
 	private File outputFile;
@@ -37,7 +35,7 @@ public class SimulatorModel {
 	private int cwTime;
 	
 	// Transport Stream Header
-	private String tsScramblingControl;
+	private String scramblingControl;
 	
 	// ECM
 	private String ecmHeader;
@@ -50,8 +48,8 @@ public class SimulatorModel {
 	private String ecmDateTime;
 	private String ecmRecordControl;
 	private String ecmVariablePart;
-	private String ecmMac;
-	private String ecmCrc;
+	private String ecmMAC;
+	private String ecmCRC;
 	
 	// Authorization Keys for Input and Output Player
 	private String authorizationInputKey0;
@@ -94,30 +92,6 @@ public class SimulatorModel {
 
 	public void setMediaInput(Media mediaInput) {
 		this.mediaInput = mediaInput;
-	}
-
-	public String getVideoInputType() {
-		return videoInputType;
-	}
-
-	public void setVideoInputType(String videoInputType) {
-		this.videoInputType = videoInputType;
-	}
-
-	public String getVideoInputCodec() {
-		return videoInputCodec;
-	}
-
-	public void setVideoInputCodec(String videoInputCodec) {
-		this.videoInputCodec = videoInputCodec;
-	}
-
-	public String getVideoInputResolution() {
-		return videoInputResolution;
-	}
-
-	public void setVideoInputResolution(String videoInputResolution) {
-		this.videoInputResolution = videoInputResolution;
 	}
 
 	public File getOutputFile() {
@@ -168,12 +142,12 @@ public class SimulatorModel {
 		this.cwTime = cwTime;
 	}
 
-	public String getTsScramblingControl() {
-		return tsScramblingControl;
+	public String getScramblingControl() {
+		return scramblingControl;
 	}
 
-	public void setTsScramblingControl(String tsScramblingControl) {
-		this.tsScramblingControl = tsScramblingControl;
+	public void setScramblingControl(String scramblingControl) {
+		this.scramblingControl = scramblingControl;
 	}
 
 	public String getEcmHeader() {
@@ -257,19 +231,19 @@ public class SimulatorModel {
 	}
 
 	public String getEcmMac() {
-		return ecmMac;
+		return ecmMAC;
 	}
 
 	public void setEcmMac(String ecmMac) {
-		this.ecmMac = ecmMac;
+		this.ecmMAC = ecmMac;
 	}
 
 	public String getEcmCrc() {
-		return ecmCrc;
+		return ecmCRC;
 	}
 
 	public void setEcmCrc(String ecmCrc) {
-		this.ecmCrc = ecmCrc;
+		this.ecmCRC = ecmCrc;
 	}
 
 	public String getAuthorizationInputKey0() {
@@ -310,6 +284,14 @@ public class SimulatorModel {
 
 	public void setObservableArrayList(ObservableList<XYChart.Series<String, Number>> observableArrayList) {
 		this.observableArrayList = observableArrayList;
+	}
+
+	public boolean getEncryptionState() {
+		return encryptionState;
+	}
+
+	public void setEncryptionState(boolean encryptionState) {
+		this.encryptionState = encryptionState;
 	}
 
 	

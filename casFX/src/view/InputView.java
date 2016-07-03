@@ -14,6 +14,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
@@ -22,6 +23,9 @@ import javafx.stage.Stage;
 import model.SimulatorModel;
 import app.MediaControl;
 
+/**
+ * Input View
+ */
 public class InputView {
 
 	private Scene scene;
@@ -40,15 +44,10 @@ public class InputView {
 	
 	private final MenuItem test = new MenuItem("Run Test Funktion");
 
+	// Encryption Text Field and Toggle Button
+	private static Label encryptionL;
+	private static ToggleButton encryptionTB;
 	
-	// Video Input Informations
-	private static Label videoTypeL;
-	private static TextField videoTypeTF;
-	private static Label videoCodecL;
-	private static TextField videoCodecTF;
-	private static Label videoResolutionL;
-	private static TextField videoResolutionTF;
-
 	// Time interval for ControlWord (CW)
 	private static Label cwTimeL;
 	private static TextField cwTimeTF;
@@ -67,8 +66,8 @@ public class InputView {
 	private static RadioButton ak1InRB;
 
 	// Transport Stream Header
-	private static Label tsScramblingControlL;
-	private static TextField tsScramblingControlTF;
+	private static Label scramblingControlL;
+	private static TextField scramblingControlTF;
 
 	// ECM Header Fields
 	private static Label ecmHeaderL;
@@ -120,7 +119,7 @@ public class InputView {
 
 	
 	/**
-	 * InputView
+	 * Input View
 	 * 
 	 * @param model
 	 *            SimulatorModel
@@ -139,7 +138,7 @@ public class InputView {
 		MenuBar menuBar = new MenuBar();
 		menuBar.getMenus().addAll(menu1, menu2, menu3);
 		GridPane.setColumnSpan(menuBar, 20);
-		menuBar.prefWidthProperty().bind(SimulatorModel.PRIMARY_STAGE.widthProperty());
+		menuBar.prefWidthProperty().bind(model.getPrimaryStage().widthProperty());
 		grid.add(menuBar, 0, 0);
 
 		menu1.getItems().add(open);
@@ -154,7 +153,7 @@ public class InputView {
 
 		scene = new Scene(grid, 1024, 650);
 		scene.setRoot(grid);
-		show(SimulatorModel.PRIMARY_STAGE);
+		show(model.getPrimaryStage());
 
 	}
 
@@ -176,6 +175,9 @@ public class InputView {
 		return test;
 	}
 
+	public ToggleButton getEncryption(){
+		return encryptionTB;
+	}
 
 	public void init() {
 
@@ -183,36 +185,17 @@ public class InputView {
 		// grid.setGridLinesVisible(true);
 
 		// --------------------------------------------------------------------
-		// Video Input
-		videoTypeL = new Label("Type:");
-		videoTypeTF = new TextField("Video");
-		videoTypeTF.setStyle("-fx-background-color: transparent;");
-		videoTypeTF.setEditable(false);
-		// videoTypeTF.setMaxWidth(100);
-
-		grid.add(videoTypeL, 1, 1);
-		grid.add(videoTypeTF, 2, 1);
-
-		videoCodecL = new Label("Codec:");
-		videoCodecTF = new TextField("H264");
-		videoCodecTF.setStyle("-fx-background-color: transparent;");
-		videoCodecTF.setEditable(false);
-		grid.add(videoCodecL, 1, 2);
-		grid.add(videoCodecTF, 2, 2);
-
-		videoResolutionL = new Label("Resolution:");
-		videoResolutionTF = new TextField(model.getMediaInput().getWidth() + "x" + model.getMediaInput().getHeight());
-		videoResolutionTF.setStyle("-fx-background-color: transparent;");
-		videoResolutionTF.setEditable(false);
-		grid.add(videoResolutionL, 1, 3);
-		grid.add(videoResolutionTF, 2, 3);
-
+		// Encryption Toggle Button
+		encryptionL = new Label("Encryption:");
+		grid.add(encryptionL, 1, 2);
+		encryptionTB = new ToggleButton("OFF");
+		encryptionTB.setPrefWidth(80);
+		grid.add(encryptionTB, 2, 2);
+		
+		// --------------------------------------------------------------------
 		// Media Player Input
 
-		// TODO del
-		// videoResolutionTF.setText(model.media.getWidth() + "x" +
-		// model.media.getHeight());
-
+		// --------------------------------------------------------------------
 		// Time interval for ControlWord (CW)
 		cwTimeL = new Label("Time (sec):");
 		cwTimeTF = new TextField("10");
@@ -221,6 +204,7 @@ public class InputView {
 		grid.add(cwTimeL, 1, 12);
 		grid.add(cwTimeTF, 2, 12);
 
+		// --------------------------------------------------------------------
 		// ECM Input Keys
 		cwInL = new Label("CW:");
 		cwInTF = new TextField("0123456789ABCDEF");
@@ -266,19 +250,20 @@ public class InputView {
 		grid.add(mpkInTA, 2, 16);
 		
 		
+		// --------------------------------------------------------------------
 		// BarChar Input Stream
 				     
 
 		// --------------------------------------------------------------------
 		// Transport Stream Header
-		tsScramblingControlL = new Label("Scrambling Control (2 bits):");
-		tsScramblingControlTF = new TextField("00");
-		tsScramblingControlTF.setStyle("-fx-background-color: transparent;");
-		tsScramblingControlTF.setEditable(false);
-		tsScramblingControlTF.setTooltip(new Tooltip("00: No scrambling\n" + "01: Not defined\n"
+		scramblingControlL = new Label("Scrambling Control (2 bits):");
+		scramblingControlTF = new TextField("00");
+		scramblingControlTF.setStyle("-fx-background-color: transparent;");
+		scramblingControlTF.setEditable(false);
+		scramblingControlTF.setTooltip(new Tooltip("00: No scrambling\n" + "01: Not defined\n"
 				+ "10: Control Word (even key)\n" + "11: Control Word (odd key) "));
-		grid.add(tsScramblingControlL, 8, 2);
-		grid.add(tsScramblingControlTF, 9, 2);
+		grid.add(scramblingControlL, 8, 2);
+		grid.add(scramblingControlTF, 9, 2);
 
 		// --------------------------------------------------------------------
 		// ECM
@@ -339,7 +324,7 @@ public class InputView {
 		grid.add(ecmProgramTypeTF, 9, 10);
 
 		ecmDateTimeL = new Label("Date/Time:");
-		ecmDateTimeTF = new TextField("123456789A");
+		ecmDateTimeTF = new TextField("0123456789");
 		ecmDateTimeTF.setEditable(false);
 		ecmDateTimeTF.setStyle("-fx-background-color: transparent;");
 		ecmDateTimeTF.setTooltip(new Tooltip("Date/Time (40 bit)"));
@@ -355,7 +340,7 @@ public class InputView {
 		grid.add(ecmRecordControlTF, 9, 12);
 
 		ecmVariablePartL = new Label("Variable part:");
-		ecmVariablePartTF = new TextField("null");
+		ecmVariablePartTF = new TextField("00000000");
 		ecmVariablePartTF.setEditable(false);
 		ecmVariablePartTF.setStyle("-fx-background-color: transparent;");
 		ecmRecordControlTF.setTooltip(new Tooltip("Variable part \nCapable of accommodating various function information"));
@@ -380,7 +365,8 @@ public class InputView {
 
 		// --------------------------------------------------------------------
 		// Video Output
-
+		
+		// --------------------------------------------------------------------
 		// Media Player Output
 
 		// Internal or External Key Reader
@@ -392,6 +378,7 @@ public class InputView {
 		grid.add(readerL, 16, 12);
 		grid.add(readerCB, 17, 12);
 
+		// --------------------------------------------------------------------
 		// ECM Output Keys
 		cwOutL = new Label("CW:");
 		cwOutTF = new TextField("0123456789ABCDEF");
@@ -426,6 +413,9 @@ public class InputView {
 		grid.add(mpkOutTA, 17, 16);
 
 	}
+
+
+
 
 	/**
 	 * Video Player Input
@@ -481,8 +471,8 @@ public class InputView {
 		grid.add(bc1, 0, 17);
 	}
 	
-	public TextField getVideoResolutionTF() {
-		return videoResolutionTF;
+	public TextField getScramblingControlTF() {
+		return scramblingControlTF;
 	}
 		
 	public TextField getCwTimeTF() {
@@ -520,9 +510,26 @@ public class InputView {
 	public TextField getEcmWorkKey() {
 		return ecmWorkKeyIdTF;
 	}
+	
+	public TextField getEcmCwOddTF() {
+		return ecmCwOddTF;
+	}
+
+	public TextField getEcmCwEvenTF() {
+		return ecmCwEvenTF;
+	}
+
 
 	public TextField getEcmDateTime() {
 		return ecmDateTimeTF;
+	}
+	
+	public TextField getEcmMacTF() {
+		return ecmMacTF;
+	}
+
+	public TextField getEcmCrcTF() {
+		return ecmCrcTF;
 	}
 
 	public MediaPlayer getMediaPlayerInput() {
