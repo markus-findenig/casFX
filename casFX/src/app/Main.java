@@ -24,7 +24,7 @@ public class Main extends Application {
 			InputViewController inputVC = new InputViewController(dataBean);
 			inputVC.show();
 			
-			// Zweiten Controller Config instanziieren
+			// Zweiten Controller Config initialisieren
 			Stage dialogStage = new Stage();
 			ConfigModel configModel = new ConfigModel(dialogStage);
 			@SuppressWarnings("unused")

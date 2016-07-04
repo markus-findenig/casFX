@@ -22,7 +22,7 @@ public class ConfigViewController {
 	 */
 	public ConfigViewController(ConfigModel cModel) {
 		configModel = cModel;
-		configView = new ConfigView(configModel);
+		configView = new ConfigView();
 
 		ConfigEventHandler configEventHandler = new ConfigEventHandler();
 

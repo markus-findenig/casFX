@@ -29,8 +29,6 @@ import javafx.scene.control.Toggle;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import model.ConfigModel;
 import model.SimulatorModel;
 import view.InputView;
 
@@ -61,17 +59,18 @@ public class InputViewController {
 	 * @param simulatorModel
 	 *            - Simulator Model
 	 */
-	public InputViewController(SimulatorModel simulatorModel) {
-		this.model = simulatorModel;
+	public InputViewController(SimulatorModel sModel) {
+		model = sModel;
+
 		// instance with dummy file video
 		setInputFile(new File("resorces\\dummy.mp4"));
 		setOutputFile(new File("resorces\\dummy.mp4"));
 
 		// TODO dummy Data for BarChart
-		model.observableArrayList = getChartData();
+		SimulatorModel.observableArrayList = getChartData();
 
-		view = new InputView(model);
-
+		view = new InputView();
+		
 		CasEventHandler casEventHandler = new CasEventHandler();
 
 		// Cas Event handler registrieren
@@ -92,11 +91,7 @@ public class InputViewController {
 		// Test Function
 		view.test().setOnAction(event -> {
 
-			Stage dialogStage = new Stage();
-			ConfigModel configModel = new ConfigModel(dialogStage);
-			ConfigViewController configVC = new ConfigViewController(configModel);
-			configVC.show();
-			
+					
 //			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
 //			LocalDateTime dateTime = LocalDateTime.now();
 //			String formattedDateTime = dateTime.format(formatter);

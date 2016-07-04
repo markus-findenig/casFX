@@ -9,14 +9,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import model.ConfigModel;
 
 public class ConfigView {
 
 	// Config Scene und Grid
 	private Scene sceneConfig;
 	private GridPane grid;
-	private ConfigModel configModel;
+	//private ConfigModel configModel;
 
 	// Config Parameter
 	private static Label serverL;
@@ -31,11 +30,9 @@ public class ConfigView {
 	/**
 	 * Config View
 	 * 
-	 * @param configModel
-	 *            ConfigModel
 	 */
-	public ConfigView(ConfigModel configModel) {
-		this.configModel = configModel;
+	public ConfigView() {
+		//configModel = cModel;
 
 		// Layout
 		grid = new GridPane();
@@ -44,10 +41,10 @@ public class ConfigView {
 		grid.setHgap(5);
 		grid.setVgap(5);
 
-		init();
+		// Initialisiere Config Parameter
+		initConfig();
 
 		sceneConfig = new Scene(grid, 400, 200);
-	
 	}
 
 	public void show(Stage dialogStage) {
@@ -56,7 +53,7 @@ public class ConfigView {
 		dialogStage.show();
 	}
 
-	public void init() {
+	public void initConfig() {
 
 		// TODO Debug
 		// grid.setGridLinesVisible(true);

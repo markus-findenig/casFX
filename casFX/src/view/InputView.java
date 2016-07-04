@@ -19,7 +19,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.media.MediaPlayer;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
 import model.SimulatorModel;
 import app.MediaControl;
@@ -32,7 +31,7 @@ public class InputView {
 	private Scene scene;
 	private GridPane grid;
 	
-	private SimulatorModel model;
+	//private SimulatorModel model;
 
 	// Menu
 	private final Menu menu1 = new Menu("File");
@@ -129,8 +128,8 @@ public class InputView {
 	 * @param model
 	 *            SimulatorModel
 	 */
-	public InputView(SimulatorModel sModel) {
-		model = sModel;
+	public InputView() {
+		//model = sModel;
 
 		// Layout
 		grid = new GridPane();
@@ -143,7 +142,7 @@ public class InputView {
 		MenuBar menuBar = new MenuBar();
 		menuBar.getMenus().addAll(menu1, menu2, menu3);
 		GridPane.setColumnSpan(menuBar, 20);
-		menuBar.prefWidthProperty().bind(model.getPrimaryStage().widthProperty());
+		//menuBar.prefWidthProperty().bind(SimulatorModel.getPrimaryStage().widthProperty());
 		grid.add(menuBar, 0, 0);
 
 		menu1.getItems().add(open);
@@ -160,7 +159,7 @@ public class InputView {
 
 		scene = new Scene(grid, 1024, 650);
 		scene.setRoot(grid);
-		show(model.getPrimaryStage());
+		//show(model.getPrimaryStage());
 
 	}
 
@@ -434,7 +433,7 @@ public class InputView {
 	 */
 	public void initPlayerInput() {
 		// create media player 1 fx
-		setMediaPlayerInput(new MediaPlayer(model.getMediaInput()));
+		setMediaPlayerInput(new MediaPlayer(SimulatorModel.getMediaInput()));
 		mediaControlInput = new MediaControl(getMediaPlayerInput());
 		GridPane.setColumnSpan(mediaControlInput, 3);
 		GridPane.setRowSpan(mediaControlInput, 8);
@@ -450,7 +449,7 @@ public class InputView {
 	 */
 	public void initPlayerOutput() {
 		// create media player 2 fx
-		mediaPlayerOutput = new MediaPlayer(model.getMediaOutput());
+		mediaPlayerOutput = new MediaPlayer(SimulatorModel.getMediaOutput());
 		mediaControlOutput = new MediaControl(mediaPlayerOutput);
 		GridPane.setColumnSpan(mediaControlOutput, 3);
 		GridPane.setRowSpan(mediaControlOutput, 8);
@@ -475,7 +474,7 @@ public class InputView {
 		GridPane.setColumnSpan(bc1, 3);
 		GridPane.setRowSpan(bc1, 2);
 		bc1.setMaxWidth(350);
-		bc1.setData(model.observableArrayList);
+		bc1.setData(SimulatorModel.observableArrayList);
 		//bc1.setScaleX(0.5);
 		//bc1.setScaleY(0.5);
 		//bc1.setMaxSize(10, 10);

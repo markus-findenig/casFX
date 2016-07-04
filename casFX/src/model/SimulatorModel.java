@@ -20,12 +20,12 @@ public class SimulatorModel {
 	// Video Input File
 	private File inputFile;
 	private String mediaInputUrl;
-	private Media mediaInput;
+	private static Media mediaInput;
 	
 	// Video Output File
 	private File outputFile;
 	private String mediaOutputUrl;
-	private Media mediaOutput;
+	private static Media mediaOutput;
 	
 	// actual CW
 	private String controlWordInput;
@@ -59,7 +59,7 @@ public class SimulatorModel {
 	
 
 	// Dummy Array for BarChart
-	public ObservableList<XYChart.Series<String, Number>> observableArrayList;
+	public static ObservableList<XYChart.Series<String, Number>> observableArrayList;
 	
 	
 	public SimulatorModel(Stage primaryStage) {
@@ -86,12 +86,12 @@ public class SimulatorModel {
 		this.mediaInputUrl = mediaInputUrl;
 	}
 
-	public Media getMediaInput() {
+	public static Media getMediaInput() {
 		return mediaInput;
 	}
 
 	public void setMediaInput(Media mediaInput) {
-		this.mediaInput = mediaInput;
+		SimulatorModel.mediaInput = mediaInput;
 	}
 
 	public File getOutputFile() {
@@ -110,12 +110,12 @@ public class SimulatorModel {
 		this.mediaOutputUrl = mediaOutputUrl;
 	}
 
-	public Media getMediaOutput() {
+	public static Media getMediaOutput() {
 		return mediaOutput;
 	}
 
 	public void setMediaOutput(Media mediaOutput) {
-		this.mediaOutput = mediaOutput;
+		SimulatorModel.mediaOutput = mediaOutput;
 	}
 
 	public String getControlWordInput() {
@@ -283,7 +283,7 @@ public class SimulatorModel {
 	}
 
 	public void setObservableArrayList(ObservableList<XYChart.Series<String, Number>> observableArrayList) {
-		this.observableArrayList = observableArrayList;
+		SimulatorModel.observableArrayList = observableArrayList;
 	}
 
 	public boolean getEncryptionState() {
