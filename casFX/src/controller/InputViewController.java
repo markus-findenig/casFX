@@ -29,7 +29,8 @@ import javafx.scene.control.Toggle;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.stage.FileChooser;
-
+import javafx.stage.Stage;
+import model.ConfigModel;
 import model.SimulatorModel;
 import view.InputView;
 
@@ -76,6 +77,9 @@ public class InputViewController {
 		// Cas Event handler registrieren
 		view.getOpen().setOnAction(casEventHandler);
 		view.getExit().setOnAction(casEventHandler);
+		
+		// Config Popup
+		view.getConfig().setOnAction(casEventHandler);
 
 		// Encryption Toggle Button registrieren
 		view.getEncryption().setOnAction(casEventHandler);
@@ -88,11 +92,16 @@ public class InputViewController {
 		// Test Function
 		view.test().setOnAction(event -> {
 
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
-			LocalDateTime dateTime = LocalDateTime.now();
-			String formattedDateTime = dateTime.format(formatter);
-
-			System.out.println(formattedDateTime);
+			Stage dialogStage = new Stage();
+			ConfigModel configModel = new ConfigModel(dialogStage);
+			ConfigViewController configVC = new ConfigViewController(configModel);
+			configVC.show();
+			
+//			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
+//			LocalDateTime dateTime = LocalDateTime.now();
+//			String formattedDateTime = dateTime.format(formatter);
+//
+//			System.out.println(formattedDateTime);
 
 			// Task<Void> task = new Task<Void>() {
 			// @Override
@@ -216,13 +225,18 @@ public class InputViewController {
 				thInitPlayerOutput.start();
 
 			}
+			
+			// Config Popup
+			if (event.getSource() == view.getConfig()) {
+				ConfigViewController.show();
+			}
 
 			// Exit
 			if (event.getSource() == view.getExit()) {
 				// stop all Threads
-				thActivateEncryption.stop();
-				thInitPlayerOutput.stop();
-				thInitPlayerInput.stop();
+//				thActivateEncryption.stop();
+//				thInitPlayerOutput.stop();
+//				thInitPlayerInput.stop();
 				// GUI exit
 				Platform.exit();
 				System.exit(0);

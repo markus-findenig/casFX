@@ -19,6 +19,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.media.MediaPlayer;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import model.SimulatorModel;
 import app.MediaControl;
@@ -29,7 +30,7 @@ import app.MediaControl;
 public class InputView {
 
 	private Scene scene;
-	public GridPane grid;
+	private GridPane grid;
 	
 	private SimulatorModel model;
 
@@ -43,6 +44,10 @@ public class InputView {
 	private final MenuItem exit = new MenuItem("Exit");
 	
 	private final MenuItem test = new MenuItem("Run Test Funktion");
+	
+	private final MenuItem config = new MenuItem("Player Config");
+	
+	
 
 	// Encryption Text Field and Toggle Button
 	private static Label encryptionL;
@@ -124,8 +129,8 @@ public class InputView {
 	 * @param model
 	 *            SimulatorModel
 	 */
-	public InputView(SimulatorModel model) {
-		this.model = model;
+	public InputView(SimulatorModel sModel) {
+		model = sModel;
 
 		// Layout
 		grid = new GridPane();
@@ -143,6 +148,8 @@ public class InputView {
 
 		menu1.getItems().add(open);
 		menu1.getItems().add(exit);
+		
+		menu2.getItems().add(config);
 		
 		menu3.getItems().add(test);
 
@@ -170,6 +177,11 @@ public class InputView {
 	public MenuItem getExit() {
 		return exit;
 	}
+	
+	public MenuItem getConfig() {
+		return config;
+	}
+	
 	
 	public MenuItem test() {
 		return test;
