@@ -9,6 +9,9 @@ import controller.InputViewController;
 
 public class Main extends Application {
 
+	/**
+     * @param args the command line arguments
+     */
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -24,7 +27,7 @@ public class Main extends Application {
 			InputViewController inputVC = new InputViewController(dataBean);
 			inputVC.show();
 			
-			// Zweiten Controller Config initialisieren
+			// Zweiten Controller Config Popup initialisieren
 			Stage dialogStage = new Stage();
 			ConfigModel configModel = new ConfigModel(dialogStage);
 			@SuppressWarnings("unused")

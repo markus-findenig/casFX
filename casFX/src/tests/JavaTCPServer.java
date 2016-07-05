@@ -28,11 +28,12 @@ public class JavaTCPServer {
 		System.out.println("Port: " + port);
 
 		Socket socket = null;
+		Scanner scanner = null;
 		try {
 			serverSocket = new ServerSocket(port);
 
 			socket = serverSocket.accept();
-			Scanner scanner = new Scanner(socket.getInputStream());
+			scanner = new Scanner(socket.getInputStream());
 			PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
 
 			String line = scanner.nextLine();
@@ -45,6 +46,7 @@ public class JavaTCPServer {
 
 			if (socket != null) {
 				try {
+					scanner.close();
 					socket.close();
 				} catch (IOException ex) {
 					Logger.getLogger(JavaTCPServer.class.getName()).log(Level.SEVERE, null, ex);

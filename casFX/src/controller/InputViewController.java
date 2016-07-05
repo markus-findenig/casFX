@@ -3,6 +3,8 @@ package controller;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -87,10 +89,17 @@ public class InputViewController {
 			public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
 			}
 		});
+		
+		
 
 		// Test Function
 		view.test().setOnAction(event -> {
 
+						
+			
+//			HttpServer httpServer = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 7777), 0);
+//			httpServer.createContext("/", new CustomHttpHandler("/dir/to/files/to/play"));
+//			httpServer.start();
 					
 //			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
 //			LocalDateTime dateTime = LocalDateTime.now();
@@ -309,13 +318,13 @@ public class InputViewController {
 			ecmWorkKey = model.getAuthorizationInputKey1();
 		}
 
-		byte[] decodedKey = Base64.getDecoder().decode(ecmWorkKey);
-		SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "HmacSHA1");
-
-		// ALG_DES_MAC4_ISO9797_M1
+		// generate a key
+		SecretKeySpec macKey = new SecretKeySpec(ecmWorkKey.getBytes(), "HmacSHA1");
+		
+		// ALG_DES_MAC4_ISO9797_M1 for SmartCards
 		try {
-			Mac mac = Mac.getInstance(originalKey.getAlgorithm());
-			mac.init(originalKey);
+			Mac mac = Mac.getInstance(macKey.getAlgorithm());
+			mac.init(macKey);
 
 			// get the string as UTF-8 bytes
 			byte[] b = payload.getBytes("UTF-8");
