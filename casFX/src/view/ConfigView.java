@@ -60,13 +60,13 @@ public class ConfigView {
 
 		serverL = new Label("Input Player (Server):");
 		grid.add(serverL, 1, 1);
-		serverTF = new TextField("http://127.0.0.1:7777");
+		serverTF = new TextField();
 		serverTF.setTooltip(new Tooltip("Server IP and Port, Default http://127.0.0.1:7777"));
 		grid.add(serverTF, 2, 1);
 
 		clientL = new Label("Output Player (Client):");
 		grid.add(clientL, 1, 3);
-		clientTF = new TextField("http://127.0.0.1:7777");
+		clientTF = new TextField();
 		clientTF.setTooltip(new Tooltip("Client IP and Port, Default http://127.0.0.1:7777"));
 		grid.add(clientTF, 2, 3);
 

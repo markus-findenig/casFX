@@ -23,6 +23,10 @@ public class ConfigViewController {
 	public ConfigViewController(ConfigModel cModel) {
 		configModel = cModel;
 		configView = new ConfigView();
+		
+		// set default Config parameter
+		configModel.setServer("http://127.0.0.1:7777");
+		configModel.setClient("http://127.0.0.1:7777");
 
 		ConfigEventHandler configEventHandler = new ConfigEventHandler();
 
@@ -36,6 +40,10 @@ public class ConfigViewController {
 	 * Zeigt den Config Dialog
 	 */
 	public static void show() {
+		// setze die model daten in der view
+		configView.getServer().setText(configModel.getServer());
+		configView.getClient().setText(configModel.getClient());
+		// zeige den Config Dialog an
 		configView.show(configModel.getDialogStage());
 	}
 	
@@ -47,6 +55,7 @@ public class ConfigViewController {
 			// Button OK
 			if (event.getSource() == configView.getOk()) {
 				if (isInputValid()) {
+					// speichert die view daten ins model
 					configModel.setServer(configView.getServer().getText());
 					configModel.setClient(configView.getClient().getText());
 					configModel.getDialogStage().close();
@@ -55,7 +64,6 @@ public class ConfigViewController {
 
 			// Button CANCEL
 			if (event.getSource() == configView.getCancel()) {
-				// TODO speichert beim canceln
 				configModel.getDialogStage().close();
 			}
 
