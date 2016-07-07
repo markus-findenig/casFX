@@ -27,7 +27,7 @@ public class HTTPServer_MT {
 	public static void main(String argv[]) throws Exception {
 		
 		int port = 80;
-		String documentroot = "E:\\Users\\Dropbox\\workspace\\11W\\RN_blatt_4_3\\documentRoot";
+		String documentroot = "D://Users//Dropbox//workspace//11W//RN_blatt_4_3//documentRoot";
 
 		//ServerSocket listenSocket = new ServerSocket(Integer.valueOf(argv[0]));
 		ServerSocket listenSocket = new ServerSocket(port);

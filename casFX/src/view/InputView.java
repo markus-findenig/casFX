@@ -18,6 +18,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
+import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import model.SimulatorModel;
@@ -449,7 +450,9 @@ public class InputView {
 	 */
 	public void initPlayerOutput() {
 		// create media player 2 fx
-		mediaPlayerOutput = new MediaPlayer(SimulatorModel.getMediaOutput());
+		Media media = new Media("http://127.0.0.1:7777/TheSimpsonsMovie-1080pTrailer.mp4");
+		mediaPlayerOutput = new MediaPlayer(media);
+		//mediaPlayerOutput = new MediaPlayer(SimulatorModel.getMediaOutput());
 		mediaControlOutput = new MediaControl(mediaPlayerOutput);
 		GridPane.setColumnSpan(mediaControlOutput, 3);
 		GridPane.setRowSpan(mediaControlOutput, 8);

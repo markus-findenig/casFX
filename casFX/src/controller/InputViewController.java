@@ -66,7 +66,8 @@ public class InputViewController {
 
 		// instance with dummy file video
 		setInputFile(new File("resorces\\dummy.mp4"));
-		setOutputFile(new File("resorces\\dummy.mp4"));
+		//setOutputFile(new File("resorces\\dummy.mp4"));
+		
 
 		// TODO dummy Data for BarChart
 		SimulatorModel.observableArrayList = getChartData();
