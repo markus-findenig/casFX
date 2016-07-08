@@ -6,6 +6,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+/**
+ * 
+ * http://stackoverflow.com/questions/10864317/how-to-break-a-file-into-pieces-using-java
+ *
+ */
 public class FileStreamController {
 
 	static FileInputStream fis; // video file
@@ -20,7 +25,12 @@ public class FileStreamController {
 		frame_nb = 0;
 
 		int offset = 0;
-		int length = 1048576; // 1 MB
+		int length = 10485760; // 1024 * 1024 * 10 = 10 MB
+		
+		int partCounter = 1;//I like to name parts from 001, 002, 003, ...
+        //you can change it to 0 if you want 000, 001, ...
+		
+		String name = file_in.getName();
 
 		byte[] byteOdd = new byte[length];
 		byte[] byteEven = new byte[length];
@@ -39,14 +49,18 @@ public class FileStreamController {
 		
 		BufferedOutputStream bos = null;
 		
-		FileOutputStream out = new FileOutputStream(file_out);
+		//FileOutputStream out = new FileOutputStream(file_out);
+		
+		FileOutputStream out = null;
 		
 		int tmp = 0;
-        //while ((tmp = bis.read(buffer)) > 0) {
-		while (fis.available() != 0) {
-			bis.read(buffer);
+        while ((tmp = bis.read(buffer)) > 0) {
+		//while (fis.available() != 0) {
+			//bis.read(buffer);
 			
-			out.write(buffer);
+			File newFile = new File(file_in.getParent(), name + "." + String.format("%03d", partCounter++));
+			out = new FileOutputStream(newFile);
+			out.write(buffer, 0, tmp);//tmp is chunk size
         	
         	
         	
