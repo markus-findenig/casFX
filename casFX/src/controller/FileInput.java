@@ -14,15 +14,16 @@ import java.io.Reader;
 
 public class FileInput {
 
-	//public static void main(String[] args) {
+	public static void main(String[] args) {
 	
-	public static void FileInputLoader() {
+	//public static void FileInputLoader() {
 
-		File file_in = new File("E:\\Users\\Videos\\Test\\TheSimpsonsMovie-1080pTrailer.mp4");
-		File file_out = new File("E:\\Users\\Videos\\Test\\stream.mp4");
+		
+		File file_in = new File("D:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4");
+		File file_out = new File("D:\\Users\\Videos\\Test\\stream.mp4");
 
 		try {
-			InputStream inputStream = new FileInputStream(file_in);
+			FileInputStream inputStream = new FileInputStream(file_in);
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 			BufferedReader bufferReader = new BufferedReader(inputStreamReader);
 			
@@ -53,6 +54,9 @@ public class FileInput {
 
 	}
 
+	
+	
+	
 	/**
 	 * Liest den Inhalt einer Datei aus.
 	 *
@@ -66,6 +70,39 @@ public class FileInput {
 		InputStreamReader isr = new InputStreamReader(is);
 		BufferedReader isrb = new BufferedReader(isr);
 		return isrb.readLine();
+	}
+	
+	
+	FileInputStream fis; // video file
+	int frame_nb; // current frame nb
+
+	// -----------------------------------
+	// constructor
+	// -----------------------------------
+	public void VideoStream(String filename) throws Exception {
+
+		// init variables
+		fis = new FileInputStream(filename);
+		frame_nb = 0;
+	}
+
+	// -----------------------------------
+	// getnextframe
+	// returns the next frame as an array of byte and the size of the frame
+	// -----------------------------------
+	public int getNextFrame(byte[] frame) throws Exception {
+		int length = 0;
+		String length_string;
+		byte[] frame_length = new byte[5];
+
+		// read current frame length
+		fis.read(frame_length, 0, 5);
+
+		// transform frame_length to integer
+		length_string = new String(frame_length);
+		length = Integer.parseInt(length_string);
+
+		return (fis.read(frame, 0, length));
 	}
 
 	

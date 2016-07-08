@@ -62,7 +62,7 @@ public class Server extends JFrame implements ActionListener {
 	// input and output stream filters
 	static BufferedReader RTSPBufferedReader;
 	static BufferedWriter RTSPBufferedWriter;
-	static String VideoFileName = "D:\\Users\\Videos\\Test\\TheSimpsonsMovie-1080pTrailer.mp4"; // video file requested from the client
+	static String VideoFileName = "D:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.avi"; // video file requested from the client
 	static int RTSP_ID = 123456; // ID of the RTSP session
 	int RTSPSeqNb = 0; // Sequence number of RTSP messages within the session
 
@@ -82,7 +82,7 @@ public class Server extends JFrame implements ActionListener {
 		timer.setCoalesce(true);
 
 		// allocate memory for the sending buffer
-		buf = new byte[15000000];
+		buf = new byte[1500];
 
 		// Handler to close the main window
 		addWindowListener(new WindowAdapter() {

@@ -15,5 +15,11 @@
 	<classpathentry kind="lib" path="lib/vlcj-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/xuggle-xuggler-test.jar"/>
 	<classpathentry kind="lib" path="lib/xuggle-xuggler.jar"/>
+	<classpathentry kind="lib" path="lib/sun-jai_codec.jar"/>
+	<classpathentry kind="lib" path="lib/customizer.jar"/>
+	<classpathentry kind="lib" path="lib/mediaplayer.jar"/>
+	<classpathentry kind="lib" path="lib/multiplayer.jar"/>
+	<classpathentry kind="lib" path="lib/sound.jar"/>
+	<classpathentry kind="lib" path="lib/jmf-2.1.1e.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

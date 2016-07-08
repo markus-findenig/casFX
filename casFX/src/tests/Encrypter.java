@@ -80,9 +80,9 @@ public class Encrypter {
     }
 
     public static void main(String[] args) {
-        File inFile = new File("E:\\Users\\Videos\\Test\\TheSimpsonsMovie-1080pTrailer.mp4");
-        File outFile_enc = new File("E:\\Users\\Videos\\Test\\out_enc_TheSimpsonsMovie-1080pTrailer.mp4");
-        File outFile_dec = new File("E:\\Users\\Videos\\Test\\out_dec_TheSimpsonsMovie-1080pTrailer.mp4");
+        File inFile = new File("E:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4");
+        File outFile_enc = new File("E:\\Users\\Videos\\Test\\out_enc_TheSimpsonsMovie1080pTrailer.mp4");
+        File outFile_dec = new File("E:\\Users\\Videos\\Test\\out_dec_TheSimpsonsMovie1080pTrailer.mp4");
 
         try {
             //SecretKey key = KeyGenerator.getInstance(ALGO_SECRET_KEY_GENERATOR).generateKey();

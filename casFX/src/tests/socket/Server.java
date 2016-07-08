@@ -27,7 +27,7 @@ import tests.aufgabe3.server.Service;
 public class Server {
 
 	public final static int SOCKET_PORT = 8554; // you may change this
-	public final static String FILE_TO_SEND = "D:\\Users\\Videos\\Test\\TheSimpsonsMovie-1080pTrailer.mp4"; // you
+	public final static String FILE_TO_SEND = "D:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4"; // you
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws Exception {
