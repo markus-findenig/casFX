@@ -2,28 +2,27 @@ package tests.rtp;
 
 //VideoStream
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class VideoStream {
 
-	FileInputStream fis; // video file
-	int frame_nb; // current frame nb
+	private FileInputStream fis;
 
-	// -----------------------------------
-	// constructor
-	// -----------------------------------
 	public VideoStream(String filename) throws Exception {
-
-		// init variables
-		fis = new FileInputStream(filename);
-		frame_nb = 0;
+		//fis = new FileInputStream("." + System.getProperty("file.separator") + "videos" + System.getProperty("file.separator") + filename);
+		fis = new FileInputStream("D:\\Users\\Videos\\Test\\" + filename);
 	}
 
-	// -----------------------------------
-	// getnextframe
-	// returns the next frame as an array of byte and the size of the frame
-	// -----------------------------------
-	public int getnextframe(byte[] frame) throws Exception {
+	/**
+	 * Reads the next frame from the video into the frame parameter
+	 * 
+	 * @param frame
+	 *            where the video frame is read to
+	 * @return the total number of bytes read into the frame
+	 * @throws IOException
+	 */
+	public int getNextFrame(byte[] frame) throws IOException {
 		int length = 0;
 		String length_string;
 		byte[] frame_length = new byte[5];
@@ -37,4 +36,5 @@ public class VideoStream {
 
 		return (fis.read(frame, 0, length));
 	}
+
 }

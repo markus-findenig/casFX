@@ -1,4 +1,4 @@
-package tests.rtp;
+package tests.rtp2;
 
 import java.io.*;
 import java.util.Vector;
