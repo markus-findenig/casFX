@@ -21,5 +21,6 @@
 	<classpathentry kind="lib" path="lib/multiplayer.jar"/>
 	<classpathentry kind="lib" path="lib/sound.jar"/>
 	<classpathentry kind="lib" path="lib/jmf-2.1.1e.jar"/>
+	<classpathentry kind="lib" path="lib/libjitsi.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

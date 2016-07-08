@@ -75,7 +75,7 @@ public class Client {
 	private final static String CRLF = "\r\n";
 
 	// Video constants:
-	static int MJPEG_TYPE = 26; // RTP payload type for MJPEG video
+	static int MJPEG_TYPE = 98; // 26;  RTP payload type for MJPEG video
 
 
 	public Client() {
