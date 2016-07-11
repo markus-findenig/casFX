@@ -50,7 +50,7 @@ public class EmbeddedMediaPlayer extends Application {
 	
 	//private final String MEDIA_URL = file.toURI().toString();
 	
-	private final String MEDIA_URL = "http://127.0.0.1:7777/cas.mp4";
+	private final String MEDIA_URL = "http://127.0.0.1:5555";
 	
 	// Note the 127.0.0.1 here, localhost will NOT work!
 	//Media myMedia = new Media("http://127.0.0.1:7777/something.m3u8")

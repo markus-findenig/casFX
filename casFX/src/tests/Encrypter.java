@@ -80,15 +80,16 @@ public class Encrypter {
     }
 
     public static void main(String[] args) {
-        File inFile = new File("E:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4");
-        File outFile_enc = new File("E:\\Users\\Videos\\Test\\out_enc_TheSimpsonsMovie1080pTrailer.mp4");
-        File outFile_dec = new File("E:\\Users\\Videos\\Test\\out_dec_TheSimpsonsMovie1080pTrailer.mp4");
+        File inFile = new File("D:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4");
+        File outFile_enc = new File("D:\\Users\\Videos\\Test\\out_enc_TheSimpsonsMovie1080pTrailer.mp4");
+        File outFile_dec = new File("D:\\Users\\Videos\\Test\\out_dec_TheSimpsonsMovie1080pTrailer.mp4");
 
         try {
             //SecretKey key = KeyGenerator.getInstance(ALGO_SECRET_KEY_GENERATOR).generateKey();
-        	byte[] k = ("1234567812345678").getBytes();
+        	String k = "1234567812345678";
+        	//byte[] k = ("1234567812345678").getBytes();
         	
-        	SecretKey key = new SecretKeySpec(k, ALGO_SECRET_KEY_GENERATOR);
+        	SecretKey key = new SecretKeySpec(k.getBytes(), ALGO_SECRET_KEY_GENERATOR);
         			
             byte[] keyData = key.getEncoded();
             SecretKey key2 = new SecretKeySpec(keyData, 0, keyData.length, ALGO_SECRET_KEY_GENERATOR); 
