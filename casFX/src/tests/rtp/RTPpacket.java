@@ -23,7 +23,7 @@ package tests.rtp;
  */
 public class RTPpacket {
 
-	public static int MJPEG_TYPE = 26;		// payload type for MJPEG video
+	public static int MJPEG_TYPE = 99;		// payload type for MJPEG video
 	private static int HEADER_SIZE = 12;	// size of the header
 
 	// Fields that compose the header

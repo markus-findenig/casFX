@@ -18,8 +18,8 @@ import javax.media.control.*;
 public class RTPServer implements ControllerListener {
     private boolean realized = false;
     private boolean configured = false;
-    private String ipAddress = "192.168.178.101";
-    private String destUrl = "rtp://192.168.178.101:42050/audio/1";
+    private String ipAddress = "239.0.0.1";
+    private String destUrl = "rtp://239.0.0.1:5004";
     private MediaLocator dest = new MediaLocator(destUrl);
 
     public static void main(String [] args) {

@@ -1,5 +1,8 @@
 package controller;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
@@ -19,14 +22,15 @@ public class ConfigViewController {
 	 * Config View Controller
 	 * 
 	 * @param configModel
+	 * @throws UnknownHostException 
 	 */
-	public ConfigViewController(ConfigModel cModel) {
+	public ConfigViewController(ConfigModel cModel) throws UnknownHostException {
 		configModel = cModel;
 		configView = new ConfigView();
 		
 		// set default Config parameter
-		configModel.setServer("http://127.0.0.1:7777");
-		configModel.setClient("http://127.0.0.1:7777");
+		configModel.setServer("rtsp://" + InetAddress.getLocalHost().getHostAddress() + ":8080/cas.sdp");
+		configModel.setClient("rtsp://" + InetAddress.getLocalHost().getHostAddress() + ":8080/cas.sdp");
 
 		ConfigEventHandler configEventHandler = new ConfigEventHandler();
 
@@ -80,10 +84,10 @@ public class ConfigViewController {
         String errorMessage = "";
 
         if (configView.getServer().getText() == null || configView.getServer().getText().length() == 0) {
-            errorMessage += "No valid server and port! (http://127.0.0.1:7777)\n"; 
+            errorMessage += "No valid server config! (rtsp://127.0.0.1:8080/cas.sdp)\n"; 
         }
         if (configView.getClient().getText() == null || configView.getClient().getText().length() == 0) {
-            errorMessage += "No valid client and port! (http://127.0.0.1:7777)\n"; 
+            errorMessage += "No valid client config! (rtsp://127.0.0.1:8080/cas.sdp)\n"; 
         }
 
         if (errorMessage.length() == 0) {

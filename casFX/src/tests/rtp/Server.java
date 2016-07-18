@@ -44,7 +44,7 @@ public class Server extends JFrame implements ActionListener {
 	// Video variables
 	private int imagenb = 0;				// image nb of the image currently transmitted
 	private VideoStream video;				// VideoStream object used to access video frames
-	private static int MJPEG_TYPE = 98;		// 26; RTP payload type for MJPEG video
+	private static int MJPEG_TYPE = 99;		// 26; RTP payload type for MJPEG video
 	private static int FRAME_PERIOD = 100;	// Frame period of the video to stream, in ms
 	private static int VIDEO_LENGTH = 500;	// length of the video in frames
 
@@ -243,6 +243,7 @@ public class Server extends JFrame implements ActionListener {
 
 		// Get Client IP address
 		server.clientIp = server.rtspSocket.getInetAddress();
+		System.out.println("Server IP: " + server.clientIp);
 
 		// Initiate RTSPstate
 		state = INIT;

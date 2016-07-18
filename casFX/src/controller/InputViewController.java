@@ -489,9 +489,9 @@ public class InputViewController {
 					mpStatus = view.getMediaPlayerInput().getStatus();
 					rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
 					
-				}
+				} // end while
 				return null;
-			}
+			} // end call
 		};
 		
 		// start the task
