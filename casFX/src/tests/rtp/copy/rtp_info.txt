@@ -1,0 +1,14 @@
+
+TUT
+http://www.siptutorial.net/RTP/header.html
+
+Beispiel
+http://stackoverflow.com/questions/30283485/handling-h264-encoded-rtp-video-stream-with-libjitsi-library-in-swing-how-to-r
+
+
+lib
+https://jitsi.org/Projects/LibJitsi
+
+
+github
+https://github.com/Metaswitch/libjitsi/tree/master/src/org/jitsi/examples

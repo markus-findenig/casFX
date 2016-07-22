@@ -3,6 +3,8 @@ package controller;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import com.sun.jna.NativeLibrary;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
@@ -29,8 +31,15 @@ public class ConfigViewController {
 		configView = new ConfigView();
 		
 		// set default Config parameter
-		configModel.setServer("rtsp://" + InetAddress.getLocalHost().getHostAddress() + ":8080/cas.sdp");
-		configModel.setClient("rtsp://" + InetAddress.getLocalHost().getHostAddress() + ":8080/cas.sdp");
+		configModel.setFfmpegPath("D:\\Securety\\Programms\\ffmpeg\\bin\\");
+		configModel.setVlcPath("C:\\ProgLoc\\VideoLAN\\VLC");
+		// TODO default
+		//configModel.setVlcPath("C:\\Program Files\\VideoLAN\\VLC");
+		configModel.setServer("rtp://239.0.0.1:5004");
+		configModel.setClient("rtp://239.0.0.1:5004");
+		
+		// set VLC Native Library
+		NativeLibrary.addSearchPath("libvlc", configModel.getVlcPath());
 
 		ConfigEventHandler configEventHandler = new ConfigEventHandler();
 
@@ -45,6 +54,8 @@ public class ConfigViewController {
 	 */
 	public static void show() {
 		// setze die model daten in der view
+		configView.getFfmpegPathTF().setText(configModel.getFfmpegPath());
+		configView.getVlcPathTF().setText(configModel.getVlcPath());
 		configView.getServer().setText(configModel.getServer());
 		configView.getClient().setText(configModel.getClient());
 		// zeige den Config Dialog an
@@ -60,6 +71,8 @@ public class ConfigViewController {
 			if (event.getSource() == configView.getOk()) {
 				if (isInputValid()) {
 					// speichert die view daten ins model
+					configModel.setFfmpegPath(configView.getFfmpegPathTF().getText());
+					configModel.setVlcPath(configView.getVlcPathTF().getText());
 					configModel.setServer(configView.getServer().getText());
 					configModel.setClient(configView.getClient().getText());
 					configModel.getDialogStage().close();
@@ -84,10 +97,10 @@ public class ConfigViewController {
         String errorMessage = "";
 
         if (configView.getServer().getText() == null || configView.getServer().getText().length() == 0) {
-            errorMessage += "No valid server config! (rtsp://127.0.0.1:8080/cas.sdp)\n"; 
+            errorMessage += "No valid server config! ()\n"; 
         }
         if (configView.getClient().getText() == null || configView.getClient().getText().length() == 0) {
-            errorMessage += "No valid client config! (rtsp://127.0.0.1:8080/cas.sdp)\n"; 
+            errorMessage += "No valid client config! ()\n"; 
         }
 
         if (errorMessage.length() == 0) {
@@ -105,6 +118,10 @@ public class ConfigViewController {
             return false;
         }
     }
+
+	public static ConfigModel getConfigModel() {
+		return configModel;
+	}
 	
 	
 }

@@ -83,7 +83,7 @@ public class StreamHttp extends VlcjTest {
 		        setStart(_stop + 0.01);
 		        
 		        
-		        setStop(_stop + 10);
+		        setStop(_stop + 100000);
 		     }
 		   };
 
@@ -259,11 +259,11 @@ public class StreamHttp extends VlcjTest {
 
 		vlcArgs.add(options);
 
-		vlcArgs.add("--sout-ts-crypt-video");
-		vlcArgs.add("--sout-ts-crypt-audio");
-		vlcArgs.add("--sout-ts-csa-use=2");
-		vlcArgs.add("--sout-ts-csa-ck=" + csaCK);
-		vlcArgs.add("--sout-ts-csa2-ck=" + csa2CK);
+//		vlcArgs.add("--sout-ts-crypt-video");
+//		vlcArgs.add("--sout-ts-crypt-audio");
+//		vlcArgs.add("--sout-ts-csa-use=2");
+//		vlcArgs.add("--sout-ts-csa-ck=" + csaCK);
+//		vlcArgs.add("--sout-ts-csa2-ck=" + csa2CK);
 		
 		vlcArgs.add("--start-time=" + start);
 		vlcArgs.add("--stop-time=" + stop);
@@ -271,7 +271,9 @@ public class StreamHttp extends VlcjTest {
 		// 4000ms = 4sec
 		
 		
-		//vlcArgs.add("--sout-ts-dts-delay=500");
+		//vlcArgs.add("--sout-ts-dts-delay=100");
+		
+		vlcArgs.add("--packetizer-mpegvideo-sync-iframe");
 //		
 		//vlcArgs.add("--rtsp-session-timeout=10000");
 		//vlcArgs.add("--file-caching=300");
@@ -288,8 +290,8 @@ public class StreamHttp extends VlcjTest {
 //		vlcArgs.add("--sout-udp-caching=0");
 		//vlcArgs.add("--sout-udp-group=10");
 		//vlcArgs.add("--clock-synchro=1");
-		//vlcArgs.add("--sout-ts-shaping=2000");
-		//vlcArgs.add("--sout-ts-use-key-frames");
+//		vlcArgs.add("--sout-ts-shaping=100");
+//		vlcArgs.add("--sout-ts-use-key-frames");
 				
 		
 //		vlcArgs.add("--video-filter=scene");
@@ -307,7 +309,11 @@ public class StreamHttp extends VlcjTest {
 //		vlcArgs.add("--sout-rtp-caching=0");
 //		vlcArgs.add("--sout-udp-caching=0");
 		
-		vlcArgs.add("--clock-jitter=0");
+		//vlcArgs.add("--clock-jitter=100");
+		
+		// PCR interval (ms) (Ganzzahl)
+		vlcArgs.add("--sout-ts-pcr=100");
+		
 		vlcArgs.add("--ttl=1");
 	
 		vlcArgs.add("--no-sout-rtp-sap");
@@ -360,7 +366,7 @@ public class StreamHttp extends VlcjTest {
 			
 			//sb.append("--sout=#rtp{dst=127.0.0.1,port=1234,mux=ts,sdp=rtsp://127.0.0.1:8080/cas.sdp}");
 			
-			sb.append("--sout=#rtp{proto=udp,mux=ts,dst=239.0.0.1,port=5004,tsid=88}");
+			sb.append("--sout=#rtp{proto=udp,mux=ts,dst=239.0.0.1,port=5004}");
 			
 						
 			//sb.append("--sout=#rtp{dst=127.0.0.1,port=1234,mux=ts}");

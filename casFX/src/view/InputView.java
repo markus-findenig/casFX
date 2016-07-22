@@ -1,11 +1,15 @@
 package view;
 
+import javafx.stage.WindowEvent;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -18,11 +22,25 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
-import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import model.SimulatorModel;
+import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
+import uk.co.caprica.vlcj.player.MediaPlayerFactory;
+import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
+
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
 import app.MediaControl;
+import controller.PlayerControlsPanel;
+import controller.PlayerViewController;
 
 /**
  * Input View
@@ -116,6 +134,15 @@ public class InputView {
 	private MediaPlayer mediaPlayerOutput;
 	private MediaControl mediaControlOutput;
 	
+	// Video Input Player
+	private static Label videoInputL;
+	private static Button videoInputB;
+
+	// Video Output Player
+	private static Label videoOutputL;
+	private static Button videoOutputB;
+
+    
 	// BarCharts
 	CategoryAxis xAxis;
 	NumberAxis yAxis;
@@ -153,10 +180,10 @@ public class InputView {
 		
 		menu3.getItems().add(test);
 
-		init();
-		initPlayerInput();
-		initPlayerOutput();
-		initBarChartInput();
+		initGUI();
+		//initPlayerInput();
+		//initPlayerOutput();
+		//initBarChartInput();
 
 		scene = new Scene(grid, 1024, 650);
 		scene.setRoot(grid);
@@ -167,6 +194,14 @@ public class InputView {
 	public void show(Stage stage) {
 		stage.setTitle("CAS-Simulator");
 		stage.setScene(scene);
+		// overwrite Exit event
+		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			public void handle(WindowEvent we) {
+				System.out.println("Stage is closing");
+				Platform.exit();
+				System.exit(0);
+			}
+		});
 		stage.show();
 	}
 
@@ -190,8 +225,10 @@ public class InputView {
 	public ToggleButton getEncryption(){
 		return encryptionTB;
 	}
+	
 
-	public void init() {
+
+	public void initGUI() {
 
 		// TODO Debug
 		// grid.setGridLinesVisible(true);
@@ -201,11 +238,19 @@ public class InputView {
 		encryptionL = new Label("Encryption:");
 		grid.add(encryptionL, 1, 2);
 		encryptionTB = new ToggleButton("OFF");
+		encryptionTB.setDisable(true);
 		encryptionTB.setPrefWidth(80);
 		grid.add(encryptionTB, 2, 2);
 		
 		// --------------------------------------------------------------------
-		// Media Player Input
+		// Video Player Input
+		videoInputL = new Label("Input Player:");
+		videoInputL.setPrefWidth(80);
+		videoInputB = new Button("View");
+		videoInputB.setDisable(true);
+		videoInputB.setPrefWidth(80);
+		grid.add(videoInputL, 1, 4);
+		grid.add(videoInputB, 2, 4);
 
 		// --------------------------------------------------------------------
 		// Time interval for ControlWord (CW)
@@ -377,6 +422,13 @@ public class InputView {
 
 		// --------------------------------------------------------------------
 		// Video Output
+		videoOutputL = new Label("Output Player:");
+		videoOutputL.setPrefWidth(80);
+		videoOutputB = new Button("View");
+		videoOutputB.setDisable(true);
+		videoOutputB.setPrefWidth(80);
+		grid.add(videoOutputL, 16, 4);
+		grid.add(videoOutputB, 17, 4);
 		
 		// --------------------------------------------------------------------
 		// Media Player Output
@@ -429,39 +481,23 @@ public class InputView {
 
 
 
-	/**
-	 * Video Player Input
-	 */
-	public void initPlayerInput() {
-		// create media player 1 fx
-		setMediaPlayerInput(new MediaPlayer(SimulatorModel.getMediaInput()));
-		mediaControlInput = new MediaControl(getMediaPlayerInput());
-		GridPane.setColumnSpan(mediaControlInput, 3);
-		GridPane.setRowSpan(mediaControlInput, 8);
-		mediaControlInput.setMinSize(300, 225);
-		mediaControlInput.setPrefSize(300, 225);
-		mediaControlInput.setMaxSize(300, 225);
-		grid.add(mediaControlInput, 1, 4);
-		
-	}
+//	/**
+//	 * Video Player Input
+//	 */
+//	public void initPlayerInput() {
+//		// create media player 1 fx
+//		setMediaPlayerInput(new MediaPlayer(SimulatorModel.getMediaInput()));
+//		mediaControlInput = new MediaControl(getMediaPlayerInput());
+//		GridPane.setColumnSpan(mediaControlInput, 3);
+//		GridPane.setRowSpan(mediaControlInput, 8);
+//		mediaControlInput.setMinSize(300, 225);
+//		mediaControlInput.setPrefSize(300, 225);
+//		mediaControlInput.setMaxSize(300, 225);
+//		grid.add(mediaControlInput, 1, 4);
+//		
+//	}
 
-	/**
-	 * Video Player Output
-	 */
-	public void initPlayerOutput() {
-		// create media player 2 fx
-		Media media = new Media("http://127.0.0.1:7777/TheSimpsonsMovie-1080pTrailer.mp4");
-		mediaPlayerOutput = new MediaPlayer(media);
-		//mediaPlayerOutput = new MediaPlayer(SimulatorModel.getMediaOutput());
-		mediaControlOutput = new MediaControl(mediaPlayerOutput);
-		GridPane.setColumnSpan(mediaControlOutput, 3);
-		GridPane.setRowSpan(mediaControlOutput, 8);
-		mediaControlOutput.setMinSize(300, 225);
-		mediaControlOutput.setPrefSize(300, 225);
-		mediaControlOutput.setMaxSize(300, 225);
-		grid.add(mediaControlOutput, 16, 4);
-		
-	}
+
 
 	/**
 	 * BarChar Input Stream
@@ -554,4 +590,12 @@ public class InputView {
 		this.mediaPlayerInput = mediaPlayerInput;
 	}
 	
+	public Button getVideoOutputButton () {
+		return videoOutputB;
+	}
+
+	public Button getVideoInputButton() {
+		return videoInputB;
+	}
+
 }

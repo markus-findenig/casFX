@@ -16,54 +16,56 @@ public class SimulatorModel {
 
 	// Encryption State ON (true) or OFF (false)
 	private boolean encryptionState = false;
-	
+
 	// Video Input File
-	private File inputFile;
+	private static File inputFile;
 	private String mediaInputUrl;
 	private static Media mediaInput;
-	
+
 	// Video Output File
 	private File outputFile;
 	private String mediaOutputUrl;
 	private static Media mediaOutput;
-	
+
+	// odd/even Files
+	private File oddFile;
+	private File evenFile;
+
 	// actual CW
 	private String controlWordInput;
 	private String controlWordOutput;
-	
+
 	// Time for CW period of validity
 	private int cwTime;
-	
+
 	// Transport Stream Header
 	private String scramblingControl;
-	
+
 	// ECM
 	private String ecmHeader;
 	private String ecmProtocol;
 	private String ecmBroadcastId;
 	private String ecmWorkKeyId;
-	private String ecmCwOdd;
-	private String ecmCwEven;
+	private static String ecmCwOdd;
+	private static String ecmCwEven;
 	private String ecmProgramType;
 	private String ecmDateTime;
 	private String ecmRecordControl;
 	private String ecmVariablePart;
 	private String ecmMAC;
 	private String ecmCRC;
-	
+
 	// Authorization Keys for Input and Output Player
 	private String authorizationInputKey0;
 	private String authorizationInputKey1;
 	private String authorizationOutputKey0;
 	private String authorizationOutputKey1;
-	
 
 	// Dummy Array for BarChart
 	public static ObservableList<XYChart.Series<String, Number>> observableArrayList;
-	
-	
+
 	public SimulatorModel(Stage primaryStage) {
-		PRIMARY_STAGE  = primaryStage;
+		PRIMARY_STAGE = primaryStage;
 	}
 
 	public Stage getPrimaryStage() {
@@ -75,7 +77,7 @@ public class SimulatorModel {
 	}
 
 	public void setInputFile(File inputFile) {
-		this.inputFile = inputFile;
+		SimulatorModel.inputFile = inputFile;
 	}
 
 	public String getMediaInputUrl() {
@@ -116,6 +118,38 @@ public class SimulatorModel {
 
 	public void setMediaOutput(Media mediaOutput) {
 		SimulatorModel.mediaOutput = mediaOutput;
+	}
+
+	public File getOddFile() {
+		return oddFile;
+	}
+
+	public void setOddFile(File oddFile) {
+		this.oddFile = oddFile;
+	}
+
+	public File getEvenFile() {
+		return evenFile;
+	}
+
+	public void setEvenFile(File evenFile) {
+		this.evenFile = evenFile;
+	}
+
+	public String getEcmMAC() {
+		return ecmMAC;
+	}
+
+	public void setEcmMAC(String ecmMAC) {
+		this.ecmMAC = ecmMAC;
+	}
+
+	public String getEcmCRC() {
+		return ecmCRC;
+	}
+
+	public void setEcmCRC(String ecmCRC) {
+		this.ecmCRC = ecmCRC;
 	}
 
 	public String getControlWordInput() {
@@ -187,7 +221,7 @@ public class SimulatorModel {
 	}
 
 	public void setEcmCwOdd(String ecmCwOdd) {
-		this.ecmCwOdd = ecmCwOdd;
+		SimulatorModel.ecmCwOdd = ecmCwOdd;
 	}
 
 	public String getEcmCwEven() {
@@ -195,7 +229,7 @@ public class SimulatorModel {
 	}
 
 	public void setEcmCwEven(String ecmCwEven) {
-		this.ecmCwEven = ecmCwEven;
+		SimulatorModel.ecmCwEven = ecmCwEven;
 	}
 
 	public String getEcmProgramType() {
@@ -294,6 +328,4 @@ public class SimulatorModel {
 		this.encryptionState = encryptionState;
 	}
 
-	
-	
 }

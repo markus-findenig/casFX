@@ -91,33 +91,10 @@ public class StreamRtp extends VlcjTest {
 		   ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 		   //executor.scheduleAtFixedRate(myRunnable, 0, 10, TimeUnit.SECONDS);
 		   executor.scheduleWithFixedDelay(myRunnable, 0, 9999, TimeUnit.MILLISECONDS);
-		
-//		
-//		while (run) {
-//			Thread thread = new Thread(myRunnable);
-//			
-//			
-//			if (thread.isAlive()) {
-//				System.out.println("isAlive");
-//				
-//			} else {
-//				thread.start();
-//				System.out.println("notAlive");
-//			}
-//			
-//			Thread.sleep(5000);
-//			
-//			//thread.stop();
-//		}
-//		
+
 //		// Don't exit
 //		Thread.currentThread().join();
 	}
-	
-	
-	
-
-	
 	
 	
 	
@@ -158,7 +135,7 @@ public class StreamRtp extends VlcjTest {
 		
 		
 		//vlcArgs.add("--loop");
-		vlcArgs.add("--ttl=2");
+		vlcArgs.add("--ttl=1");
 	
 		vlcArgs.add("--no-sout-rtp-sap");
 		vlcArgs.add("--no-sout-standard-sap");

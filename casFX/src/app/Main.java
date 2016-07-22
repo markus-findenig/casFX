@@ -6,6 +6,7 @@ import model.ConfigModel;
 import model.SimulatorModel;
 import controller.ConfigViewController;
 import controller.InputViewController;
+import controller.PlayerViewController;
 
 public class Main extends Application {
 
@@ -21,19 +22,21 @@ public class Main extends Application {
 		try {
 			// session scope/application scope Beans initialisieren!
 			// muss von Controller zu Controller weitergegeben werden
-			SimulatorModel dataBean = new SimulatorModel(primaryStage);
+			SimulatorModel simulatorModel = new SimulatorModel(primaryStage);
 
-			// Ersten Controller aufrufen
-			InputViewController inputVC = new InputViewController(dataBean);
-			inputVC.show();
-			
-			// Zweiten Controller Config Popup initialisieren
+			// Controller Config Popup initialisieren
 			Stage dialogStage = new Stage();
 			ConfigModel configModel = new ConfigModel(dialogStage);
 			@SuppressWarnings("unused")
 			ConfigViewController configVC = new ConfigViewController(configModel);
-			// show im InputViewController 
+			// show im InputViewController
 			//configVC.show();
+			
+			// Controller View aufrufen
+			InputViewController inputVC = new InputViewController(simulatorModel, configModel);
+			inputVC.show();
+			
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();

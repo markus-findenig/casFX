@@ -11,7 +11,7 @@ public class VideoStream {
 
 	public VideoStream(String filename) throws Exception {
 		//fis = new FileInputStream("." + System.getProperty("file.separator") + "videos" + System.getProperty("file.separator") + filename);
-		fis = new FileInputStream("D:\\Users\\Videos\\Test\\" + filename);
+		fis = new FileInputStream("D:\\Users\\Videos\\" + filename);
 	}
 
 	/**
