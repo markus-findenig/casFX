@@ -33,6 +33,14 @@ public class Encryption {
 	// Encryption Thread
 	public static Thread thGenerateECM;
 
+	/**
+	 * @true Odd ECM
+	 * @false Even ECM
+	 */
+	static Boolean stateECMType;
+	
+
+
 	// ECM Payload
 	private static String payload;
 
@@ -59,28 +67,54 @@ public class Encryption {
 		// Time (sec), hole die Zeit vom Timer Eingabefeld
 		model.setCwTime(Integer.parseInt(view.getCwTimeTF().getText().toString()));
 
+		// first init parameter
+		FFmpegController.initFFmpegController();
+		VlcServerController.initVLC();
+		setStateECMType(true);
+
+		// constant CW
 		if (model.getCwTime() == 0) {
 			constantECM();
 
 			VlcServerController.streamVlcFile(model.getInputFile().toString());
+
+			// Intervall CW
 		} else {
-			generateECM();
-			FFmpegController.runFFmpeg();
+			Runnable encryptionRunnable = new Runnable() {
+				public void run() {
+					System.out.println("Runnable running");
+
+					generateECM();
+				
+
+					FFmpegController.runFFmpeg();
+
+					// VlcServerController.streamVLC();
+
+				}
+			};
+
+			encryptionExecutor = Executors.newScheduledThreadPool(3);
+			encryptionExecutor.scheduleWithFixedDelay(encryptionRunnable, 0, model.getCwTime(), TimeUnit.SECONDS);
+
+			// generateECM();
+			// FFmpegController.runFFmpeg();
+			// VlcServerController.streamVLC();
+
+			// TODO stream odd and even
+			// VlcServerController.streamVlcFile(model.getInputFile().toString());
 		}
 
-		// Runnable encryptionRunnable = new Runnable() {
-		// public void run() {
-		// System.out.println("Runnable running");
-		//
-		// generateECM();
-		//
-		//
-		// }
-		// };
-		//
-		// encryptionExecutor = Executors.newScheduledThreadPool(1);
-		// encryptionExecutor.scheduleWithFixedDelay(encryptionRunnable, 0,
-		// model.getCwTime() * 990, TimeUnit.MILLISECONDS);
+	}
+
+	public static void stopEncryption() {
+		// TODO
+		encryptionExecutor.shutdown();
+		thGenerateECM.stop();
+		FFmpegController.thFFmpeg.stop();
+		// Encryption.encryptionExecutor.shutdown();
+		// PlayerViewController.thInitPlayerOutput.stop();
+		// PlayerViewController.thInitPlayerOutput.stop();
 
 	}
 
@@ -88,112 +122,77 @@ public class Encryption {
 		Task<Void> taskGenerateECM = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
-
 				String rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
 				LocalDateTime dateTime;
 				// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
 
-				while (!isCancelled() && model.getEncryptionState()) {
+				// sperre die CW Time
+				view.getCwTimeTF().setDisable(true);
 
-					// sperre die CW Time
-					view.getCwTimeTF().setDisable(true);
+				// erzeuge ein cw
+				String cw = getRandomHex(16);
+				// setzte das CW im Input Player
+				model.setControlWordInput(cw);
 
-					// erzeuge ein cw
-					String cw = getRandomHex(16);
-					// setzte das CW im Input Player
-					model.setControlWordInput(cw);
+				// ECM Section Header
+				model.setEcmHeader("8200000000000000");
 
-					// ECM Section Header
-					model.setEcmHeader("8200000000000000");
+				// ECM Protocol number
+				model.setEcmProtocol("AA");
 
-					// ECM Protocol number
-					model.setEcmProtocol("AA");
+				// ECM Broadcast group id
+				model.setEcmBroadcastId("FF");
 
-					// ECM Broadcast group id
-					model.setEcmBroadcastId("FF");
+				// ECM AK id
+				if (rbStatus == "00") {
+					model.setEcmWorkKeyId("00");
+				} else {
+					model.setEcmWorkKeyId("01");
+				}
 
-					// ECM AK id
-					if (rbStatus == "00") {
-						model.setEcmWorkKeyId("00");
-					} else {
-						model.setEcmWorkKeyId("01");
+				// ECM Scrambling Control Pointer for CW odd
+				if (isStateECMType()) {
+					model.setEcmCwOdd(cw);
+				} else {
+					model.setEcmCwEven(cw);
+				}
+
+				// ECM Program type
+				model.setEcmProgramType("C8");
+
+				// ECM Date/Time setzen
+				dateTime = LocalDateTime.now();
+				model.setEcmDateTime(dateTime.format(formatter));
+
+				// Record control
+				model.setEcmRecordControl("D5");
+
+				// Variable part
+				model.setEcmVariablePart(Integer.toString(model.getCwTime()));
+
+				// setze ECM MAC
+				model.setEcmMac(getMAC());
+
+				// setze ECM CRC
+				model.setEcmCrc(getCRC());
+				
+				// GUI updaten
+				Platform.runLater(new Runnable() {
+					public void run() {
+						guiUpdate();
 					}
+				});
 
-					// ECM Scrambling Control Pointer for CW even
-					if (model.getScramblingControl() == "10") {
-						model.setEcmCwEven(cw);
-						// FFmpegController.generateEvenFile();
-
-					}
-					// Scrambling Control Pointer for CW odd
-					else {
-						model.setEcmCwOdd(cw);
-						// FFmpegController.generateOddFile();
-					}
-
-					// ECM Program type
-					model.setEcmProgramType("C8");
-
-					// ECM Date/Time setzen
-					dateTime = LocalDateTime.now();
-					model.setEcmDateTime(dateTime.format(formatter));
-
-					// Record control
-					model.setEcmRecordControl("D5");
-
-					// Variable part
-					model.setEcmVariablePart("00000000");
-
-					// setze ECM MAC
-					model.setEcmMac(getMAC());
-
-					// setze ECM CRC
-					model.setEcmCrc(getCRC());
-
-					// GUI updaten
-					Platform.runLater(new Runnable() {
-						public void run() {
-							// Input Player
-							view.getCwTF().setText(model.getControlWordInput());
-
-							// TS
-							view.getScramblingControlTF().setText(model.getScramblingControl());
-
-							// ECM ---------------------------------------
-							// ECM Section Header
-							// Protocol number
-							// Broadcast group id
-							view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
-							view.getEcmCwOddTF().setText(model.getEcmCwOdd());
-							view.getEcmCwEvenTF().setText(model.getEcmCwEven());
-							// Program type
-							view.getEcmDateTime().setText(model.getEcmDateTime());
-							// Record control
-							// Variable part
-							view.getEcmMacTF().setText(model.getEcmMac());
-							view.getEcmCrcTF().setText(model.getEcmCrc());
-							// -------------------------------------------
-
-						} // end run
-					});
-
-					// Thread wait
-					try {
-						// time in seconds
-						Thread.sleep(model.getCwTime() * 1000);
-
-						// Scrambling Control switch
-						if (model.getScramblingControl() == "10") {
-							model.setScramblingControl("11");
-						} else {
-							model.setScramblingControl("10");
-						}
-					} catch (InterruptedException interrupted) {
-						cancel();
-					}
-
-				} // end while
+				// switch odd/even Scrambling Control
+				if (isStateECMType()) {
+					model.setScramblingControl("11");
+					setStateECMType(false);
+				} else {
+					model.setScramblingControl("10");
+					setStateECMType(true);
+				}
+				
 				return null;
 			} // end call
 		};
@@ -253,7 +252,7 @@ public class Encryption {
 				model.setEcmRecordControl("D5");
 
 				// Variable part
-				model.setEcmVariablePart("00000000");
+				model.setEcmVariablePart(Integer.toString(model.getCwTime()));
 
 				// setze ECM MAC
 				model.setEcmMac(getMAC());
@@ -264,28 +263,8 @@ public class Encryption {
 				// GUI updaten
 				Platform.runLater(new Runnable() {
 					public void run() {
-						// Input Player
-						view.getCwTF().setText(model.getControlWordInput());
-
-						// TS
-						view.getScramblingControlTF().setText(model.getScramblingControl());
-
-						// ECM ---------------------------------------
-						// ECM Section Header
-						// Protocol number
-						// Broadcast group id
-						view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
-						view.getEcmCwOddTF().setText(model.getEcmCwOdd());
-						view.getEcmCwEvenTF().setText(model.getEcmCwEven());
-						// Program type
-						view.getEcmDateTime().setText(model.getEcmDateTime());
-						// Record control
-						// Variable part
-						view.getEcmMacTF().setText(model.getEcmMac());
-						view.getEcmCrcTF().setText(model.getEcmCrc());
-						// -------------------------------------------
-
-					} // end run
+						guiUpdate();
+					}
 				});
 
 				return null;
@@ -303,6 +282,30 @@ public class Encryption {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static void guiUpdate() {
+		// Input Player
+		view.getCwTF().setText(model.getControlWordInput());
+
+		// TS
+		view.getScramblingControlTF().setText(model.getScramblingControl());
+
+		// ECM ---------------------------------------
+		// ECM Section Header
+		view.getEcmProtocolTF().setText(model.getEcmProtocol());
+		// Broadcast group id
+		view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
+		view.getEcmCwOddTF().setText(model.getEcmCwOdd());
+		view.getEcmCwEvenTF().setText(model.getEcmCwEven());
+		// Program type
+		view.getEcmDateTime().setText(model.getEcmDateTime());
+		// Record control
+		view.getEcmVariablePartTF().setText(model.getEcmVariablePart());
+		view.getEcmMacTF().setText(model.getEcmMac());
+		view.getEcmCrcTF().setText(model.getEcmCrc());
+		// -------------------------------------------
+
 	}
 
 	/**
@@ -381,4 +384,14 @@ public class Encryption {
 		x.update(bytes);
 		return Long.toHexString(x.getValue()).toUpperCase();
 	}
+	
+
+	public static boolean isStateECMType() {
+		return stateECMType;
+	}
+
+	public static void setStateECMType(boolean s) {
+		stateECMType = s;
+	}
+	
 }

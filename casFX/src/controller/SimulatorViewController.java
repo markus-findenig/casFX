@@ -84,14 +84,14 @@ public class SimulatorViewController {
 		view.test().setOnAction(event -> {
 
 			// TODO
-			
-			
-			Runnable myRunnable = new Runnable(){
-			     public void run(){
-			    	 
-			    	 VlcServerController.streamVlcFile(model.getInputFile().toString());
-			     }
-			   };
+			VlcServerController.streamVlcFile(model.getInputFile().toString());
+//			
+//			Runnable myRunnable = new Runnable(){
+//			     public void run(){
+//			    	 
+//			    	 VlcServerController.streamVlcFile(model.getInputFile().toString());
+//			     }
+//			   };
 			   
 			//FFmpegController.runFFmpeg();
 			
@@ -99,7 +99,7 @@ public class SimulatorViewController {
 //			
 //			System.out.println("error" + configModel.getServer());
 //			
-			   myRunnable.run();
+//			   myRunnable.run();
 			
 
 		});
@@ -130,9 +130,9 @@ public class SimulatorViewController {
 				}
 
 //				String cw = Encryption.getRandomHex(16);
-//				// set ECM 64 bit Control Word
-//				model.setEcmCwOdd(cw);
-//				model.setEcmCwEven(cw);
+				// set ECM 64 bit Control Word
+				model.setEcmCwOdd(view.getEcmCwOddTF().getText());
+				model.setEcmCwEven(view.getEcmCwEvenTF().getText());
 
 				// set 128 bit Authorization Keys input and output
 				String key0 = Encryption.getRandomHex(32);
@@ -168,14 +168,11 @@ public class SimulatorViewController {
 					// run Encryption
 					// TODO 
 					Encryption.runEncryption();
-					// Initialisiere Input & Ouput Video Player
-					new PlayerViewController(model, configModel);
+					
 					
 				} else {
 					// stop Encryption Thread
-					//Encryption.encryptionExecutor.shutdown();
-					PlayerViewController.thInitPlayerOutput.stop();
-					PlayerViewController.thInitPlayerOutput.stop();
+					Encryption.stopEncryption();
 					view.getEncryption().setText("OFF");
 					model.setEncryptionState(false);
 					// no scrambling
@@ -188,12 +185,12 @@ public class SimulatorViewController {
 
 			// Input Player
 			if (event.getSource() == view.getVideoInputButton()) {
-				PlayerViewController.showInputPlayer();
+				PlayerViewController.runPlayerInput();
 			}
 
 			// Output Player
 			if (event.getSource() == view.getVideoOutputButton()) {
-				PlayerViewController.showOutputPlayer();
+				PlayerViewController.runPlayerOutput();
 			}
 			
 			// Config Popup

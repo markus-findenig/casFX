@@ -31,23 +31,26 @@ public class PlayerViewController {
 	public PlayerViewController(SimulatorModel sModel, ConfigModel cModel) {
 		model = sModel;
 		configModel = cModel;
-		initPlayerInput();
-		initPlayerOutput();
+		runPlayerInput();
+		runPlayerOutput();
 		// playerView = new PlayerView();
 
 	}
 
-	public static void showInputPlayer() {
-		inputPlayerView.showInputPlayer();
+//	public static void showInputPlayer() {
+//		inputPlayerView.showInputPlayer();
+//
+//	}
+//	
+//	public static void showOutputPlayer() {
+//		outputPlayerView.showOutputPlayer();
+//
+//	}
 
-	}
-	
-	public static void showOutputPlayer() {
-		outputPlayerView.showOutputPlayer();
-
-	}
-
-	public static void initPlayerInput() {
+	public static void runPlayerInput() {
+		
+		model = SimulatorViewController.getModel();
+		configModel = ConfigViewController.getConfigModel();
 
 		// Video Player Input Initialisieren
 		Task<Void> taskInitPlayerInput = new Task<Void>() {
@@ -90,8 +93,11 @@ public class PlayerViewController {
 
 	}
 
-	public static void initPlayerOutput() {
+	public static void runPlayerOutput() {
 
+		model = SimulatorViewController.getModel();
+		configModel = ConfigViewController.getConfigModel();
+		
 		// Video Player Output Initialisieren
 		Task<Void> taskInitPlayerOutput = new Task<Void>() {
 			@Override

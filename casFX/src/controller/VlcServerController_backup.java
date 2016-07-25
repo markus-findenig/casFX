@@ -10,14 +10,13 @@ import javax.media.bean.playerbean.MediaPlayer;
 
 import com.sun.jna.NativeLibrary;
 
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import model.ConfigModel;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 
-public class VlcServerController {
+public class VlcServerController_backup {
 
 	private static SimulatorModel model;
 
@@ -32,72 +31,85 @@ public class VlcServerController {
 	
 	static String file;
 	
-	public static void initVLC() {
-		model = SimulatorViewController.getModel();
-		configModel = ConfigViewController.getConfigModel();
-		// first init state true for odd
-		setState(true);
-	}
-	
 	public static void streamVLC() {
 		
+		model = SimulatorViewController.getModel();
+		configModel = ConfigViewController.getConfigModel();
 		
 		
-		
-//		Runnable myRunnable = new Runnable() {
-//			public void run() {
-//				if (isState()) {
-//					setFile(model.getInputFile().getParent() + "\\odd.mp4");
-//					setState(false);
-//				} else {
-//					setFile(model.getInputFile().getParent() + "\\even.mp4");
-//					setState(true);
-//				}
-//
-//				streamVlcFile(getFile());
-//			}
-//		};
-//		   
-//		   ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-//		   //executor.scheduleAtFixedRate(myRunnable, 0, 10, TimeUnit.SECONDS);
-//		   executor.scheduleWithFixedDelay(myRunnable, 0, model.getCwTime(), TimeUnit.SECONDS);
+		Runnable myRunnable = new Runnable() {
+			public void run() {
+				if (isState()) {
+					setFile(model.getInputFile().getParent() + "\\odd.mp4");
+					setState(false);
+				} else {
+					setFile(model.getInputFile().getParent() + "\\even.mp4");
+					setState(true);
+				}
+
+				streamVlcFile(getFile());
+			}
+		};
+		   
+		   ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+		   //executor.scheduleAtFixedRate(myRunnable, 0, 10, TimeUnit.SECONDS);
+		   executor.scheduleWithFixedDelay(myRunnable, 0, model.getCwTime(), TimeUnit.SECONDS);
 		   
 		
-		Task<Void> taskStreamVLC = new Task<Void>() {
-			@Override
-			protected Void call() throws Exception {
+//		Task<Void> taskStreamVLC = new Task<Void>() {
+//			@Override
+//			protected Void call() throws Exception {
+//				
+//				// first init state true for odd
+//				//setState(true);
+//				setState(true);;
+//				
+//
+//				while (!isCancelled() && model.getEncryptionState()) {
+//
+//					if (isState()) {
+//						setFile(model.getInputFile().getParent() + "\\odd.mp4");
+//					} else {
+//						setFile(model.getInputFile().getParent() + "\\even.mp4");
+//					}
+//					 
+//					streamVlcFile(getFile());
+//					
+//					// GUI updaten
+////					Platform.runLater(new Runnable() {
+////						public void run() {
+////								VlcServerController.streamVlcFile(getFile());
+////
+////						} // end run
+////					});
+//
+//					// Thread wait
+//					try {
+//						// time in seconds
+//						//Thread.currentThread().join();
+//						Thread.sleep(model.getCwTime() * 1000);
+//
+//						// switch odd/even
+//						if (isState()) {
+//							setState(false);
+//						} else {
+//							setState(true);
+//						}
+//					} catch (InterruptedException interrupted) {
+//						cancel();
+//					}
+//
+//				} // end while
+//				return null;
+//			} // end call
+//		};
+//
+//		// start the task
+//		thStreamVLC = new Thread(taskStreamVLC);
+//		thStreamVLC.setDaemon(true);
+//		thStreamVLC.start();
 
-				// GUI updaten
-				Platform.runLater(new Runnable() {
-					public void run() {
-
-						if (isState()) {
-							setFile(model.getInputFile().getParent() + "\\odd.mp4");
-						} else {
-							setFile(model.getInputFile().getParent() + "\\even.mp4");
-						}
-
-						streamVlcFile(getFile());
-
-						// switch odd/even
-						if (isState()) {
-							setState(false);
-						} else {
-							setState(true);
-						}
-
-					} // end run
-				});
-
-				return null;
-			} // end call
-		};
-
-		// start the task
-		thStreamVLC = new Thread(taskStreamVLC);
-		thStreamVLC.setDaemon(true);
-		thStreamVLC.start();
-
+		
 	}
 	
 
@@ -107,8 +119,8 @@ public class VlcServerController {
 	 */
 	public static void streamVlcFile(String outfile) {
 		
-//		model = SimulatorViewController.getModel();
-//		configModel = ConfigViewController.getConfigModel();
+		model = SimulatorViewController.getModel();
+		configModel = ConfigViewController.getConfigModel();
 		
 		
 //		if (mediaPlayer.isPlaying()) {

@@ -59,7 +59,7 @@ public class PlayerView {
 			videoOutputF.add(videoOutputP, BorderLayout.CENTER);
 			embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoOutputC));
 			// disable player view
-			videoOutputF.setVisible(false);
+			//videoOutputF.setVisible(false);
 
 		} else if (type == "Input") {
 			videoInputF = new JFrame("Video Input Player");
@@ -87,17 +87,17 @@ public class PlayerView {
 			videoInputF.add(videoInputP, BorderLayout.CENTER);
 			embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
 			// disable player view
-			videoInputF.setVisible(false);
+			//videoInputF.setVisible(false);
 		}
 
 	}
 
-	public void showOutputPlayer() {
-		videoOutputF.setVisible(true);
-	}
-
-	public void showInputPlayer() {
-		videoInputF.setVisible(true);
-	}
+//	public void showOutputPlayer() {
+//		videoOutputF.setVisible(true);
+//	}
+//
+//	public void showInputPlayer() {
+//		videoInputF.setVisible(true);
+//	}
 
 }

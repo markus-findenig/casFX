@@ -24,6 +24,8 @@ public class FFmpegController {
 	static String outFileOdd;
 	static String outFileEven;
 
+	static Thread thFFmpeg;
+
 	/**
 	 * @true Odd File
 	 * @false Even File
@@ -33,8 +35,7 @@ public class FFmpegController {
 	static double startTime;
 	static double stopTime;
 
-	public static void runFFmpeg() {
-
+	public static void initFFmpegController() {
 		configModel = ConfigViewController.getConfigModel();
 		model = SimulatorViewController.getModel();
 
@@ -48,6 +49,9 @@ public class FFmpegController {
 		setStartTime(0);
 		setStopTime(model.getCwTime());
 		setStateFileType(true);
+	}
+
+	public static void runFFmpeg() {
 
 		// TODO
 		// 1. init odd file
@@ -57,116 +61,142 @@ public class FFmpegController {
 		// 5. odd file
 		// 6. goto 2
 
-		Runnable ffmpegRunnable = new Runnable() {
+		Task<Void> taskFFmpeg = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
 
-			ProcessBuilder pb;
-			Process p = null;
+				// GUI updaten
+				Platform.runLater(new Runnable() {
+					public void run() {
 
-			File cutOddFile;
-			File cutEvenFile;
+						ProcessBuilder pb;
+						Process p = null;
 
-			public void run() {
+						File cutOddFile;
+						File cutEvenFile;
 
-				if (model.getEncryptionState()) {
+						if (model.getEncryptionState()) {
 
-					// --------------------------------------------------------
-					// File Odd
-					if (getStateFileType()) {
+							// --------------------------------------------------------
+							// File Odd
+							if (getStateFileType()) {
 
-						cutOddFile = new File(outFileOdd);
-						pb = new ProcessBuilder(ffmpegPath + "ffmpeg", "-i", infile, "-y", "-ss",
-								Double.toString(getStartTime()), "-to", Double.toString(getStopTime()), "-y", "-async",
-								"1", outFileOdd);
+								cutOddFile = new File(outFileOdd);
+								pb = new ProcessBuilder(ffmpegPath + "ffmpeg", "-i", infile, "-y", "-ss",
+										Double.toString(getStartTime()), "-to", Double.toString(getStopTime()), "-y",
+										"-async", "1", outFileOdd);
 
-						try {
-							cutOddFile.createNewFile();
-						} catch (IOException e) {
-							e.printStackTrace();
+								try {
+									cutOddFile.createNewFile();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								pb.redirectErrorStream(true);
+								pb.redirectInput(ProcessBuilder.Redirect.PIPE); // optional,
+								pb.redirectOutput(cutOddFile);
+								try {
+									p = pb.start();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								try {
+									p.waitFor();
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+
+								// switch file type
+								setStateFileType(false);
+
+								// --------------------------------------------------------
+								// File Even
+							} else {
+								cutEvenFile = new File(outFileEven);
+								pb = new ProcessBuilder(ffmpegPath + "ffmpeg", "-i", infile, "-y", "-ss",
+										Double.toString(getStartTime()), "-to", Double.toString(getStopTime()), "-y",
+										"-async", "1", outFileEven);
+
+								try {
+									cutEvenFile.createNewFile();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								pb.redirectErrorStream(true);
+								pb.redirectInput(ProcessBuilder.Redirect.PIPE); // optional,
+								pb.redirectOutput(cutEvenFile);
+								try {
+									p = pb.start();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								try {
+									p.waitFor();
+									// VlcServerController.streamVlcFile(outFileEven);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+
+								// switch file type
+								setStateFileType(true);
+
+							}
+
+							// Update Start/Stop
+							setStartTime(getStopTime() + 0.01);
+							setStopTime(getStopTime() + model.getCwTime());
+
+						} else {
+
+							// del cut files
+							// cutEvenFile.delete();
+							// cutOddFile.delete();
+							cancel();
+							// Thread.currentThread().stop();
 						}
-
-						pb.redirectErrorStream(true);
-						pb.redirectInput(ProcessBuilder.Redirect.PIPE); // optional,
-						pb.redirectOutput(cutOddFile);
-						try {
-							p = pb.start();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						try {
-							p.waitFor();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						
-						// stream Odd file
-						//VlcServerController.streamVlcFile(outFileOdd);
-
-						// switch file type
-						setStateFileType(false);
-
-						// --------------------------------------------------------
-						// File Even
-					} else {
-						cutEvenFile = new File(outFileEven);
-						// pb = new ProcessBuilder(ffmpegPath + "ffmpeg", "-i",
-						// infile, "-y", "-ss",
-						// Double.toString(getStartTime()), "-to",
-						// Double.toString(getStopTime()), "-y", "-acodec",
-						// "copy", "-vcodec", "copy", "-async",
-						// "1", outfileEven);
-						pb = new ProcessBuilder(ffmpegPath + "ffmpeg", "-i", infile, "-y", "-ss",
-								Double.toString(getStartTime()), "-to", Double.toString(getStopTime()), "-y", "-async",
-								"1", outFileEven);
-
-						try {
-							cutEvenFile.createNewFile();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						pb.redirectErrorStream(true);
-						pb.redirectInput(ProcessBuilder.Redirect.PIPE); // optional,
-						pb.redirectOutput(cutEvenFile);
-						try {
-							p = pb.start();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						try {
-							p.waitFor();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						
-						// stream Even file
-						//VlcServerController.streamVlcFile(outFileEven);
-
-						// switch file type
-						setStateFileType(true);
-
 					}
+				});
 
-					// Update Start/Stop
-					setStartTime(getStopTime() + 0.01);
-					setStopTime(getStopTime() + model.getCwTime());
-
+				// Scrambling Control switch
+				if (model.getScramblingControl() == "10") {
+					model.setScramblingControl("11");
 				} else {
-
-					// del cut files
-					// cutEvenFile.delete();
-					// cutOddFile.delete();
-
-					Thread.currentThread().stop();
+					model.setScramblingControl("10");
 				}
 
-			}
+				// } // end while
+				return null;
+			} // end call
 		};
 
+		// start the task
+		thFFmpeg = new Thread(taskFFmpeg);
+		thFFmpeg.setDaemon(true);
+		thFFmpeg.start();
+
+		// Runnable ffmpegRunnable = new Runnable() {
+		//
+		// ProcessBuilder pb;
+		// Process p = null;
+		//
+		// File cutOddFile;
+		// File cutEvenFile;
+		//
+		// public void run() {
+		//
+		//
+		//
+		// }
+		// };
+
 		// myRunnable.run();
-		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-		executor.scheduleWithFixedDelay(ffmpegRunnable, 0, model.getCwTime(), TimeUnit.SECONDS);
+		// ScheduledExecutorService executor =
+		// Executors.newScheduledThreadPool(1);
+		// executor.scheduleWithFixedDelay(ffmpegRunnable, 0, model.getCwTime(),
+		// TimeUnit.SECONDS);
 
 	}
 

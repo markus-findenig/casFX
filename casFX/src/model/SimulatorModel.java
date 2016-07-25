@@ -180,16 +180,16 @@ public class SimulatorModel {
 		return scramblingControl;
 	}
 
-	public void setScramblingControl(String scramblingControl) {
-		this.scramblingControl = scramblingControl;
+	public void setScramblingControl(String sControl) {
+		scramblingControl = sControl;
 	}
 
 	public String getEcmHeader() {
 		return ecmHeader;
 	}
 
-	public void setEcmHeader(String ecmHeader) {
-		this.ecmHeader = ecmHeader;
+	public void setEcmHeader(String eHeader) {
+		ecmHeader = eHeader;
 	}
 
 	public String getEcmProtocol() {

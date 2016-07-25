@@ -397,7 +397,7 @@ public class SimulatorView {
 		grid.add(ecmRecordControlTF, 9, 12);
 
 		ecmVariablePartL = new Label("Variable part:");
-		ecmVariablePartTF = new TextField("00000000");
+		ecmVariablePartTF = new TextField("00");
 		ecmVariablePartTF.setEditable(false);
 		ecmVariablePartTF.setStyle("-fx-background-color: transparent;");
 		ecmRecordControlTF.setTooltip(new Tooltip("Variable part \nCapable of accommodating various function information"));
@@ -561,6 +561,10 @@ public class SimulatorView {
 		return ecmWorkKeyIdTF;
 	}
 	
+	public TextField getEcmProtocolTF() {
+		return ecmProtocolTF;
+	}
+
 	public TextField getEcmCwOddTF() {
 		return ecmCwOddTF;
 	}
@@ -572,6 +576,10 @@ public class SimulatorView {
 
 	public TextField getEcmDateTime() {
 		return ecmDateTimeTF;
+	}
+	
+	public TextField getEcmVariablePartTF() {
+		return ecmVariablePartTF;
 	}
 	
 	public TextField getEcmMacTF() {
