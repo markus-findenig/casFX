@@ -45,7 +45,7 @@ import controller.PlayerViewController;
 /**
  * Input View
  */
-public class InputView {
+public class SimulatorView {
 
 	private Scene scene;
 	private GridPane grid;
@@ -63,7 +63,7 @@ public class InputView {
 	
 	private final MenuItem test = new MenuItem("Run Test Funktion");
 	
-	private final MenuItem config = new MenuItem("Player Config");
+	private final MenuItem config = new MenuItem("Simulator Config");
 	
 	
 
@@ -156,7 +156,7 @@ public class InputView {
 	 * @param model
 	 *            SimulatorModel
 	 */
-	public InputView() {
+	public SimulatorView() {
 		//model = sModel;
 
 		// Layout

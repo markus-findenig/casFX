@@ -8,22 +8,27 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.sun.jna.NativeLibrary;
+
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.scene.media.MediaPlayer.Status;
 import model.SimulatorModel;
-import view.InputView;
+import view.SimulatorView;
 
 public class Encryption {
-	
-	private static InputView view;
-	
+
+	private static SimulatorView view;
+
 	private static SimulatorModel model;
-	
+
+	public static ScheduledExecutorService encryptionExecutor;
 
 	// Encryption Thread
 	public static Thread thGenerateECM;
@@ -32,14 +37,16 @@ public class Encryption {
 	private static String payload;
 
 	public Encryption() {
-//		model = simulatorModel;
-//		view = inputView;
-//		activateEncryption();
+		// model = simulatorModel;
+		// view = inputView;
+		// activateEncryption();
 
 	}
 
 	public static void runEncryption() {
-		
+		model = SimulatorViewController.getModel();
+		view = SimulatorViewController.getView();
+
 		// TODO
 		// 1. generate ECM odd
 		// 2. cut file odd
@@ -48,20 +55,37 @@ public class Encryption {
 		// 5. cut file even
 		// 6. vlc stream odd
 		// 7. goto 1
-		
-		
-		
-	}
-	
-	
-	
-	public static void generateECM() {
-		
-		model = InputViewController.getModel();
-		view = InputViewController.getView();
-		
-		Task<Void> taskGenerateECM = new Task<Void>() {
 
+		// Time (sec), hole die Zeit vom Timer Eingabefeld
+		model.setCwTime(Integer.parseInt(view.getCwTimeTF().getText().toString()));
+
+		if (model.getCwTime() == 0) {
+			constantECM();
+
+			VlcServerController.streamVlcFile(model.getInputFile().toString());
+		} else {
+			generateECM();
+			FFmpegController.runFFmpeg();
+		}
+
+		// Runnable encryptionRunnable = new Runnable() {
+		// public void run() {
+		// System.out.println("Runnable running");
+		//
+		// generateECM();
+		//
+		//
+		// }
+		// };
+		//
+		// encryptionExecutor = Executors.newScheduledThreadPool(1);
+		// encryptionExecutor.scheduleWithFixedDelay(encryptionRunnable, 0,
+		// model.getCwTime() * 990, TimeUnit.MILLISECONDS);
+
+	}
+
+	public static void generateECM() {
+		Task<Void> taskGenerateECM = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
 
@@ -69,53 +93,55 @@ public class Encryption {
 				LocalDateTime dateTime;
 				// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
-				
+
 				while (!isCancelled() && model.getEncryptionState()) {
-				
-					// Time (sec), hole die Zeit vom Timer Eingabefeld
-					model.setCwTime(Integer.parseInt(view.getCwTimeTF().getText().toString()));
-					
+
+					// sperre die CW Time
+					view.getCwTimeTF().setDisable(true);
+
 					// erzeuge ein cw
 					String cw = getRandomHex(16);
 					// setzte das CW im Input Player
 					model.setControlWordInput(cw);
-					
+
 					// ECM Section Header
 					model.setEcmHeader("8200000000000000");
-					
+
 					// ECM Protocol number
 					model.setEcmProtocol("AA");
-					
+
 					// ECM Broadcast group id
 					model.setEcmBroadcastId("FF");
-					
+
 					// ECM AK id
 					if (rbStatus == "00") {
 						model.setEcmWorkKeyId("00");
 					} else {
 						model.setEcmWorkKeyId("01");
 					}
-					
+
 					// ECM Scrambling Control Pointer for CW even
 					if (model.getScramblingControl() == "10") {
 						model.setEcmCwEven(cw);
+						// FFmpegController.generateEvenFile();
+
 					}
 					// Scrambling Control Pointer for CW odd
 					else {
 						model.setEcmCwOdd(cw);
+						// FFmpegController.generateOddFile();
 					}
-					
+
 					// ECM Program type
 					model.setEcmProgramType("C8");
-					
 
 					// ECM Date/Time setzen
 					dateTime = LocalDateTime.now();
 					model.setEcmDateTime(dateTime.format(formatter));
-					
+
 					// Record control
 					model.setEcmRecordControl("D5");
-					
+
 					// Variable part
 					model.setEcmVariablePart("00000000");
 
@@ -124,16 +150,16 @@ public class Encryption {
 
 					// setze ECM CRC
 					model.setEcmCrc(getCRC());
-					
+
 					// GUI updaten
 					Platform.runLater(new Runnable() {
 						public void run() {
 							// Input Player
 							view.getCwTF().setText(model.getControlWordInput());
-							
+
 							// TS
 							view.getScramblingControlTF().setText(model.getScramblingControl());
-							
+
 							// ECM ---------------------------------------
 							// ECM Section Header
 							// Protocol number
@@ -148,11 +174,10 @@ public class Encryption {
 							view.getEcmMacTF().setText(model.getEcmMac());
 							view.getEcmCrcTF().setText(model.getEcmCrc());
 							// -------------------------------------------
-							
-						}
 
+						} // end run
 					});
-					
+
 					// Thread wait
 					try {
 						// time in seconds
@@ -165,15 +190,10 @@ public class Encryption {
 							model.setScramblingControl("10");
 						}
 					} catch (InterruptedException interrupted) {
-						break;
+						cancel();
 					}
-					
-					
-					
-					
-				} // end while
-				
 
+				} // end while
 				return null;
 			} // end call
 		};
@@ -182,9 +202,109 @@ public class Encryption {
 		thGenerateECM = new Thread(taskGenerateECM);
 		thGenerateECM.setDaemon(true);
 		thGenerateECM.start();
-		
+
 	}
-	
+
+	public static void constantECM() {
+		Task<Void> taskConstantECM = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				String rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
+				LocalDateTime dateTime;
+				// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
+
+				// sperre die CW Time
+				view.getCwTimeTF().setDisable(true);
+
+				// erzeuge ein cw
+				String cw = "0123456789ABCDEF";
+				// setzte das CW im Input Player
+				model.setControlWordInput(cw);
+
+				// ECM Section Header
+				model.setEcmHeader("8200000000000000");
+
+				// ECM Protocol number (BB for constantCW)
+				model.setEcmProtocol("BB");
+
+				// ECM Broadcast group id
+				model.setEcmBroadcastId("FF");
+
+				// ECM AK id
+				if (rbStatus == "00") {
+					model.setEcmWorkKeyId("00");
+				} else {
+					model.setEcmWorkKeyId("01");
+				}
+
+				// set cw for odd and even
+				model.setEcmCwOdd(cw);
+				model.setEcmCwEven(cw);
+
+				// ECM Program type
+				model.setEcmProgramType("C8");
+
+				// ECM Date/Time setzen
+				dateTime = LocalDateTime.now();
+				model.setEcmDateTime(dateTime.format(formatter));
+
+				// Record control
+				model.setEcmRecordControl("D5");
+
+				// Variable part
+				model.setEcmVariablePart("00000000");
+
+				// setze ECM MAC
+				model.setEcmMac(getMAC());
+
+				// setze ECM CRC
+				model.setEcmCrc(getCRC());
+
+				// GUI updaten
+				Platform.runLater(new Runnable() {
+					public void run() {
+						// Input Player
+						view.getCwTF().setText(model.getControlWordInput());
+
+						// TS
+						view.getScramblingControlTF().setText(model.getScramblingControl());
+
+						// ECM ---------------------------------------
+						// ECM Section Header
+						// Protocol number
+						// Broadcast group id
+						view.getEcmWorkKey().setText(model.getEcmWorkKeyId());
+						view.getEcmCwOddTF().setText(model.getEcmCwOdd());
+						view.getEcmCwEvenTF().setText(model.getEcmCwEven());
+						// Program type
+						view.getEcmDateTime().setText(model.getEcmDateTime());
+						// Record control
+						// Variable part
+						view.getEcmMacTF().setText(model.getEcmMac());
+						view.getEcmCrcTF().setText(model.getEcmCrc());
+						// -------------------------------------------
+
+					} // end run
+				});
+
+				return null;
+			} // end call
+		};
+
+		// start the task
+		thGenerateECM = new Thread(taskConstantECM);
+		thGenerateECM.setDaemon(true);
+		thGenerateECM.start();
+
+		try {
+			// wait for finish
+			thGenerateECM.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * Erzeugt eine Random Hex Nummer
 	 * 
@@ -201,7 +321,7 @@ public class Encryption {
 		sb.setLength(length);
 		return sb.toString().toUpperCase();
 	}
-	
+
 	/**
 	 * Erzeugt einen MAC (4 Bytes) von der ECM Payload.
 	 * 
@@ -209,17 +329,13 @@ public class Encryption {
 	 * @throws Exception
 	 */
 	private static String getMAC() {
-		
-		System.out.println("get MAC" + model.getEcmHeader());
-		
+		// get payload elements
 		payload = model.getEcmHeader() + model.getEcmProtocol() + model.getEcmBroadcastId() + model.getEcmWorkKeyId()
 				+ model.getEcmCwOdd() + model.getEcmCwEven() + model.getEcmProgramType() + model.getEcmDateTime()
 				+ model.getEcmRecordControl() + model.getEcmVariablePart();
 
 		String ecmWorkKey = null;
 		String macString = null;
-		
-		System.out.println("get payload: " + payload);
 
 		if (model.getEcmWorkKeyId() == "00") {
 			ecmWorkKey = model.getAuthorizationInputKey0();
@@ -244,16 +360,12 @@ public class Encryption {
 			macString = String.format("%02X ", new BigInteger(1, digest.toString().substring(4, 8).getBytes("UTF-8")));
 		} catch (NoSuchAlgorithmException e) {
 			System.out.println("No Such Algorithm:" + e.getMessage());
-
 		} catch (UnsupportedEncodingException e) {
 			System.out.println("Unsupported Encoding:" + e.getMessage());
-
 		} catch (InvalidKeyException e) {
 			System.out.println("Invalid Key:" + e.getMessage());
-
 		}
-		System.out.println("get MAC String" + macString);
-		
+
 		return macString;
 
 	}

@@ -5,7 +5,7 @@ import javafx.stage.Stage;
 import model.ConfigModel;
 import model.SimulatorModel;
 import controller.ConfigViewController;
-import controller.InputViewController;
+import controller.SimulatorViewController;
 import controller.PlayerViewController;
 
 public class Main extends Application {
@@ -33,7 +33,7 @@ public class Main extends Application {
 			//configVC.show();
 			
 			// Controller View aufrufen
-			InputViewController inputVC = new InputViewController(simulatorModel, configModel);
+			SimulatorViewController inputVC = new SimulatorViewController(simulatorModel, configModel);
 			inputVC.show();
 			
 			

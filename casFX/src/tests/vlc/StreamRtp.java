@@ -122,7 +122,7 @@ public class StreamRtp extends VlcjTest {
 		vlcArgs.add("--start-time=" + start);
 		vlcArgs.add("--stop-time=" + stop);
 
-		// 4000ms = 4sec
+		// 4000ms = 4secm
 		
 		
 //		vlcArgs.add("--sout-ts-dts-delay=300");

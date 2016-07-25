@@ -1,6 +1,9 @@
 package controller;
 
 import java.io.File;
+
+import com.sun.jna.NativeLibrary;
+
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,13 +18,13 @@ import javafx.scene.media.Media;
 import javafx.stage.FileChooser;
 import model.ConfigModel;
 import model.SimulatorModel;
-import view.InputView;
-import controller.FfmpegController;
+import view.SimulatorView;
+import controller.FFmpegController;
 
 /**
  * Input View Controller
  */
-public class InputViewController {
+public class SimulatorViewController {
 	
 	// Model
 	private static SimulatorModel model;
@@ -30,7 +33,7 @@ public class InputViewController {
 	private static ConfigModel configModel;
 
 	// View
-	private static InputView view;
+	private static SimulatorView view;
 	
 	
 	/**
@@ -41,7 +44,7 @@ public class InputViewController {
 	 * @param cModel
 	 *            - Config Model
 	 */
-	public InputViewController(SimulatorModel sModel, ConfigModel cModel) {
+	public SimulatorViewController(SimulatorModel sModel, ConfigModel cModel) {
 		model = sModel;
 		configModel = cModel;
 		
@@ -52,7 +55,7 @@ public class InputViewController {
 		// TODO dummy Data for BarChart
 		//SimulatorModel.observableArrayList = getChartData();
 
-		view = new InputView();
+		view = new SimulatorView();
 
 		CasEventHandler casEventHandler = new CasEventHandler();
 
@@ -80,8 +83,23 @@ public class InputViewController {
 		// Test Function
 		view.test().setOnAction(event -> {
 
-
-			FfmpegController.runFfmpeg();
+			// TODO
+			
+			
+			Runnable myRunnable = new Runnable(){
+			     public void run(){
+			    	 
+			    	 VlcServerController.streamVlcFile(model.getInputFile().toString());
+			     }
+			   };
+			   
+			//FFmpegController.runFFmpeg();
+			
+//			System.out.println(model.getInputFile().toString());
+//			
+//			System.out.println("error" + configModel.getServer());
+//			
+			   myRunnable.run();
 			
 
 		});
@@ -111,10 +129,10 @@ public class InputViewController {
 					view.getVideoOutputButton().setDisable(false);
 				}
 
-				String cw = Encryption.getRandomHex(16);
-				// set ECM 64 bit Control Word
-				model.setEcmCwOdd(cw);
-				model.setEcmCwEven(cw);
+//				String cw = Encryption.getRandomHex(16);
+//				// set ECM 64 bit Control Word
+//				model.setEcmCwOdd(cw);
+//				model.setEcmCwEven(cw);
 
 				// set 128 bit Authorization Keys input and output
 				String key0 = Encryption.getRandomHex(32);
@@ -126,14 +144,14 @@ public class InputViewController {
 				model.setAuthorizationInputKey1(key1);
 				model.setAuthorizationOutputKey1(key1);
 
-				// Update GUI
+				// GUI Update Autorisation Keys
 				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
 				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
 				view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
 				view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
 				
 				// Initialisiere Input & Ouput Video Player
-				new PlayerViewController(model, configModel);
+				//new PlayerViewController(model, configModel);
 
 			}
 			
@@ -148,25 +166,23 @@ public class InputViewController {
 					model.setScramblingControl("11");
 					
 					// run Encryption
-					System.out.println("INFO 2: ");
-					
 					// TODO 
-					// Encryption.runEncryption();
-					// get video segments
-					//FfmpegController.runFfmpeg();
-					//activateEncryption();
-					//Encryption.generateECM();
+					Encryption.runEncryption();
+					// Initialisiere Input & Ouput Video Player
+					new PlayerViewController(model, configModel);
 					
 				} else {
 					// stop Encryption Thread
-					//thActivateEncryption.stop();
-					//Encryption.thGenerateECM.stop();
+					//Encryption.encryptionExecutor.shutdown();
+					PlayerViewController.thInitPlayerOutput.stop();
+					PlayerViewController.thInitPlayerOutput.stop();
 					view.getEncryption().setText("OFF");
 					model.setEncryptionState(false);
 					// no scrambling
 					model.setScramblingControl("00");
 					view.getScramblingControlTF().setText("00");
-
+					// Entsperre die CW Time
+					view.getCwTimeTF().setDisable(false);
 				}
 			}
 
@@ -251,7 +267,7 @@ public class InputViewController {
 
 
 
-	public static InputView getView() {
+	public static SimulatorView getView() {
 		return view;
 	}
 
