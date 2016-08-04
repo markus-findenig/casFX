@@ -39,7 +39,8 @@ public class Server {
         http.registerRoom();
 
         Thread thread = new Thread(){
-            public void run() {
+            @Override
+			public void run() {
                 JFXPanel fxPanel = new JFXPanel();
                 System.out.println("Thread Running");
                 //Media hit = new Media(Paths.get("resorces/dummy.mp4").toUri().toString());

@@ -1,6 +1,5 @@
 package controller;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import com.sun.jna.NativeLibrary;
@@ -31,12 +30,14 @@ public class ConfigViewController {
 		configView = new ConfigView();
 		
 		// set default Config parameter
-		configModel.setFfmpegPath("D:\\Securety\\Programms\\ffmpeg\\bin\\");
+		configModel.setFFmpegPath("D:\\Securety\\Programms\\ffmpeg\\bin");
 		configModel.setVlcPath("C:\\ProgLoc\\VideoLAN\\VLC");
 		// TODO default
 		//configModel.setVlcPath("C:\\Program Files\\VideoLAN\\VLC");
 		configModel.setServer("rtp://239.0.0.1:5004");
 		configModel.setClient("rtp://239.0.0.1:5004");
+		
+		configModel.setConstantCw("0123456789ABCDEF");
 		
 		// set VLC Native Library
 		NativeLibrary.addSearchPath("libvlc", configModel.getVlcPath());
@@ -58,6 +59,7 @@ public class ConfigViewController {
 		configView.getVlcPathTF().setText(configModel.getVlcPath());
 		configView.getServer().setText(configModel.getServer());
 		configView.getClient().setText(configModel.getClient());
+		configView.getConstantCwTF().setText(ConfigModel.getConstantCw());
 		// zeige den Config Dialog an
 		configView.show(configModel.getDialogStage());
 	}
@@ -71,10 +73,11 @@ public class ConfigViewController {
 			if (event.getSource() == configView.getOk()) {
 				if (isInputValid()) {
 					// speichert die view daten ins model
-					configModel.setFfmpegPath(configView.getFfmpegPathTF().getText());
+					configModel.setFFmpegPath(configView.getFfmpegPathTF().getText());
 					configModel.setVlcPath(configView.getVlcPathTF().getText());
 					configModel.setServer(configView.getServer().getText());
 					configModel.setClient(configView.getClient().getText());
+					configModel.setConstantCw(configView.getConstantCwTF().getText());
 					configModel.getDialogStage().close();
 				}
 			}

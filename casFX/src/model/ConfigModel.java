@@ -18,6 +18,8 @@ public class ConfigModel {
 	private String server;
 	private String client;
 	
+	private static String constantCw;
+	
 	
 	public ConfigModel(Stage dStage) {
 		dialogStage  = dStage;
@@ -52,8 +54,16 @@ public class ConfigModel {
 		return ffmpegPath;
 	}
 
-	public void setFfmpegPath(String ffmpegPath) {
+	public void setFFmpegPath(String ffmpegPath) {
 		this.ffmpegPath = ffmpegPath;
+	}
+
+	public static String getConstantCw() {
+		return constantCw;
+	}
+
+	public void setConstantCw(String constantCw) {
+		ConfigModel.constantCw = constantCw;
 	}
 	
 	

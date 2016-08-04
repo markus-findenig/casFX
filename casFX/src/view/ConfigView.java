@@ -29,6 +29,9 @@ public class ConfigView {
 
 	private static Label clientL;
 	private static TextField clientTF;
+	
+	private static Label constantCwL;
+	private static TextField constantCwTF;
 
 	private static Button okB;
 	private static Button cancelB;
@@ -50,7 +53,7 @@ public class ConfigView {
 		// Initialisiere Config Parameter
 		initConfig();
 
-		sceneConfig = new Scene(grid, 500, 200);
+		sceneConfig = new Scene(grid, 500, 220);
 	}
 
 	public void show(Stage dialogStage) {
@@ -90,6 +93,13 @@ public class ConfigView {
 		clientTF = new TextField();
 		clientTF.setTooltip(new Tooltip("Client IP and Port, Default http://127.0.0.1:7777"));
 		grid.add(clientTF, 2, 4);
+		
+		
+		constantCwL = new Label("Constant CW:");
+		grid.add(constantCwL, 1, 5);
+		constantCwTF = new TextField();
+		constantCwTF.setTooltip(new Tooltip("If Timer 0, Constant CW in hex with 16 char."));
+		grid.add(constantCwTF, 2, 5);
 
 		okB = new Button("OK");
 		okB.setPrefWidth(80);
@@ -115,6 +125,10 @@ public class ConfigView {
 
 	public TextField getClient() {
 		return clientTF;
+	}
+	
+	public TextField getConstantCwTF() {
+		return constantCwTF;
 	}
 
 	public Button getOk() {

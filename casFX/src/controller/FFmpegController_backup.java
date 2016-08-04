@@ -2,14 +2,6 @@ package controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import model.ConfigModel;
 import model.SimulatorModel;
 
@@ -65,6 +57,7 @@ public class FFmpegController_backup {
 			File cutOddFile;
 			File cutEvenFile;
 
+			@Override
 			public void run() {
 
 				if (model.getEncryptionState()) {

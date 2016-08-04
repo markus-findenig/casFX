@@ -1,12 +1,6 @@
 package tests.rtp2;
 
-import java.io.*;
-import java.util.Vector;
-import java.net.InetAddress;
-import javax.media.rtp.*;
-import javax.media.rtp.rtcp.*;
 import javax.media.*;
-import javax.media.format.*;
 import javax.media.protocol.*;
 import javax.media.control.*;
 
@@ -39,7 +33,8 @@ public class RTPServer implements ControllerListener {
 	    p.configure();
 	    while (! configured) {
 		try {
-		    Thread.currentThread().sleep(100L);;
+		    Thread.currentThread();
+			Thread.sleep(100L);;
 		} catch (InterruptedException e) {
 		    // ignore
 		}
@@ -51,7 +46,8 @@ public class RTPServer implements ControllerListener {
 	    p.realize();
 	    while (! realized) {
 		try {
-		    Thread.currentThread().sleep(100L);;
+		    Thread.currentThread();
+			Thread.sleep(100L);;
 		} catch (InterruptedException e) {
 		    // ignore
 		}
@@ -173,7 +169,8 @@ public class RTPServer implements ControllerListener {
 	}
     }
 
-    public synchronized void controllerUpdate(ControllerEvent evt) {
+    @Override
+	public synchronized void controllerUpdate(ControllerEvent evt) {
 	if (evt instanceof RealizeCompleteEvent) {
 	    realized = true;
 	} else 	if (evt instanceof ConfigureCompleteEvent) {

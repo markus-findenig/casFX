@@ -1,7 +1,5 @@
 package tests;
 
-import java.security.Security;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 

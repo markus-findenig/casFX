@@ -10,7 +10,6 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -25,22 +24,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import model.SimulatorModel;
-import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
-import uk.co.caprica.vlcj.player.MediaPlayerFactory;
-import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
-
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import app.MediaControl;
-import controller.PlayerControlsPanel;
-import controller.PlayerViewController;
 
 /**
  * Input View
@@ -49,8 +32,8 @@ public class SimulatorView {
 
 	private Scene scene;
 	private GridPane grid;
-	
-	//private SimulatorModel model;
+
+	// private SimulatorModel model;
 
 	// Menu
 	private final Menu menu1 = new Menu("File");
@@ -60,17 +43,15 @@ public class SimulatorView {
 	private final MenuItem open = new MenuItem("Open");
 
 	private final MenuItem exit = new MenuItem("Exit");
-	
+
 	private final MenuItem test = new MenuItem("Run Test Funktion");
-	
+
 	private final MenuItem config = new MenuItem("Simulator Config");
-	
-	
 
 	// Encryption Text Field and Toggle Button
 	private static Label encryptionL;
 	private static ToggleButton encryptionTB;
-	
+
 	// Time interval for ControlWord (CW)
 	private static Label cwTimeL;
 	private static TextField cwTimeTF;
@@ -121,19 +102,26 @@ public class SimulatorView {
 	// ECM Outpt Keys
 	private static Label cwOutL;
 	private static TextField cwOutTF;
+
+
 	private static Label ak0OutL;
 	private static TextField ak0OutTF;
 	private static Label ak1OutL;
 	private static TextField ak1OutTF;
 	private static Label mpkOutL;
 	private static TextArea mpkOutTA;
-	
+
+	// ECM's
+	private static Label ecmL;
+	private static TextArea ecmTA;
+	private static Label ecmEncryptedL;
+	private static TextArea ecmEncryptedTA;
+	private static Label ecmDecryptedL;
+	private static TextArea ecmDecryptedTA;
+
 	// Media Player
 	private MediaPlayer mediaPlayerInput;
-	private MediaControl mediaControlInput;
 	private MediaPlayer mediaPlayerOutput;
-	private MediaControl mediaControlOutput;
-	
 	// Video Input Player
 	private static Label videoInputL;
 	private static Button videoInputB;
@@ -142,14 +130,12 @@ public class SimulatorView {
 	private static Label videoOutputL;
 	private static Button videoOutputB;
 
-    
 	// BarCharts
 	CategoryAxis xAxis;
 	NumberAxis yAxis;
 	BarChart<String, Number> bc1;
 	static String barChartInput = "barChartInput";
 
-	
 	/**
 	 * Input View
 	 * 
@@ -157,7 +143,7 @@ public class SimulatorView {
 	 *            SimulatorModel
 	 */
 	public SimulatorView() {
-		//model = sModel;
+		// model = sModel;
 
 		// Layout
 		grid = new GridPane();
@@ -170,24 +156,24 @@ public class SimulatorView {
 		MenuBar menuBar = new MenuBar();
 		menuBar.getMenus().addAll(menu1, menu2, menu3);
 		GridPane.setColumnSpan(menuBar, 20);
-		//menuBar.prefWidthProperty().bind(SimulatorModel.getPrimaryStage().widthProperty());
+		// menuBar.prefWidthProperty().bind(SimulatorModel.getPrimaryStage().widthProperty());
 		grid.add(menuBar, 0, 0);
 
 		menu1.getItems().add(open);
 		menu1.getItems().add(exit);
-		
+
 		menu2.getItems().add(config);
-		
+
 		menu3.getItems().add(test);
 
 		initGUI();
-		//initPlayerInput();
-		//initPlayerOutput();
-		//initBarChartInput();
+		// initPlayerInput();
+		// initPlayerOutput();
+		// initBarChartInput();
 
 		scene = new Scene(grid, 1024, 650);
 		scene.setRoot(grid);
-		//show(model.getPrimaryStage());
+		// show(model.getPrimaryStage());
 
 	}
 
@@ -196,6 +182,7 @@ public class SimulatorView {
 		stage.setScene(scene);
 		// overwrite Exit event
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
 			public void handle(WindowEvent we) {
 				System.out.println("Stage is closing");
 				Platform.exit();
@@ -208,30 +195,27 @@ public class SimulatorView {
 	public MenuItem getOpen() {
 		return open;
 	}
-	
+
 	public MenuItem getExit() {
 		return exit;
 	}
-	
+
 	public MenuItem getConfig() {
 		return config;
 	}
-	
-	
+
 	public MenuItem test() {
 		return test;
 	}
 
-	public ToggleButton getEncryption(){
+	public ToggleButton getEncryption() {
 		return encryptionTB;
 	}
-	
-
 
 	public void initGUI() {
 
 		// TODO Debug
-		// grid.setGridLinesVisible(true);
+		//grid.setGridLinesVisible(true);
 
 		// --------------------------------------------------------------------
 		// Encryption Toggle Button
@@ -241,10 +225,10 @@ public class SimulatorView {
 		encryptionTB.setDisable(true);
 		encryptionTB.setPrefWidth(80);
 		grid.add(encryptionTB, 2, 2);
-		
+
 		// --------------------------------------------------------------------
 		// Video Player Input
-		videoInputL = new Label("Input Player:");
+		videoInputL = new Label("Input\nPlayer:");
 		videoInputL.setPrefWidth(80);
 		videoInputB = new Button("View");
 		videoInputB.setDisable(true);
@@ -255,11 +239,11 @@ public class SimulatorView {
 		// --------------------------------------------------------------------
 		// Time interval for ControlWord (CW)
 		cwTimeL = new Label("Time (sec):");
-		cwTimeTF = new TextField("10");
+		cwTimeTF = new TextField("0");
 		cwTimeTF.setMaxWidth(120);
 		cwTimeTF.setTooltip(new Tooltip("Time in seconds"));
-		grid.add(cwTimeL, 1, 12);
-		grid.add(cwTimeTF, 2, 12);
+		grid.add(cwTimeL, 1, 8);
+		grid.add(cwTimeTF, 2, 8);
 
 		// --------------------------------------------------------------------
 		// ECM Input Keys
@@ -268,8 +252,8 @@ public class SimulatorView {
 		cwInTF.setStyle("-fx-background-color: transparent;");
 		cwInTF.setEditable(false);
 		cwInTF.setTooltip(new Tooltip("Control Word (64 bit)"));
-		grid.add(cwInL, 1, 13);
-		grid.add(cwInTF, 2, 13);
+		grid.add(cwInL, 1, 10);
+		grid.add(cwInTF, 2, 10);
 
 		groupRB = new ToggleGroup();
 		ak0InRB = new RadioButton();
@@ -279,41 +263,50 @@ public class SimulatorView {
 		ak0InRB.setUserData("00");
 		ak1InRB.setUserData("01");
 		ak0InRB.setSelected(true);
-		grid.add(ak0InRB, 0, 14);
-		grid.add(ak1InRB, 0, 15);
+		grid.add(ak0InRB, 0, 12);
+		grid.add(ak1InRB, 0, 13);
 
 		ak0InL = new Label("AK 00:");
 		ak0InTF = new TextField("00112233445566778899AABBCCDDEEFF");
 		ak0InTF.setEditable(true);
 		ak0InTF.setTooltip(new Tooltip("Authorization Key 0 (128 bit)"));
 		ak0InTF.setMinWidth(230);
-		grid.add(ak0InL, 1, 14);
-		grid.add(ak0InTF, 2, 14);
+		grid.add(ak0InL, 1, 12);
+		grid.add(ak0InTF, 2, 12);
 
 		ak1InL = new Label("AK 01:");
 		ak1InTF = new TextField("FFEEDDCCBBAA99887766554433221100");
 		ak1InTF.setEditable(true);
 		ak1InTF.setTooltip(new Tooltip("Authorization Key 1 (128 bit)"));
 		ak1InTF.setMinWidth(230);
-		grid.add(ak1InL, 1, 15);
-		grid.add(ak1InTF, 2, 15);
+		grid.add(ak1InL, 1, 13);
+		grid.add(ak1InTF, 2, 13);
 
 		mpkInL = new Label("MPK:");
-		mpkInTA = new TextArea("00112233445566778899AABBCCDDEEFF\nFFEEDDCCBBAA99887766554433221100");
+		mpkInTA = new TextArea("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
+		mpkInTA.setWrapText(true);
 		mpkInTA.setEditable(false);
 		mpkInTA.setTooltip(new Tooltip("Master Private Key (256 bit) \nMPK is not currently in use."));
-		mpkInTA.setMaxSize(240, 45);
-		grid.add(mpkInL, 1, 16);
-		grid.add(mpkInTA, 2, 16);
-		
-		
+		mpkInTA.setMaxSize(250, 45);
+		grid.add(mpkInL, 1, 14);
+		grid.add(mpkInTA, 2, 14);
+
 		// --------------------------------------------------------------------
-		// BarChar Input Stream
-				     
+		// Current ECM
+
+		ecmL = new Label("Current\nECM:");
+		ecmTA = new TextArea("");
+		ecmTA.setWrapText(true);
+		ecmTA.setEditable(false);
+		ecmTA.setTooltip(new Tooltip("Current ECM."));
+		ecmTA.setMaxSize(240, 60);
+		grid.add(ecmL, 1, 17);
+		grid.add(ecmTA, 2, 17);
 
 		// --------------------------------------------------------------------
 		// Transport Stream Header
-		scramblingControlL = new Label("Scrambling Control (2 bits):");
+		scramblingControlL = new Label("Scrambling\nControl (2 bits):");
+		scramblingControlL.setPrefWidth(100);
 		scramblingControlTF = new TextField("00");
 		scramblingControlTF.setStyle("-fx-background-color: transparent;");
 		scramblingControlTF.setEditable(false);
@@ -324,15 +317,15 @@ public class SimulatorView {
 
 		// --------------------------------------------------------------------
 		// ECM
-		ecmHeaderL = new Label("ECM Section Header:");
-		ecmHeaderTF = new TextField("8200000000000000");
+		ecmHeaderL = new Label("ECM Section\nHeader:");
+		ecmHeaderTF = new TextField("8000000000000000");
 		ecmHeaderTF.setEditable(false);
 		ecmHeaderTF.setStyle("-fx-background-color: transparent;");
 		ecmHeaderTF.setTooltip(new Tooltip("ECM Section Header (64 bit)"));
 		grid.add(ecmHeaderL, 8, 4);
 		grid.add(ecmHeaderTF, 9, 4);
 
-		ecmProtocolL = new Label("Protocol number:");
+		ecmProtocolL = new Label("Protocol Nr.:");
 		ecmProtocolTF = new TextField("AA");
 		ecmProtocolTF.setEditable(false);
 		ecmProtocolTF.setStyle("-fx-background-color: transparent;");
@@ -340,7 +333,7 @@ public class SimulatorView {
 		grid.add(ecmProtocolL, 8, 5);
 		grid.add(ecmProtocolTF, 9, 5);
 
-		ecmBroadcastIdL = new Label("Broadcast group id:");
+		ecmBroadcastIdL = new Label("Broadcast ID:");
 		ecmBroadcastIdTF = new TextField("FF");
 		ecmBroadcastIdTF.setEditable(false);
 		ecmBroadcastIdTF.setStyle("-fx-background-color: transparent;");
@@ -372,11 +365,11 @@ public class SimulatorView {
 		grid.add(ecmCwEvenL, 8, 9);
 		grid.add(ecmCwEvenTF, 9, 9);
 
-		ecmProgramTypeL = new Label("Program type:");
+		ecmProgramTypeL = new Label("Program:");
 		ecmProgramTypeTF = new TextField("C8");
 		ecmProgramTypeTF.setEditable(false);
 		ecmProgramTypeTF.setStyle("-fx-background-color: transparent;");
-		ecmCwEvenTF.setTooltip(new Tooltip("Program type (8 bit)"));
+		ecmProgramTypeTF.setTooltip(new Tooltip("Program type (8 bit)"));
 		grid.add(ecmProgramTypeL, 8, 10);
 		grid.add(ecmProgramTypeTF, 9, 10);
 
@@ -388,7 +381,7 @@ public class SimulatorView {
 		grid.add(ecmDateTimeL, 8, 11);
 		grid.add(ecmDateTimeTF, 9, 11);
 
-		ecmRecordControlL = new Label("Recording control:");
+		ecmRecordControlL = new Label("Recording:");
 		ecmRecordControlTF = new TextField("D5");
 		ecmRecordControlTF.setEditable(false);
 		ecmRecordControlTF.setStyle("-fx-background-color: transparent;");
@@ -397,10 +390,11 @@ public class SimulatorView {
 		grid.add(ecmRecordControlTF, 9, 12);
 
 		ecmVariablePartL = new Label("Variable part:");
-		ecmVariablePartTF = new TextField("00");
+		ecmVariablePartTF = new TextField("00000000");
 		ecmVariablePartTF.setEditable(false);
 		ecmVariablePartTF.setStyle("-fx-background-color: transparent;");
-		ecmRecordControlTF.setTooltip(new Tooltip("Variable part \nCapable of accommodating various function information"));
+		ecmRecordControlTF
+				.setTooltip(new Tooltip("Variable part \nCapable of accommodating various function information"));
 		grid.add(ecmVariablePartL, 8, 13);
 		grid.add(ecmVariablePartTF, 9, 13);
 
@@ -421,26 +415,38 @@ public class SimulatorView {
 		grid.add(ecmCrcTF, 9, 15);
 
 		// --------------------------------------------------------------------
+		// Encrypted ECM
+
+		ecmEncryptedL = new Label("Encrypted\nECM:");
+		ecmEncryptedTA = new TextArea("");
+		ecmEncryptedTA.setWrapText(true);
+		ecmEncryptedTA.setEditable(false);
+		ecmEncryptedTA.setTooltip(new Tooltip("Encrypted ECM."));
+		ecmEncryptedTA.setMaxSize(240, 60);
+		grid.add(ecmEncryptedL, 8, 17);
+		grid.add(ecmEncryptedTA, 9, 17);
+
+		// --------------------------------------------------------------------
 		// Video Output
-		videoOutputL = new Label("Output Player:");
+		videoOutputL = new Label("Output\nPlayer:");
 		videoOutputL.setPrefWidth(80);
 		videoOutputB = new Button("View");
-		videoOutputB.setDisable(true);
+		//videoOutputB.setDisable(true);
 		videoOutputB.setPrefWidth(80);
 		grid.add(videoOutputL, 16, 4);
 		grid.add(videoOutputB, 17, 4);
-		
+
 		// --------------------------------------------------------------------
 		// Media Player Output
 
 		// Internal or External Key Reader
-		Label readerL = new Label("Reader:");
-		ComboBox<String> readerCB = new ComboBox<String>();
-		readerCB.getItems().addAll("Internal", "External");
-		readerCB.setValue("Internal");
-
-		grid.add(readerL, 16, 12);
-		grid.add(readerCB, 17, 12);
+		// Label readerL = new Label("Reader:");
+		// ComboBox<String> readerCB = new ComboBox<String>();
+		// readerCB.getItems().addAll("Internal", "External");
+		// readerCB.setValue("Internal");
+		//
+		// grid.add(readerL, 16, 12);
+		// grid.add(readerCB, 17, 12);
 
 		// --------------------------------------------------------------------
 		// ECM Output Keys
@@ -449,82 +455,94 @@ public class SimulatorView {
 		cwOutTF.setStyle("-fx-background-color: transparent;");
 		cwOutTF.setEditable(false);
 		cwOutTF.setTooltip(new Tooltip("Control Word (64 bit)"));
-		grid.add(cwOutL, 16, 13);
-		grid.add(cwOutTF, 17, 13);
+		grid.add(cwOutL, 16, 10);
+		grid.add(cwOutTF, 17, 10);
 
 		ak0OutL = new Label("AK 00:");
 		ak0OutTF = new TextField("00112233445566778899AABBCCDDEEFF");
 		ak0OutTF.setEditable(true);
 		ak0OutTF.setTooltip(new Tooltip("Authorization Key 0 (128 bit)"));
 		ak0OutTF.setMinWidth(230);
-		grid.add(ak0OutL, 16, 14);
-		grid.add(ak0OutTF, 17, 14);
+		grid.add(ak0OutL, 16, 12);
+		grid.add(ak0OutTF, 17, 12);
 
 		ak1OutL = new Label("AK 01:");
 		ak1OutTF = new TextField("FFEEDDCCBBAA99887766554433221100");
 		ak1OutTF.setEditable(true);
 		ak1OutTF.setTooltip(new Tooltip("Authorization Key 1 (128 bit)"));
 		ak1OutTF.setMinWidth(230);
-		grid.add(ak1OutL, 16, 15);
-		grid.add(ak1OutTF, 17, 15);
+		grid.add(ak1OutL, 16, 13);
+		grid.add(ak1OutTF, 17, 13);
 
 		mpkOutL = new Label("MPK:");
-		mpkOutTA = new TextArea("00112233445566778899AABBCCDDEEFF\nFFEEDDCCBBAA99887766554433221100");
+		mpkOutTA = new TextArea("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
+		mpkOutTA.setWrapText(true);
 		mpkOutTA.setEditable(false);
 		mpkOutTA.setTooltip(new Tooltip("Master Private Key (256 bit) \nMPK is not currently in use."));
-		mpkOutTA.setMaxSize(240, 45);
-		grid.add(mpkOutL, 16, 16);
-		grid.add(mpkOutTA, 17, 16);
+		mpkOutTA.setMaxSize(250, 45);
+		grid.add(mpkOutL, 16, 14);
+		grid.add(mpkOutTA, 17, 14);
+
+		// --------------------------------------------------------------------
+		// Decrypted ECM
+
+		ecmDecryptedL = new Label("Decrypted\nECM:");
+		ecmDecryptedTA = new TextArea("");
+		ecmDecryptedTA.setWrapText(true);
+		ecmDecryptedTA.setEditable(false);
+		ecmDecryptedTA.setTooltip(new Tooltip("Decrypted ECM."));
+		ecmDecryptedTA.setMaxSize(240, 60);
+		grid.add(ecmDecryptedL, 16, 17);
+		grid.add(ecmDecryptedTA, 17, 17);
 
 	}
 
-
-
+	// /**
+	// * Video Player Input
+	// */
+	// public void initPlayerInput() {
+	// // create media player 1 fx
+	// setMediaPlayerInput(new MediaPlayer(SimulatorModel.getMediaInput()));
+	// mediaControlInput = new MediaControl(getMediaPlayerInput());
+	// GridPane.setColumnSpan(mediaControlInput, 3);
+	// GridPane.setRowSpan(mediaControlInput, 8);
+	// mediaControlInput.setMinSize(300, 225);
+	// mediaControlInput.setPrefSize(300, 225);
+	// mediaControlInput.setMaxSize(300, 225);
+	// grid.add(mediaControlInput, 1, 4);
+	//
+	// }
 
 //	/**
-//	 * Video Player Input
+//	 * BarChar Input Stream
 //	 */
-//	public void initPlayerInput() {
-//		// create media player 1 fx
-//		setMediaPlayerInput(new MediaPlayer(SimulatorModel.getMediaInput()));
-//		mediaControlInput = new MediaControl(getMediaPlayerInput());
-//		GridPane.setColumnSpan(mediaControlInput, 3);
-//		GridPane.setRowSpan(mediaControlInput, 8);
-//		mediaControlInput.setMinSize(300, 225);
-//		mediaControlInput.setPrefSize(300, 225);
-//		mediaControlInput.setMaxSize(300, 225);
-//		grid.add(mediaControlInput, 1, 4);
-//		
+//	public void initBarChartInput() {
+//		xAxis = new CategoryAxis();
+//		yAxis = new NumberAxis();
+//
+//		xAxis.setLabel("X"); // Beschriftung
+//		yAxis.setLabel("Y");
+//
+//		bc1 = new BarChart<String, Number>(xAxis, yAxis);
+//		GridPane.setColumnSpan(bc1, 3);
+//		GridPane.setRowSpan(bc1, 2);
+//		bc1.setMaxWidth(350);
+//		bc1.setData(SimulatorModel.observableArrayList);
+//		// bc1.setScaleX(0.5);
+//		// bc1.setScaleY(0.5);
+//		// bc1.setMaxSize(10, 10);
+//		// bc1.setMinSize(60, 20);
+//		grid.add(bc1, 0, 17);
 //	}
 
-
-
-	/**
-	 * BarChar Input Stream
-	 */
-	public void initBarChartInput() {
-		xAxis = new CategoryAxis();
-		yAxis = new NumberAxis();
-		
-		xAxis.setLabel("X");	// Beschriftung
-		yAxis.setLabel("Y");
-		
-		bc1 = new BarChart<String, Number>(xAxis, yAxis);
-		GridPane.setColumnSpan(bc1, 3);
-		GridPane.setRowSpan(bc1, 2);
-		bc1.setMaxWidth(350);
-		bc1.setData(SimulatorModel.observableArrayList);
-		//bc1.setScaleX(0.5);
-		//bc1.setScaleY(0.5);
-		//bc1.setMaxSize(10, 10);
-		//bc1.setMinSize(60, 20);
-		grid.add(bc1, 0, 17);
+	public TextField getEcmHeaderTF() {
+		return ecmHeaderTF;
 	}
-	
+
 	public TextField getScramblingControlTF() {
 		return scramblingControlTF;
 	}
-		
+
 	public TextField getCwTimeTF() {
 		return cwTimeTF;
 	}
@@ -548,7 +566,7 @@ public class SimulatorView {
 	public TextField getAk1OutTF() {
 		return ak1OutTF;
 	}
-	
+
 	public ToggleGroup getRadioButtonGroup() {
 		return groupRB;
 	}
@@ -560,7 +578,7 @@ public class SimulatorView {
 	public TextField getEcmWorkKey() {
 		return ecmWorkKeyIdTF;
 	}
-	
+
 	public TextField getEcmProtocolTF() {
 		return ecmProtocolTF;
 	}
@@ -573,15 +591,14 @@ public class SimulatorView {
 		return ecmCwEvenTF;
 	}
 
-
 	public TextField getEcmDateTime() {
 		return ecmDateTimeTF;
 	}
-	
+
 	public TextField getEcmVariablePartTF() {
 		return ecmVariablePartTF;
 	}
-	
+
 	public TextField getEcmMacTF() {
 		return ecmMacTF;
 	}
@@ -597,13 +614,29 @@ public class SimulatorView {
 	public void setMediaPlayerInput(MediaPlayer mediaPlayerInput) {
 		this.mediaPlayerInput = mediaPlayerInput;
 	}
-	
-	public Button getVideoOutputButton () {
+
+	public Button getVideoOutputButton() {
 		return videoOutputB;
 	}
 
 	public Button getVideoInputButton() {
 		return videoInputB;
+	}
+	
+	public TextField getCwOutTF() {
+		return cwOutTF;
+	}
+
+	public TextArea getEcmTA() {
+		return ecmTA;
+	}
+
+	public TextArea getEcmEncryptedTA() {
+		return ecmEncryptedTA;
+	}
+
+	public TextArea getEcmDecryptedTA() {
+		return ecmDecryptedTA;
 	}
 
 }

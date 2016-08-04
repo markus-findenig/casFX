@@ -1,17 +1,12 @@
 package tests.rtp.examples;
 
-import java.awt.*;
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 import javax.media.*;
 import javax.media.control.*;
 import javax.media.format.*;
 import javax.media.protocol.*;
-import javax.media.rtp.*;
-import javax.media.rtp.event.*;
-import javax.media.rtp.rtcp.*;
 
 public abstract class Example5
 {

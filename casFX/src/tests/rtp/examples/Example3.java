@@ -1,14 +1,9 @@
 package tests.rtp.examples;
 
-import java.net.*;
-import java.util.*;
-
 import javax.media.*;
-import javax.media.format.*;
 import javax.media.protocol.*;
 import javax.media.rtp.*;
 import javax.media.rtp.event.*;
-import javax.media.rtp.rtcp.*;
 
 public abstract class Example3 implements ControllerListener, 
                                           ReceiveStreamListener
@@ -19,7 +14,8 @@ public abstract class Example3 implements ControllerListener,
 
     // --- cut from here... --- //
 
-    public void update(ReceiveStreamEvent event) {
+    @Override
+	public void update(ReceiveStreamEvent event) {
         if (event instanceof RemotePayloadChangeEvent) {
             // payload has changed. we need to close the old player and
             // create a new player  

@@ -1,20 +1,11 @@
 package tests.socket;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import tests.aufgabe3.server.Service;
 
 /**
  * http://www.csee.umbc.edu/~pmundur/courses/CMSC691C/lab5-kurose-ross.html

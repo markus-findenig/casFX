@@ -74,7 +74,7 @@ public class ComputeMAC {
 		
 		String string2 = digest.toString().substring(4, 8);
 		
-		String out2 = String.format("%02X ", new BigInteger(1, string2.getBytes("UTF-8")));
+		String out2 = String.format("%02X", new BigInteger(1, string2.getBytes("UTF-8")));
 
 		System.out.println("MAC(lenght):: " + digest.length);
 		System.out.println("MAC(in hex):: " + out2);

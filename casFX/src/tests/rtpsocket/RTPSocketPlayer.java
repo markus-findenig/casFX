@@ -137,7 +137,8 @@ public class RTPSocketPlayer implements ControllerListener{
 	    playerWindow = new PlayerWindow(player);
 	}
     }
-    public synchronized void controllerUpdate(ControllerEvent ce) {
+    @Override
+	public synchronized void controllerUpdate(ControllerEvent ce) {
 	if (ce instanceof ControllerErrorEvent){
 	  if (player != null)
 	    player.removeControllerListener(this);
@@ -160,7 +161,7 @@ public class RTPSocketPlayer implements ControllerListener{
 	    if (addr.isMulticastAddress()){
 		MulticastSocket msock = new MulticastSocket(sockport);
 		msock.joinGroup(addr);
-		sock = (DatagramSocket)msock;		
+		sock = msock;		
 	    }else{		
 		sock = new
 		    DatagramSocket(sockport,addr);
@@ -207,6 +208,7 @@ public class RTPSocketPlayer implements ControllerListener{
 	// the main thread simply receives RTP data packets from the
 	// network and transfer's this data to the output handler of
 	// this stream.
+	@Override
 	public void run(){
 	    int len;
 	    while(true){
@@ -244,24 +246,30 @@ public class RTPSocketPlayer implements ControllerListener{
 	  stop();
 	}
 	// methods of PushSourceStream
+	@Override
 	public Object[] getControls() {
 	    return new Object[0];
 	}
 	
+	@Override
 	public Object getControl(String controlName) {
 	    return null;
 	}
+	@Override
 	public  ContentDescriptor getContentDescriptor(){
 	    return null;
 	}
+	@Override
 	public long getContentLength(){
 	    return SourceStream.LENGTH_UNKNOWN;
 	}
+	@Override
 	public boolean endOfStream(){
 	    return false;
 	}
 	// method by which data is transferred from the underlying
 	// network to the RTPSM.
+	@Override
 	public int read(byte buffer[],
 			int offset,
 			int length){
@@ -274,14 +282,17 @@ public class RTPSocketPlayer implements ControllerListener{
 	    
 	}		 
 	
+	@Override
 	public int getMinimumTransferSize(){
 	    return dp.getLength();
 	}
+	@Override
 	public void setTransferHandler(SourceTransferHandler transferHandler){
 	    this.outputhandler = transferHandler;
 	}
 	// methods of OutputDataStream used by teh RTPSM to transfer
 	// data to the underlying network.
+	@Override
 	public int write(byte[] buffer,
 			 int offset,
 			 int length){

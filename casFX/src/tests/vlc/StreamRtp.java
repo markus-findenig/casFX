@@ -1,7 +1,5 @@
 package tests.vlc;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -10,12 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.sun.jna.NativeLibrary;
 
-import javafx.application.Platform;
-import javafx.concurrent.Task;
-import javafx.scene.media.MediaPlayer.Status;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
-import uk.co.caprica.vlcj.player.manager.MediaManager;
 import uk.co.caprica.vlcj.test.VlcjTest;
 
 /* An example of how to stream a media file over HTTP.
@@ -70,7 +64,8 @@ public class StreamRtp extends VlcjTest {
 		
 
 		Runnable myRunnable = new Runnable(){
-		     public void run(){
+		     @Override
+			public void run(){
 		    	 
 		    	NativeLibrary.addSearchPath("libvlc", "C:/ProgLoc/VideoLAN/VLC");
 		        System.out.println("Runnable running");

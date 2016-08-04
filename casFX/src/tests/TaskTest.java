@@ -20,6 +20,7 @@ public class TaskTest extends Application {
 		launch(args);
 	}
 
+	@Override
 	public void start(final Stage stage) throws Exception {
 		final Label statusLabel = new Label("Status");
 		final Button runButton = new Button("Run");

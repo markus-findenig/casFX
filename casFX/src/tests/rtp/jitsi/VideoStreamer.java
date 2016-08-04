@@ -158,8 +158,8 @@ public class VideoStreamer {
      */
     public byte getRTPDynamicPayloadType(final MediaFormat format) {
         for (Map.Entry<MediaFormat, Byte> entry : RTP_payload_number_map_.entrySet()) {
-            final MediaFormat map_format = (MediaFormat) entry.getKey();
-            final Byte rtp_payload_type = (Byte) entry.getValue();
+            final MediaFormat map_format = entry.getKey();
+            final Byte rtp_payload_type = entry.getValue();
             if (map_format.getClockRate() == format.getClockRate() && map_format.getEncoding().equals(format.getEncoding())) {
                 return rtp_payload_type;
             }

@@ -1,8 +1,9 @@
 package tests.thread;
 
 public class MultiThread extends Thread{
-    public void run(){
-        System.out.println("Running Thread Name: "+ this.currentThread().getName());
-        System.out.println("Running Thread Priority: "+ this.currentThread().getPriority());
+    @Override
+	public void run(){
+        System.out.println("Running Thread Name: "+ Thread.currentThread().getName());
+        System.out.println("Running Thread Priority: "+ Thread.currentThread().getPriority());
     }
 }

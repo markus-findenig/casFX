@@ -1,13 +1,14 @@
 package tests;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Hex;
@@ -19,10 +20,10 @@ public class GenerateMessageAuthenticationCode {
 		try {
 			
 			// AK 00
-			String macKey = "00112233445566778899AABBCCDDEEFF";
+			String macKey = "465284AA69A329782CA898EB3701F546";
 
 			// get a key generator for the HMAC-SHA256 keyed-hashing algorithm
-			KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA1");
+			//KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA1");
 
 			// generate a key from the generator
 			//SecretKey key = keyGen.generateKey();
@@ -32,13 +33,29 @@ public class GenerateMessageAuthenticationCode {
 			Mac mac = Mac.getInstance(key.getAlgorithm());
 			mac.init(key);
 
-			String message = "This is a confidential message. This is a confidential message.";
+			String message = "8000000000000000BBFF000123456789ABCDEF0123456789ABCDEFC80804115931D50000000000";
 
 			// get the string as UTF-8 bytes
-			byte[] b = message.getBytes("UTF-8");
+			byte[] b = message.toString().getBytes(Charset.forName("UTF-8"));
 
 			// create a digest from the byte array
 			byte[] digest = mac.doFinal(b);
+			
+			
+			char[] test = Hex.encodeHex(digest);
+			
+			String s = String.valueOf(Hex.encodeHex(digest)).substring(0, 8).toUpperCase();
+			
+			
+		
+			
+			System.out.println("test" + test);
+			
+			System.out.println("s:" + s);
+						
+			// cut lsb to 4 bytes in hex
+			String macString = String.format("%02X", new BigInteger(1, digest.toString().substring(4, 8).getBytes("UTF-8")));
+			System.out.println("macString : " + macString);
 			
 			for (int j = 0; j < digest.length; j++) {
 				System.out.format("%02X ", digest[j]);

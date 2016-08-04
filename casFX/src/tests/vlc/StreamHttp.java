@@ -12,10 +12,8 @@ import com.sun.jna.NativeLibrary;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.scene.media.MediaPlayer.Status;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
-import uk.co.caprica.vlcj.player.manager.MediaManager;
 import uk.co.caprica.vlcj.test.VlcjTest;
 
 /* An example of how to stream a media file over HTTP.
@@ -70,7 +68,8 @@ public class StreamHttp extends VlcjTest {
 		
 
 		Runnable myRunnable = new Runnable(){
-		     public void run(){
+		     @Override
+			public void run(){
 		    	 
 		    	NativeLibrary.addSearchPath("libvlc", "C:/ProgLoc/VideoLAN/VLC");
 		        System.out.println("Runnable running");
@@ -151,6 +150,7 @@ public class StreamHttp extends VlcjTest {
 			    updateMessage("Failed!");
 			    }
 			
+			@Override
 			public Void call() throws Exception {
 				// erster Status
 				LocalDateTime dateTime;
@@ -203,6 +203,7 @@ public class StreamHttp extends VlcjTest {
 						
 						// GUI updaten
 						Platform.runLater(new Runnable() {
+							@Override
 							public void run() {
 								mediaPlayer.setVolume(0);
 								mediaPlayer.playMedia(media);

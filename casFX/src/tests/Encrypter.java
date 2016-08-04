@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -20,11 +21,13 @@ import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.commons.codec.binary.Base64;
 
 public class Encrypter {
     private final static int IV_LENGTH = 16; // Default length with Default 128
@@ -79,38 +82,76 @@ public class Encrypter {
         }
     }
 
-    public static void main(String[] args) {
-        File inFile = new File("D:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4");
-        File outFile_enc = new File("D:\\Users\\Videos\\Test\\out_enc_TheSimpsonsMovie1080pTrailer.mp4");
-        File outFile_dec = new File("D:\\Users\\Videos\\Test\\out_dec_TheSimpsonsMovie1080pTrailer.mp4");
+//    public static void main(String[] args) {
+//        File inFile = new File("D:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4");
+//        File outFile_enc = new File("D:\\Users\\Videos\\Test\\out_enc_TheSimpsonsMovie1080pTrailer.mp4");
+//        File outFile_dec = new File("D:\\Users\\Videos\\Test\\out_dec_TheSimpsonsMovie1080pTrailer.mp4");
+//
+//        try {
+//            //SecretKey key = KeyGenerator.getInstance(ALGO_SECRET_KEY_GENERATOR).generateKey();
+//        	String k = "00112233445566778899AABBCCDDEEFF";
+//        	//byte[] k = ("1234567812345678").getBytes();
+//        	
+//        	
+//        	
+//        	
+//        	byte[] keyByte = hexStringToByteArray(k);
+//        	
+//        	
+//        	
+//        	//SecretKey key = new SecretKeySpec(k.getBytes(), ALGO_SECRET_KEY_GENERATOR);
+//        			
+//            //byte[] keyData = key.getEncoded();
+//            SecretKey key = new SecretKeySpec(keyByte, 0, keyByte.length, ALGO_SECRET_KEY_GENERATOR); 
+//            //if you want to store key bytes to db so its just how to //recreate back key from bytes array
+//
+//            byte[] iv = new byte[IV_LENGTH];
+//            SecureRandom.getInstance(ALGO_RANDOM_NUM_GENERATOR).nextBytes(iv); // If
+//                                                                                // storing
+//                                                                                // separately
+//            AlgorithmParameterSpec paramSpec = new IvParameterSpec(iv);
+//            
+//            System.out.println(k.toString());
+//            System.out.println(key);
+//            //System.out.println(key2);
+//
+//            Encrypter.encrypt(key, paramSpec, new FileInputStream(inFile), new FileOutputStream(outFile_enc));
+//            Encrypter.decrypt(key, paramSpec, new FileInputStream(outFile_enc), new FileOutputStream(outFile_dec));
+//        
+//        
+//        
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+    
+    
+    public static void main(String[] args) throws Exception {
+        final String keyHex = "00000000000000000000000000123456";
+        final String plaintextHex = "";
 
-        try {
-            //SecretKey key = KeyGenerator.getInstance(ALGO_SECRET_KEY_GENERATOR).generateKey();
-        	String k = "1234567812345678";
-        	//byte[] k = ("1234567812345678").getBytes();
-        	
-        	SecretKey key = new SecretKeySpec(k.getBytes(), ALGO_SECRET_KEY_GENERATOR);
-        			
-            byte[] keyData = key.getEncoded();
-            SecretKey key2 = new SecretKeySpec(keyData, 0, keyData.length, ALGO_SECRET_KEY_GENERATOR); 
-            //if you want to store key bytes to db so its just how to //recreate back key from bytes array
+        SecretKey key = new SecretKeySpec(DatatypeConverter
+            .parseHexBinary(keyHex), "AES");
 
-            byte[] iv = new byte[IV_LENGTH];
-            SecureRandom.getInstance(ALGO_RANDOM_NUM_GENERATOR).nextBytes(iv); // If
-                                                                                // storing
-                                                                                // separately
-            AlgorithmParameterSpec paramSpec = new IvParameterSpec(iv);
-            
-            System.out.println(k.toString());
-            System.out.println(key);
-            System.out.println(key2);
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, key);
 
-            Encrypter.encrypt(key, paramSpec, new FileInputStream(inFile), new FileOutputStream(outFile_enc));
-            Encrypter.decrypt(key2, paramSpec, new FileInputStream(outFile_enc), new FileOutputStream(outFile_dec));
-        } catch (Exception e) {
-            e.printStackTrace();
+        byte[] result = cipher.doFinal(DatatypeConverter
+            .parseHexBinary(plaintextHex));
+
+        System.out.println(DatatypeConverter.printHexBinary(result));
+      }
+    
+    
+    private static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
         }
-
+        return data;
     }
 
 }

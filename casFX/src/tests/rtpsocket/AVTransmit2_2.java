@@ -41,7 +41,6 @@ import javax.media.control.TrackControl;
 import javax.media.control.QualityControl;
 import javax.media.rtp.*;
 import javax.media.rtp.rtcp.*;
-import com.sun.media.rtp.*;
 
 
 
@@ -192,7 +191,7 @@ public class AVTransmit2_2 {
                     {
                        try
                         {
-                            ((TrackControl)tracks[i]).setCodecChain(codec);
+                            tracks[i].setCodecChain(codec);
                         }
                         catch (javax.media.UnsupportedPlugInException u)
                         {
@@ -295,9 +294,9 @@ public class AVTransmit2_2 {
 	if (supported.matches(jpegFmt)) {
 	    // For JPEG, make sure width and height are divisible by 8.
 	    width = (size.width % 8 == 0 ? size.width :
-				(int)(size.width / 8) * 8);
+				size.width / 8 * 8);
 	    height = (size.height % 8 == 0 ? size.height :
-				(int)(size.height / 8) * 8);
+				size.height / 8 * 8);
 	} else if (supported.matches(h263Fmt)) {
 	    // For H.263, we only support some specific sizes.
 	    if (size.width < 128) {
@@ -385,7 +384,7 @@ public class AVTransmit2_2 {
 	// Call the required method on the processor
 	if (state == Processor.Configured) {
 	    p.configure();
-	} else if (state == Processor.Realized) {
+	} else if (state == Controller.Realized) {
 	    p.realize();
 	}
 	
@@ -414,6 +413,7 @@ public class AVTransmit2_2 {
 
     class StateListener implements ControllerListener {
 
+	@Override
 	public void controllerUpdate(ControllerEvent ce) {
 
 	    // If there was an error during configure or
@@ -471,7 +471,8 @@ public class AVTransmit2_2 {
 	// The right thing to do would be to have a GUI with a
 	// "Stop" button that would call stop on AVTransmit2
 	try {
-	    Thread.currentThread().sleep(60000);
+	    Thread.currentThread();
+		Thread.sleep(60000);
 	} catch (InterruptedException ie) {
 	}
 

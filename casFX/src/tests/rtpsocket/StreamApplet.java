@@ -25,10 +25,6 @@ import javax.media.rtp.event.NewReceiveStreamEvent;
 import javax.media.rtp.event.ReceiveStreamEvent;
 import javax.media.rtp.event.RemotePayloadChangeEvent;
 import javax.media.rtp.rtcp.SourceDescription;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
 import com.sun.media.rtp.RTPSessionMgr;
 import com.sun.media.ui.PlayerWindow;
 
@@ -63,6 +59,7 @@ public class StreamApplet extends Applet implements ReceiveStreamListener, Contr
 	PlayerWindow window = null;
 	
 	
+	@Override
 	public void init()
 	{
 		this.setLayout( new BorderLayout() );
@@ -92,6 +89,7 @@ public class StreamApplet extends Applet implements ReceiveStreamListener, Contr
 	}
 	
 	
+	@Override
 	public void start()
 	{
 		if(videoPlayer != null)
@@ -107,6 +105,7 @@ public class StreamApplet extends Applet implements ReceiveStreamListener, Contr
 	}
 	
 	
+	@Override
 	public void stop()
 	{
 		if(videoPlayer != null)
@@ -116,6 +115,7 @@ public class StreamApplet extends Applet implements ReceiveStreamListener, Contr
 	}
 	
 	
+	@Override
 	public void destroy()
 	{
 		System.err.println("Disposing of applet");
@@ -196,6 +196,7 @@ public class StreamApplet extends Applet implements ReceiveStreamListener, Contr
 	}
 
 	
+	@Override
 	public void update(ReceiveStreamEvent event)
 	{
 		
@@ -264,6 +265,7 @@ public class StreamApplet extends Applet implements ReceiveStreamListener, Contr
 	}
 
 
+	@Override
 	public synchronized void controllerUpdate(ControllerEvent event)
 	{
 		

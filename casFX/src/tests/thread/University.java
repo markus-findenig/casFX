@@ -7,7 +7,8 @@ public class University extends Thread{
         this.output = output;
     }
 
-    public void run(){
+    @Override
+	public void run(){
         output.print("University Print.");
         output.scan("University Print.");
     }

@@ -46,6 +46,7 @@ public class VideoThumbnailsExample {
 
 	private static class ImageSnapListener extends MediaListenerAdapter {
 
+		@Override
 		public void onVideoPicture(IVideoPictureEvent event) {
 
 			if (event.getStreamIndex() != mVideoStreamIndex) {

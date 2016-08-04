@@ -6,8 +6,6 @@ import java.net.*;
 
 import javax.media.*;
 import javax.media.format.*;
-import javax.media.rtp.*;
-import javax.media.rtp.event.*;
 
 public abstract class Example1 implements ControllerListener
 {
@@ -61,7 +59,8 @@ public abstract class Example1 implements ControllerListener
 
     // --- cut from here... --- //
 
-    public synchronized void controllerUpdate(ControllerEvent ce) {
+    @Override
+	public synchronized void controllerUpdate(ControllerEvent ce) {
         if (ce instanceof FormatChangeEvent) {
             Dimension vSize = new Dimension(320,0);
             Component oldVisualComp = visualComp;

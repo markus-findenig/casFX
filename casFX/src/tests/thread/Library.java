@@ -10,7 +10,8 @@ class Library extends Thread{
         this.output = output;
     }
 
-    public void run(){
+    @Override
+	public void run(){
         output.print("Library Print.");
         output.scan("Library Print.");
     }

@@ -4,14 +4,9 @@ package tests.rtp.examples;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
-
 import javax.media.*;
-import javax.media.format.*;
 import javax.media.protocol.*;
 import javax.media.rtp.*;
-import javax.media.rtp.event.*;
-import javax.media.rtp.rtcp.*;
 
 public class RTPSocketPlayer implements ControllerListener {
     // ENTER THE FOLLOWING SESSION PARAMETERS FOR YOUR RTP SESSION 
@@ -106,7 +101,8 @@ public class RTPSocketPlayer implements ControllerListener {
         }
     }
 
-    public synchronized void controllerUpdate(ControllerEvent ce) {
+    @Override
+	public synchronized void controllerUpdate(ControllerEvent ce) {
         if ((ce instanceof DeallocateEvent) ||
             (ce instanceof ControllerErrorEvent)) {
         
@@ -130,7 +126,7 @@ public class RTPSocketPlayer implements ControllerListener {
             if (addr.isMulticastAddress()) {
                 MulticastSocket msock = new MulticastSocket(sockport);
                 msock.joinGroup(addr);
-                sock = (DatagramSocket)msock;           
+                sock = msock;           
             } 
             else {              
                 sock = new DatagramSocket(sockport,addr);
@@ -184,7 +180,8 @@ public class RTPSocketPlayer implements ControllerListener {
         // network and transfer's this data to the output handler of
         // this stream.
         
-        public void run() {
+        @Override
+		public void run() {
             int len;
 
             while(true) {
@@ -230,30 +227,36 @@ public class RTPSocketPlayer implements ControllerListener {
         }
         
         // methods of PushSourceStream
-        public Object[] getControls() {
+        @Override
+		public Object[] getControls() {
             return new Object[0];
         }
         
-        public Object getControl(String controlName) {
+        @Override
+		public Object getControl(String controlName) {
             return null;
         }
 
-        public ContentDescriptor getContentDescriptor() {
+        @Override
+		public ContentDescriptor getContentDescriptor() {
             return null;
         }
 
-        public long getContentLength() {
+        @Override
+		public long getContentLength() {
             return SourceStream.LENGTH_UNKNOWN;
         }
 
-        public boolean endOfStream() {
+        @Override
+		public boolean endOfStream() {
             return false;
         }
 
         // method by which data is transferred from the underlying
         // network to the session manager.
         
-        public int read(byte buffer[],
+        @Override
+		public int read(byte buffer[],
                         int offset,
                         int length) 
         {
@@ -266,11 +269,13 @@ public class RTPSocketPlayer implements ControllerListener {
             return dp.getData().length;
         }                
         
-        public int getMinimumTransferSize(){
+        @Override
+		public int getMinimumTransferSize(){
             return dp.getLength();
         }
         
-        public void setTransferHandler(SourceTransferHandler
+        @Override
+		public void setTransferHandler(SourceTransferHandler
                                        transferHandler)
         {
             this.outputHandler = transferHandler;
@@ -279,7 +284,8 @@ public class RTPSocketPlayer implements ControllerListener {
         // methods of OutputDataStream used by the session manager to 
         // transfer data to the underlying network.
         
-        public int write(byte[] buffer,
+        @Override
+		public int write(byte[] buffer,
                          int offset,
                          int length)
         {

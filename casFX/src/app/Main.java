@@ -6,7 +6,6 @@ import model.ConfigModel;
 import model.SimulatorModel;
 import controller.ConfigViewController;
 import controller.SimulatorViewController;
-import controller.PlayerViewController;
 
 public class Main extends Application {
 

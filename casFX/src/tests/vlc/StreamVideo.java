@@ -1,12 +1,17 @@
 package tests.vlc;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import com.sun.jna.NativeLibrary;
 
-import javafx.application.Platform;
-import javafx.concurrent.Task;
+import uk.co.caprica.vlcj.player.MediaPlayer;
+import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 import uk.co.caprica.vlcj.test.VlcjTest;
@@ -19,53 +24,169 @@ public class StreamVideo extends VlcjTest {
 
 	// Stream RTP
 
-	static String media = "D:\\Users\\Videos\\2014-11-22_ORF_BINGO_Edith-Oma.mp4 ";
+	static String media = "D:\\Users\\Videos\\BINGO.mp4 ";
+	
+	
+	static String inFileOdd = "D:\\Users\\Videos\\odd.mp4";
+	static String inFileEven = "D:\\Users\\Videos\\even.mp4";
+	
+	static MediaPlayerFactory mediaPlayerFactory;
+	static HeadlessMediaPlayer mediaPlayer;
+	
+	private static boolean state;
+	
 
 	public static void main(String[] args) throws Exception {
 
 		NativeLibrary.addSearchPath("libvlc", "C:/ProgLoc/VideoLAN/VLC");
 
-		// String media = args[0];
+		setState(true);
+//
+//	    Thread t1 = new Thread(generatePlayer());
+//	    
+//
+//	    t1.start();
+//	   
+	    
+		
+		
+		Runnable encryptionRunnableThird = new Runnable() {
+			@Override
+			public void run() {
+				generatePlayer();
+			}
+		};
+		
+		
+		ScheduledExecutorService vlcExecutor = Executors.newScheduledThreadPool(1);
+		//vlcExecutor.scheduleWithFixedDelay(encryptionRunnableThird, 3, model.getCwTime(), TimeUnit.SECONDS);
+		vlcExecutor.schedule(encryptionRunnableThird, 0, TimeUnit.SECONDS);
+		
+		
+	
+		
+	}
+	
+	private static void generatePlayer() {
 		String type = "rtp";
 		String server = "127.0.0.1";
 		int port = 8554;
 		String csaCK = "0123456789ABCDEF";
-		String csa2CK = "0123456789ABCDE0";
+		String csa2CK = "FEDABC9876543210";
 
 		String id = "cas";
+		
+		String rtp = "rtp{proto=udp,mux=ts,dst=239.0.0.1,port=5004}";
 
-		String options = formatHttpStream(type, server, port, id);
+		//String options = formatHttpStream(type, server, port, id);
 
 		List<String> vlcArgs = new ArrayList<String>();
+		
+		vlcArgs.clear();
+		
+//		vlcArgs.add("--intf=dummy");
+//		vlcArgs.add("--dummy-quiet");
+	
 
-		vlcArgs.add(options);
+		//vlcArgs.add("--sout=#" + rtp);
+		
+		//vlcArgs.add("--sout=#"+ rtp);
+		
+		vlcArgs.add("--sout=#duplicate{dst=" + rtp + ",dst=display}");
 
 		vlcArgs.add("--sout-ts-crypt-video");
 		vlcArgs.add("--sout-ts-crypt-audio");
-		vlcArgs.add("--sout-ts-csa-use=2");
+		
 		vlcArgs.add("--sout-ts-csa-ck=" + csaCK);
 		vlcArgs.add("--sout-ts-csa2-ck=" + csa2CK);
 
 		// 4000ms = 4sec
-		vlcArgs.add("--file-caching=4000");
+		//vlcArgs.add("--file-caching=4000");
 
 		vlcArgs.add("--no-sout-rtp-sap");
 		vlcArgs.add("--no-sout-standard-sap");
 		vlcArgs.add("--sout-all");
 		vlcArgs.add("--sout-keep");
+		vlcArgs.add("--no-plugins-cache");
+//		vlcArgs.add("vlc://quit");
+		
+		
+		
+		// -------------------------------------------------
+		// if true = odd
+		if (isState()) {
 
-		System.out.println("Streaming '" + media + "' to '" + vlcArgs.toArray(new String[vlcArgs.size()]) + "'");
+			vlcArgs.add("--sout-ts-csa-use=1");
+			String[] standardVlcOptions = vlcArgs.toArray(new String[vlcArgs.size()]);
+			
+			// switch
+			setState(false);
+			
+			runPlayer(inFileOdd, standardVlcOptions);
+			
+		}
+		// -------------------------------------------------
+		// if else = even
+		else {
 
-		MediaPlayerFactory mediaPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));
+			vlcArgs.add("--sout-ts-csa-use=2");
+			String[] standardVlcOptions = vlcArgs.toArray(new String[vlcArgs.size()]);
+			
+			// switch
+			setState(true);
+		
+			runPlayer(inFileEven, standardVlcOptions);
 
-		HeadlessMediaPlayer mediaPlayer = mediaPlayerFactory.newHeadlessMediaPlayer();
-		System.out.println("run: ");
+			
+		} // end if else
+		
+		//return null;
+		
+		
+		
+	
+		
+	}
+	
+	
+	private static void runPlayer(String file, String[] standardMediaOptions) {
+		
+		mediaPlayerFactory = new MediaPlayerFactory(standardMediaOptions);
 
+		mediaPlayer = mediaPlayerFactory.newHeadlessMediaPlayer();
 		mediaPlayer.setVolume(0);
-		mediaPlayer.playMedia(media);
+		mediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
 
-		// Don't exit
-		Thread.currentThread().join();
+			@Override
+			public void playing(MediaPlayer mediaPlayer) {
+				System.out.println("playing: " + file.toString());
+				
+				
+			}
+			@Override
+			public void finished(MediaPlayer mediaPlayer) {
+				System.out.println("finished: " + file.toString());
+				mediaPlayer.stop();
+				mediaPlayer.release();
+				mediaPlayerFactory.release();
+				//Thread.currentThread().notify();
+				
+				System.out.println("generatePlayer: ");
+				generatePlayer();
+//				Thread.currentThread().notify();
+//				generatePlayer();
+				
+			}
+		});
+		
+		mediaPlayer.playMedia(file);
+		
+//		try {
+//			Thread.currentThread().wait();
+//
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -94,12 +215,20 @@ public class StreamVideo extends VlcjTest {
 
 		// sb.append("--sout=#rtp{dst=127.0.0.1,port=1234,mux=ts,sdp=rtsp://127.0.0.1:8080/cas.sdp}");
 
-		sb.append("--sout=#rtp{dst=127.0.0.1,port=1234,mux=ts,sdp=rtsp://192.168.178.101:8080/cas.sdp}");
+		//sb.append("--sout=#rtp{dst=127.0.0.1,port=1234,mux=ts,sdp=rtsp://192.168.178.101:8080/cas.sdp}");
 
 		// sb.append("{dst=" + serverAddress);
 		// sb.append(",port=" + serverPort);
 		// sb.append(",mux=ts}");
 
 		return sb.toString();
+	}
+
+	public static boolean isState() {
+		return state;
+	}
+
+	public static void setState(boolean state) {
+		StreamVideo.state = state;
 	}
 }

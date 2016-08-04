@@ -32,6 +32,7 @@
 package app;
 
 import java.io.File;
+
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -46,11 +47,11 @@ public class EmbeddedMediaPlayer extends Application {
     //private File file = new File("D:\\Users\\Videos\\Test\\TheSimpsonsMovie1080pTrailer.mp4");
     
 	//private File file = new File("D:\\Users\\Videos\\Test\\stream.mp4");
-	//private File file = new File("");
+	private File file = new File("D:\\Users\\Videos\\odd.mp4");
 	
-	//private final String MEDIA_URL = file.toURI().toString();
+	private final String MEDIA_URL = file.toURI().toString();
 	
-	private final String MEDIA_URL = "http://239.0.0.1:5004";
+	//private final String MEDIA_URL = "http://239.0.0.1:5004";
 	
 	// Note the 127.0.0.1 here, localhost will NOT work!
 	//Media myMedia = new Media("http://127.0.0.1:7777/something.m3u8")
@@ -65,13 +66,18 @@ public class EmbeddedMediaPlayer extends Application {
 
         // create media player
         Media media = new Media (MEDIA_URL);
+        
+        
+        media.getDuration();
+       
+        
         MediaPlayer mediaPlayer = new MediaPlayer(media);
         mediaPlayer.setAutoPlay(true);
         
         
         MediaControl mediaControl = new MediaControl(mediaPlayer);
         scene.setRoot(mediaControl);
-        
+        System.out.println("media.getDuration()" + media.getDuration());
         //mediaPlayer.play();
 
         primaryStage.setScene(scene);

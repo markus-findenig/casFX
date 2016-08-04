@@ -38,6 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -153,7 +154,7 @@ public class PlayerControlsPanel extends JPanel {
         toggleMuteButton.setToolTipText("Toggle Mute");
 
         volumeSlider = new JSlider();
-        volumeSlider.setOrientation(JSlider.HORIZONTAL);
+        volumeSlider.setOrientation(SwingConstants.HORIZONTAL);
         volumeSlider.setMinimum(LibVlcConst.MIN_VOLUME);
         volumeSlider.setMaximum(LibVlcConst.MAX_VOLUME);
         volumeSlider.setPreferredSize(new Dimension(100, 40));

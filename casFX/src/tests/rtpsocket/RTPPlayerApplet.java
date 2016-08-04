@@ -35,7 +35,6 @@ import javax.media.rtp.*;
 import javax.media.rtp.rtcp.*;
 import javax.media.rtp.event.*;
 import com.sun.media.rtp.RTPSessionMgr;
-import java.io.*;
 import java.awt.*;
 import java.util.Vector;
 import java.net.*;
@@ -43,10 +42,8 @@ import java.awt.event.*;
 import java.lang.String;
 import javax.media.*;
 import javax.media.protocol.*;
-import com.sun.media.*;
 import com.sun.media.ui.*;
 import java.io.IOException;
-import java.lang.SecurityException;
 
 // This RTP applet will allow a user to playback streams for one audio
 // session and one  video session. Video and Audio RTP monitors are
@@ -79,6 +76,7 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 	int height = 0;
 	Vector playerlist = new Vector();
 
+	@Override
 	public void init()
 	{	
 		setLayout(new BorderLayout());
@@ -125,6 +123,7 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 		}
 	}// end of constructor
 
+	@Override
 	public void start()
 	{
 		// The applet only controls the first video player by adding
@@ -146,6 +145,7 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 	}
 
 	// applet has been stopped, stop and deallocate all the RTP players.
+	@Override
 	public void stop()
 	{
 		if (videoplayer != null)
@@ -166,6 +166,7 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 
 	// applet has been destroyed by the browser. Close the Session
 	// Manager.
+	@Override
 	@SuppressWarnings("deprecation")
 	public void destroy()
 	{
@@ -187,6 +188,7 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 		super.destroy();
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event)
 	{
 		Button button = (Button) event.getSource();
@@ -223,6 +225,7 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 	}
 	
 	
+	@Override
 	public synchronized void controllerUpdate(ControllerEvent event)
 	{
 		Player player = null;
@@ -299,6 +302,7 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 		panel.validate();
 	}
 
+	@Override
 	@SuppressWarnings("deprecation")
 	public void update(ReceiveStreamEvent event)
 	{
@@ -335,14 +339,14 @@ public class RTPPlayerApplet extends Applet implements ControllerListener, Recei
 				{// controller listener and start is taken care of
 					// in playerWindiow
 					if (playerlist != null)
-						playerlist.addElement((Object) newplayer);
+						playerlist.addElement(newplayer);
 					new PlayerWindow(newplayer);
 				}
 			}// if (source == videomgr)
 			if (source == audiomgr)
 			{
 				if (playerlist != null)
-					playerlist.addElement((Object) newplayer);
+					playerlist.addElement(newplayer);
 				new PlayerWindow(newplayer);
 			}
 		}// if (event instanceof NewReceiveStreamEvent)

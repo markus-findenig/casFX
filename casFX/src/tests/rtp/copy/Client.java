@@ -82,6 +82,7 @@ public class Client {
 
 		// Frame
 		f.addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			}
@@ -123,6 +124,7 @@ public class Client {
 
 
 	class setupButtonListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent e) {
 
 			System.out.println("Setup Button pressed !");
@@ -161,6 +163,7 @@ public class Client {
 	}
 
 	class playButtonListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent e) {
 
 			System.out.println("Play Button pressed !");
@@ -188,6 +191,7 @@ public class Client {
 	}
 
 	class pauseButtonListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent e) {
 
 			System.out.println("Pause Button pressed !");
@@ -216,6 +220,7 @@ public class Client {
 	}
 
 	class tearButtonListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent e) {
 
 			System.out.println("Teardown Button pressed !");
@@ -244,6 +249,7 @@ public class Client {
 	}
 
 	class timerListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent e) {
 
 			// Construct a DatagramPacket to receive data from the UDP socket

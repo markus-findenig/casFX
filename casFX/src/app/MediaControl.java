@@ -97,6 +97,7 @@ public class MediaControl extends BorderPane {
 		playButton = new Button(">");
 		playButton.setMinWidth(30);
 		playButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
 			public void handle(ActionEvent e) {
 				Status status = mp.getStatus();
 
@@ -119,12 +120,14 @@ public class MediaControl extends BorderPane {
 			}
 		});
 		mp.currentTimeProperty().addListener(new InvalidationListener() {
+			@Override
 			public void invalidated(Observable ov) {
 				updateValues();
 			}
 		});
 
 		mp.setOnPlaying(new Runnable() {
+			@Override
 			public void run() {
 				if (stopRequested) {
 					mp.pause();
@@ -136,6 +139,7 @@ public class MediaControl extends BorderPane {
 		});
 
 		mp.setOnPaused(new Runnable() {
+			@Override
 			public void run() {
 				//System.out.println("onPaused");
 				playButton.setText(">");
@@ -143,6 +147,7 @@ public class MediaControl extends BorderPane {
 		});
 
 		mp.setOnReady(new Runnable() {
+			@Override
 			public void run() {
 				duration = mp.getMedia().getDuration();
 				updateValues();
@@ -151,6 +156,7 @@ public class MediaControl extends BorderPane {
 
 		mp.setCycleCount(repeat ? MediaPlayer.INDEFINITE : 1);
 		mp.setOnEndOfMedia(new Runnable() {
+			@Override
 			public void run() {
 				if (!repeat) {
 					playButton.setText(">");
@@ -176,6 +182,7 @@ public class MediaControl extends BorderPane {
 		timeSlider.setMinWidth(50);
 		timeSlider.setMaxWidth(Double.MAX_VALUE);
 		timeSlider.valueProperty().addListener(new InvalidationListener() {
+			@Override
 			public void invalidated(Observable ov) {
 				if (timeSlider.isValueChanging()) {
 					// multiply duration by percentage calculated by slider
@@ -202,6 +209,7 @@ public class MediaControl extends BorderPane {
 		volumeSlider.setMaxWidth(Region.USE_PREF_SIZE);
 		volumeSlider.setMinWidth(30);
 		volumeSlider.valueProperty().addListener(new InvalidationListener() {
+			@Override
 			public void invalidated(Observable ov) {
 				if (volumeSlider.isValueChanging()) {
 					mp.setVolume(volumeSlider.getValue() / 100.0);
@@ -217,6 +225,7 @@ public class MediaControl extends BorderPane {
 	protected void updateValues() {
 		if (playTime != null && timeSlider != null && volumeSlider != null) {
 			Platform.runLater(new Runnable() {
+				@Override
 				@SuppressWarnings("deprecation")
 				public void run() {
 					Duration currentTime = mp.getCurrentTime();

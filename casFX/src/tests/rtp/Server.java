@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 @SuppressWarnings("serial")
@@ -86,6 +87,7 @@ public class Server extends JFrame implements ActionListener {
 
 		// Handler to close the main window
 		addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				// stop the timer and exit
 				timer.stop();
@@ -94,10 +96,11 @@ public class Server extends JFrame implements ActionListener {
 		});
 
 		// GUI
-		label = new JLabel("Send frame #        ", JLabel.CENTER);
+		label = new JLabel("Send frame #        ", SwingConstants.CENTER);
 		getContentPane().add(label, BorderLayout.CENTER);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 
 		// if the current image nb is less than the length of the video
