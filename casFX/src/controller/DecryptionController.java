@@ -1,8 +1,6 @@
 package controller;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -19,21 +17,36 @@ import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.codec.binary.Hex;
 
 import javafx.application.Platform;
-import javafx.concurrent.Task;
+import model.ConfigModel;
 import model.DecryptionECM;
 import model.SimulatorModel;
 import view.SimulatorView;
 
-public class Decryption {
+public class DecryptionController {
 
+	/**
+	 * Simulator Model
+	 */
 	private static SimulatorModel model;
 	
-	// View
+	/**
+	 * Simulator View
+	 */
 	private static SimulatorView view;
+	
+	/**
+	 * Config Model
+	 */
+	private static ConfigModel configModel;
 
-	// Encryption ECM Model
+	/**
+	 * Encryption ECM Model
+	 */
 	private static DecryptionECM decryptionECM;
 
+	/**
+	 * Static ECM length
+	 */
 	private static int ECM_LENGTH = 94;
 
 	/**
@@ -82,17 +95,12 @@ public class Decryption {
 	private static String msgEcmMAC;
 	private static String msgEcmCRC;
 
-
-	public static void receiveMessage() throws Exception {
-		
-
-//		Task<Void> taskReceiveMessage = new Task<Void>() {
-//			@Override
-//			protected Void call() throws Exception {
-		
+	public static void runDecryption() {
 		decryptionECM = new DecryptionECM();
+		//decryptionECM = PlayerViewController.decryptionECM;
 		model = SimulatorViewController.getModel();
 		view = SimulatorViewController.getView();
+		configModel = ConfigViewController.getConfigModel();
 		
 		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
 		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
@@ -100,19 +108,50 @@ public class Decryption {
 		// init Date/Time
 		decryptionECM.setEcmDateTime("0");
 		
-		MulticastSocket socket = new MulticastSocket(5005);
-		InetAddress group = InetAddress.getByName("239.0.0.1");
+		Runnable runReceiveMessage = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					receiveMessage();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		// start the task 
+		Thread thReceiveMessage = new Thread(runReceiveMessage);
+		thReceiveMessage.setDaemon(true);
+		thReceiveMessage.start();
+		
+	}
+
+	public static void receiveMessage() throws Exception {
+		
+		
+		// default server = rtp://239.0.0.1:5004
+		String client = configModel.getClient();
+		String[] rtpSplit = client.split("://");
+		// rtp = rtpSplit[0]
+		String ipPort = rtpSplit[1];
+		String[] ip = ipPort.split(":");
+
+		// Port = 5005
+		MulticastSocket socket = new MulticastSocket(Integer.parseInt(ip[1].trim()) + 1);
+		InetAddress group = InetAddress.getByName(ip[0].trim());
+//		MulticastSocket socket = new MulticastSocket(5005);
+//		InetAddress group = InetAddress.getByName("239.0.0.1");
 		socket.joinGroup(group);
 
 		byte[] buffer = new byte[2048];
 
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 		
-		System.err.println("while :" + PlayerViewController.embeddedMediaPlayer.isPlaying());
+		//System.err.println("while :" + PlayerViewController.embeddedMediaPlayer.isPlaying());
 
 		while (model.getDecryptionState()) {
 		//while (true) {
-			System.err.println("while in:" + PlayerViewController.embeddedMediaPlayer.isPlaying());
+			//System.err.println("while in:" + PlayerViewController.embeddedMediaPlayer.isPlaying());
 			// Wait to receive a datagram
 			socket.receive(packet);
 
@@ -212,6 +251,8 @@ public class Decryption {
 			throw new IOException("MAC Mismatch");
 		}
 		
+		ecmDecrypted = ecmHeader + decrypted + msgEcmCRC;
+		
 		// check Date/Time save only new ecm
 		String ecmDateTime = ecmPayloadDecrypted.substring(34, 44);
 		
@@ -222,7 +263,7 @@ public class Decryption {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					view.getEcmDecryptedTA().setText(ecmHeader + ecmPayloadDecrypted + validMAC + msgEcmCRC);
+					view.getEcmDecryptedTA().setText(ecmDecrypted);
 				}
 			});
 			
@@ -349,6 +390,10 @@ public class Decryption {
 		} else {
 			return false;
 		}
+	}
+
+	public static DecryptionECM getDecryptionECM() {
+		return decryptionECM;
 	}
 
 

@@ -8,12 +8,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Toggle;
-import javafx.scene.media.Media;
 import javafx.stage.FileChooser;
 import model.ConfigModel;
-import model.EncryptionECM;
 import model.SimulatorModel;
-import view.InputPlayerView;
 import view.SimulatorView;
 
 /**
@@ -21,13 +18,14 @@ import view.SimulatorView;
  */
 public class SimulatorViewController {
 	
-	// Model
+	/**
+	 * Simulator Model
+	 */
 	private static SimulatorModel model;
 	
-	// Config Model
-	private static ConfigModel configModel;
-
-	// View
+	/**
+	 * Simulator View
+	 */
 	private static SimulatorView view;
 	
 	/**
@@ -35,12 +33,9 @@ public class SimulatorViewController {
 	 * 
 	 * @param sModel
 	 *            - Simulator Model
-	 * @param cModel
-	 *            - Config Model
 	 */
-	public SimulatorViewController(SimulatorModel sModel, ConfigModel cModel) {
+	public SimulatorViewController(SimulatorModel sModel) {
 		model = sModel;
-		configModel = cModel;
 		view = new SimulatorView();
 		
 		CasEventHandler casEventHandler = new CasEventHandler();
@@ -54,6 +49,9 @@ public class SimulatorViewController {
 
 		// Encryption Toggle Button registrieren
 		view.getEncryption().setOnAction(casEventHandler);
+		
+		// Decryption Toggle Button registrieren
+		view.getDecryption().setOnAction(casEventHandler);
 		
 		// Video Player
 		view.getVideoInputButton().setOnAction(casEventHandler);
@@ -111,19 +109,13 @@ public class SimulatorViewController {
 				File inputFile = fileChooser.showOpenDialog(model.getPrimaryStage());
 				if (inputFile != null) {
 					model.setInputFile(inputFile);
-					// Button aktivieren
+					// Button Encryption aktivieren
 					view.getEncryption().setDisable(false);
-					view.getVideoInputButton().setDisable(false);
-					//view.getVideoOutputButton().setDisable(false);
 				}
 
-				// set ECM 64 bit Control Word
-//				encryptionECM.setEcmCwOdd(view.getEcmCwOddTF().getText());
-//				encryptionECM.setEcmCwEven(view.getEcmCwEvenTF().getText());
-
 				// set 128 bit Authorization Keys input and output
-				String key0 = Encryption.getRandomHex(32);
-				String key1 = Encryption.getRandomHex(32);
+				String key0 = EncryptionController.getRandomHex(32);
+				String key1 = EncryptionController.getRandomHex(32);
 
 				// setze Authorizations Keys im Model
 				model.setAuthorizationInputKey0(key0);
@@ -145,19 +137,15 @@ public class SimulatorViewController {
 				// get Encryption Button State + check if file is exists
 				if (view.getEncryption().isSelected()) {
 					view.getEncryption().setText("ON");
+					view.getVideoInputButton().setDisable(false);
 					model.setEncryptionState(true);
-					// set scrambling, CW odd
-					model.setScramblingControl("11");
-					
 					// run Encryption
-					// TODO 
-					Encryption.runEncryption();
-					
-					
+					EncryptionController.runEncryption();
 				} else {
-					// stop Encryption Thread
-					Encryption.stopEncryption();
+					// stop Encryption
+					EncryptionController.stopEncryption();
 					view.getEncryption().setText("OFF");
+					view.getVideoInputButton().setDisable(true);
 					model.setEncryptionState(false);
 					// no scrambling
 					model.setScramblingControl("00");
@@ -167,6 +155,24 @@ public class SimulatorViewController {
 				}
 			}
 
+			// Decryption State ON (true) or OFF (false)
+			if (event.getSource() == view.getDecryption()) {
+				if (view.getDecryption().isSelected()) {
+					view.getDecryption().setText("ON");
+					model.setDecryptionState(true);
+					view.getVideoOutputButton().setDisable(false);
+					// run Decryption
+					DecryptionController.runDecryption();
+				} else {
+					// stop Decryption
+					view.getDecryption().setText("OFF");
+					model.setDecryptionState(false);
+					view.getVideoOutputButton().setDisable(true);
+					PlayerViewController.exitOutputPlayerView();
+				}
+			
+			}
+			
 			// Input Player
 			if (event.getSource() == view.getVideoInputButton()) {
 				PlayerViewController.runPlayerInput();
@@ -174,12 +180,7 @@ public class SimulatorViewController {
 
 			// Output Player
 			if (event.getSource() == view.getVideoOutputButton()) {
-				SimulatorModel.setDecryptionState(true);
-				try {
-					PlayerViewController.getPlayerOutput();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				PlayerViewController.getPlayerOutput();
 			}
 			
 			// Config Popup
@@ -189,18 +190,14 @@ public class SimulatorViewController {
 
 			// Exit
 			if (event.getSource() == view.getExit()) {
-				// stop all Threads
-				// thActivateEncryption.stop();
-				// thInitPlayerOutput.stop();
-				// thInitPlayerInput.stop();
 				// GUI exit
 				Platform.exit();
 				System.exit(0);
 			}
 
-		}
+		} // end handle
 
-	}
+	} // end casEventHandler
 
 
 

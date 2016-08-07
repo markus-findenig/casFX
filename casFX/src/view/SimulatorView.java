@@ -51,6 +51,10 @@ public class SimulatorView {
 	// Encryption Text Field and Toggle Button
 	private static Label encryptionL;
 	private static ToggleButton encryptionTB;
+	
+	// Decryption Text Field and Toggle Button
+	private static Label decryptionL;
+	private static ToggleButton decryptionTB;
 
 	// Time interval for ControlWord (CW)
 	private static Label cwTimeL;
@@ -119,22 +123,13 @@ public class SimulatorView {
 	private static Label ecmDecryptedL;
 	private static TextArea ecmDecryptedTA;
 
-	// Media Player
-	private MediaPlayer mediaPlayerInput;
-	private MediaPlayer mediaPlayerOutput;
-	// Video Input Player
+		// Video Input Player
 	private static Label videoInputL;
 	private static Button videoInputB;
 
 	// Video Output Player
 	private static Label videoOutputL;
 	private static Button videoOutputB;
-
-	// BarCharts
-	CategoryAxis xAxis;
-	NumberAxis yAxis;
-	BarChart<String, Number> bc1;
-	static String barChartInput = "barChartInput";
 
 	/**
 	 * Input View
@@ -206,10 +201,6 @@ public class SimulatorView {
 
 	public MenuItem test() {
 		return test;
-	}
-
-	public ToggleButton getEncryption() {
-		return encryptionTB;
 	}
 
 	public void initGUI() {
@@ -426,32 +417,30 @@ public class SimulatorView {
 		grid.add(ecmEncryptedL, 8, 17);
 		grid.add(ecmEncryptedTA, 9, 17);
 
+		
+		// --------------------------------------------------------------------
+		// Encryption Toggle Button
+		decryptionL = new Label("Decryption:");
+		grid.add(decryptionL, 16, 2);
+		decryptionTB = new ToggleButton("OFF");
+		decryptionTB.setPrefWidth(80);
+		grid.add(decryptionTB, 17, 2);
+				
 		// --------------------------------------------------------------------
 		// Video Output
 		videoOutputL = new Label("Output\nPlayer:");
 		videoOutputL.setPrefWidth(80);
 		videoOutputB = new Button("View");
-		//videoOutputB.setDisable(true);
+		videoOutputB.setDisable(true);
 		videoOutputB.setPrefWidth(80);
 		grid.add(videoOutputL, 16, 4);
 		grid.add(videoOutputB, 17, 4);
 
-		// --------------------------------------------------------------------
-		// Media Player Output
-
-		// Internal or External Key Reader
-		// Label readerL = new Label("Reader:");
-		// ComboBox<String> readerCB = new ComboBox<String>();
-		// readerCB.getItems().addAll("Internal", "External");
-		// readerCB.setValue("Internal");
-		//
-		// grid.add(readerL, 16, 12);
-		// grid.add(readerCB, 17, 12);
-
+		
 		// --------------------------------------------------------------------
 		// ECM Output Keys
 		cwOutL = new Label("CW:");
-		cwOutTF = new TextField("0123456789ABCDEF");
+		cwOutTF = new TextField("-- WAIT FOR ECM --");
 		cwOutTF.setStyle("-fx-background-color: transparent;");
 		cwOutTF.setEditable(false);
 		cwOutTF.setTooltip(new Tooltip("Control Word (64 bit)"));
@@ -571,10 +560,6 @@ public class SimulatorView {
 		return groupRB;
 	}
 
-	public MediaPlayer getOutputPlayer() {
-		return mediaPlayerOutput;
-	}
-
 	public TextField getEcmWorkKey() {
 		return ecmWorkKeyIdTF;
 	}
@@ -607,14 +592,6 @@ public class SimulatorView {
 		return ecmCrcTF;
 	}
 
-	public MediaPlayer getMediaPlayerInput() {
-		return mediaPlayerInput;
-	}
-
-	public void setMediaPlayerInput(MediaPlayer mediaPlayerInput) {
-		this.mediaPlayerInput = mediaPlayerInput;
-	}
-
 	public Button getVideoOutputButton() {
 		return videoOutputB;
 	}
@@ -638,5 +615,13 @@ public class SimulatorView {
 	public TextArea getEcmDecryptedTA() {
 		return ecmDecryptedTA;
 	}
+	
+	public ToggleButton getEncryption() {
+		return encryptionTB;
+	}
 
+	public ToggleButton getDecryption() {
+		return decryptionTB;
+	}
+	
 }

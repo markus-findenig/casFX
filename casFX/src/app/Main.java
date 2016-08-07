@@ -32,7 +32,7 @@ public class Main extends Application {
 			//configVC.show();
 			
 			// Controller View aufrufen
-			SimulatorViewController inputVC = new SimulatorViewController(simulatorModel, configModel);
+			SimulatorViewController inputVC = new SimulatorViewController(simulatorModel);
 			inputVC.show();
 			
 			

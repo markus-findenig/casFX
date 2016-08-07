@@ -180,7 +180,7 @@ public class SimulatorModel {
 		return decryptionState;
 	}
 
-	public static void setDecryptionState(boolean decState) {
+	public void setDecryptionState(boolean decState) {
 		decryptionState = decState;
 	}
 

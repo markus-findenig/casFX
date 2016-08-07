@@ -56,24 +56,17 @@ public class FFmpegController {
 	public static void runFFmpeg() {
 		
 		// TODO
-		// 1. nit odd file
+		// 1. init odd file
 		// 2. switch
 		// 3. even file
 		// 4. switch
 		// 5. odd file
 		// 6. goto 2
 
-		
 
-//		File cutOddFile;
-//		File cutEvenFile;
-
-		
 		// --------------------------------------------------------
 		// File Odd
 		if (getStateFileType()) {
-
-//			cutOddFile = new File(outFileOdd);
 			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
 					"-y", 
 					"-ss", Double.toString(getStartTime()), 
@@ -85,16 +78,6 @@ public class FFmpegController {
 					"-avoid_negative_ts", "1",
 					outFileOdd);
 			
-//	
-//			try {
-//				cutOddFile.createNewFile();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-
-//			pb.redirectErrorStream(true);
-//			pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-//			pb.redirectOutput(cutOddFile);
 			try {
 				pb.start();
 			} catch (IOException e) {
@@ -107,7 +90,6 @@ public class FFmpegController {
 			// --------------------------------------------------------
 			// File Even
 		} else {
-//			cutEvenFile = new File(outFileEven);
 			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
 					"-y", 
 					"-ss", Double.toString(getStartTime()), 
@@ -118,16 +100,7 @@ public class FFmpegController {
 					"-async", "1",
 					"-avoid_negative_ts", "1",
 					outFileEven);
-//			
-//			try {
-//				cutEvenFile.createNewFile();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//
-//			pb.redirectErrorStream(true);
-//			pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-//			pb.redirectOutput(cutEvenFile);
+			
 			try {
 				pb.start();
 			} catch (IOException e) {
@@ -141,269 +114,9 @@ public class FFmpegController {
 
 		// Update Start Time
 		setStartTime(getStartTime() + model.getCwTime());
-
-
 	}
 	
-	public static void runFFmpegProcessBuilder() {
-		
-		// TODO
-		// 1. init odd file
-		// 2. switch
-		// 3. even file
-		// 4. switch
-		// 5. odd file
-		// 6. goto 2
 
-		
-
-		File cutOddFile;
-		File cutEvenFile;
-
-		
-		// --------------------------------------------------------
-		// File Odd
-		if (getStateFileType()) {
-
-			cutOddFile = new File(outFileOdd);
-			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
-					"-y", 
-					"-ss", Double.toString(getStartTime()), 
-					"-i", infile, 
-					"-t", Double.toString(model.getCwTime()), 
-					"-vcodec", "copy", 
-					"-acodec", "copy", 
-					"-async", "1",
-					"-c", "copy",
-					"-avoid_negative_ts", "1",
-					outFileOdd);
-			
-	
-			try {
-				cutOddFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			pb.redirectErrorStream(true);
-			pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-			pb.redirectOutput(cutOddFile);
-			try {
-				pFFmpeg = pb.start();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			// switch file type
-			setStateFileType(false);
-			
-			try {
-				pFFmpeg.waitFor();
-				pFFmpeg.destroy();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-
-			// --------------------------------------------------------
-			// File Even
-		} else {
-			cutEvenFile = new File(outFileEven);
-			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
-					"-y", 
-					"-ss", Double.toString(getStartTime()), 
-					"-i", infile, 
-					"-t", Double.toString(model.getCwTime()), 
-					"-vcodec", "copy", 
-					"-acodec", "copy", 
-					"-async", "1",
-					"-c", "copy",
-					"-avoid_negative_ts", "1",
-					outFileEven);
-			
-			try {
-				cutEvenFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			pb.redirectErrorStream(true);
-			pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-			pb.redirectOutput(cutEvenFile);
-			try {
-				pFFmpeg = pb.start();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			// switch file type
-			setStateFileType(true);
-			
-			try {
-				pFFmpeg.waitFor();
-				pFFmpeg.destroy();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		}
-
-		// Update Start/Stop
-		setStartTime(getStartTime() + model.getCwTime());
-		//setStopTime(getStopTime() + model.getCwTime());
-		
-
-		// TODO del
-//		// Scrambling Control switch
-//		if (model.getScramblingControl() == "10") {
-//			model.setScramblingControl("11");
-//		} else {
-//			model.setScramblingControl("10");
-//		}
-
-	}
-
-	public static Runnable runFFmpegTask() {
-		
-		// TODO
-		// 1. init odd file
-		// 2. switch
-		// 3. even file
-		// 4. switch
-		// 5. odd file
-		// 6. goto 2
-
-		Task<Void> taskFFmpeg = new Task<Void>() {
-			@Override
-			protected Void call() throws Exception {
-
-				// GUI updaten
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-
-						ProcessBuilder pb;
-						File cutOddFile;
-						File cutEvenFile;
-
-						if (model.getEncryptionState()) {
-
-							// --------------------------------------------------------
-							// File Odd
-							if (getStateFileType()) {
-
-								cutOddFile = new File(outFileOdd);
-								pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
-										"-y", 
-										"-ss", Double.toString(getStartTime()), 
-										"-i", infile, 
-										"-t", Double.toString(model.getCwTime()), 
-										"-vcodec", "copy", 
-										"-acodec", "copy", 
-										"-async", "1",
-										"-c", "copy",
-										"-avoid_negative_ts", "1",
-										outFileOdd);
-
-								try {
-									cutOddFile.createNewFile();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								pb.redirectErrorStream(true);
-								pb.redirectInput(ProcessBuilder.Redirect.PIPE); // optional,
-								pb.redirectOutput(cutOddFile);
-								try {
-									pb.start();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								// try {
-								// p.waitFor();
-								// } catch (InterruptedException e) {
-								// e.printStackTrace();
-								// }
-
-								// switch file type
-								setStateFileType(false);
-
-								// --------------------------------------------------------
-								// File Even
-							} else {
-								cutEvenFile = new File(outFileEven);
-								pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
-										"-y", 
-										"-ss", Double.toString(getStartTime()), 
-										"-i", infile, 
-										"-t", Double.toString(model.getCwTime()), 
-										"-vcodec", "copy", 
-										"-acodec", "copy", 
-										"-async", "1",
-										"-c", "copy",
-										"-avoid_negative_ts", "1",
-										outFileEven);
-
-								try {
-									cutEvenFile.createNewFile();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								pb.redirectErrorStream(true);
-								pb.redirectInput(ProcessBuilder.Redirect.PIPE); // optional,
-								pb.redirectOutput(cutEvenFile);
-								try {
-									pb.start();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								// try {
-								// p.waitFor();
-								// } catch (InterruptedException e) {
-								// e.printStackTrace();
-								// }
-
-								// switch file type
-								setStateFileType(true);
-
-							}
-
-							
-							
-							// Update Start Time
-							setStartTime(getStartTime() + model.getCwTime());
-							
-							// Update Start/Stop
-//							setStartTime(getStopTime() + 0.001);
-//							setStopTime(getStopTime() + model.getCwTime());
-
-						} else {
-
-							// del cut files
-							// cutEvenFile.delete();
-							// cutOddFile.delete();
-							cancel();
-							// Thread.currentThread().stop();
-						}
-					}
-				});
-								
-	
-				// } // end while
-				return null;
-			} // end call
-		};
-
-//		// start the task
-//		thFFmpeg = new Thread(taskFFmpeg);
-//		thFFmpeg.setDaemon(true);
-//		thFFmpeg.start();
-		return taskFFmpeg;
-
-	}
 
 	public static Boolean getStateFileType() {
 		return stateFileType;

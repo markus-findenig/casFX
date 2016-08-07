@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import controller.PlayerControlsPanel;
+import controller.PlayerViewController;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
@@ -38,9 +39,13 @@ public class OutputPlayerView {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				PlayerViewController.exitOutputPlayerView();
+				
 				// PlayerViewController.thInitPlayerOutput.stop();
-				SimulatorModel.setDecryptionState(false);
+				//SimulatorModel.setDecryptionState(false);
 				embeddedMediaPlayer.stop();
+				embeddedMediaPlayer.release();
+				mediaPlayerFactory.release();
 				videoOutputF.dispose();
 
 			}

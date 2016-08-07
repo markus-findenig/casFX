@@ -1,12 +1,8 @@
 package controller;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -19,13 +15,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
 import javafx.application.Platform;
@@ -35,13 +28,26 @@ import model.EncryptionECM;
 import model.SimulatorModel;
 import view.SimulatorView;
 
-public class Encryption {
+public class EncryptionController {
 
+	/**
+	 * Simulator View
+	 */
 	private static SimulatorView view;
 
+	/**
+	 * Simulator Model
+	 */
 	private static SimulatorModel model;
 	
-	// Encryption ECM Model
+	/**
+	 * Config Model
+	 */
+	private static ConfigModel configModel;
+	
+	/**
+	 * Encryption ECM Model
+	 */
 	private static EncryptionECM encryptionECM;
 
 	public static ScheduledExecutorService ecmExecutor;
@@ -94,7 +100,7 @@ public class Encryption {
 	private static String ecmWorkKey;
 
 
-	public Encryption() {
+	public EncryptionController() {
 		// model = simulatorModel;
 		// view = inputView;
 		// activateEncryption();
@@ -104,6 +110,10 @@ public class Encryption {
 	public static void runEncryption() {
 		model = SimulatorViewController.getModel();
 		view = SimulatorViewController.getView();
+		configModel = ConfigViewController.getConfigModel();
+		
+		// set scrambling, CW odd for first init
+		model.setScramblingControl("11");
 
 		encryptionECM = new EncryptionECM();
 		
@@ -140,83 +150,36 @@ public class Encryption {
 		}
 		// Intervall CW
 		else {
-			Runnable encryptionRunnableFirst = new Runnable() {
+			Runnable runGenerateECM = new Runnable() {
 				@Override
 				public void run() {
-					System.out.println("encryptionRunnableFirst");
-					// TODO
 					generateECM();
-					//constantECM();
-
 				}
 			};
 
-			Runnable encryptionRunnableSecond = new Runnable() {
+			Runnable runFFmpeg = new Runnable() {
 				@Override
 				public void run() {
-					System.out.println("encryptionRunnableSecond");
-
-					// TODO aktuell
 					FFmpegController.runFFmpeg();
-					
-					
-				
-					//FFmpegController.runFFmpegTask().run();
-					
-					
-					//FFmpegController.runFFmpegProcessBuilder();
-
 				}
 			};
 
-			Runnable encryptionRunnableThird = new Runnable() {
+			Runnable runVLCmediaPlayer = new Runnable() {
 				@Override
 				public void run() {
-					System.out.println("encryptionRunnableThird");
-
-//					VlcServerController.mediaPlayer.stop();
-//					VlcServerController.mediaPlayer.release();
-//					VlcServerController.mediaPlayerFactory.release();
-					
-					
-					//VlcServerController.streamVLCmediaPlayerInputFileOhneTask();
-					
-					
-					//VlcServerController.streamVLCmediaPlayerInputFile();
-					
-					//VlcServerController.streamVLC();
-					//VlcServerController.streamVLCtask();
-					
-					
-					
-//					VlcServerController.p.destroy();
-//					VlcServerController.p.destroyForcibly();
-					//VlcServerController.streamVLCProcessBuilder();
-					
-					
-					//VlcServerController.streamVLCProcessBuilder_test();
-					
-					
-					// TODO aktuell
 					VlcServerController.streamVLCmediaPlayer();
-					
-					
-					System.out.println("ende encryptionRunnableThird");
-
 				}
 			};
-			
-			
 
 			ecmExecutor = Executors.newScheduledThreadPool(1);
-			ecmExecutor.scheduleWithFixedDelay(encryptionRunnableFirst, 0, model.getCwTime(), TimeUnit.SECONDS);
+			ecmExecutor.scheduleWithFixedDelay(runGenerateECM, 0, model.getCwTime(), TimeUnit.SECONDS);
 
 			ffmpegExecutor = Executors.newScheduledThreadPool(1);
-			ffmpegExecutor.scheduleWithFixedDelay(encryptionRunnableSecond, 1, model.getCwTime(), TimeUnit.SECONDS);
+			ffmpegExecutor.scheduleWithFixedDelay(runFFmpeg, 1, model.getCwTime(), TimeUnit.SECONDS);
 
 			vlcExecutor = Executors.newScheduledThreadPool(1);
 			//vlcExecutor.scheduleWithFixedDelay(encryptionRunnableThird, 3, model.getCwTime(), TimeUnit.SECONDS);
-			vlcExecutor.schedule(encryptionRunnableThird, 3, TimeUnit.SECONDS);
+			vlcExecutor.schedule(runVLCmediaPlayer, 3, TimeUnit.SECONDS);
 				
 		}
 
@@ -243,7 +206,8 @@ public class Encryption {
 			VlcServerController.mediaPlayer.stop();
 			VlcServerController.mediaPlayer.release();
 			VlcServerController.mediaPlayerFactory.release();
-//			sendECMExecutor.shutdown();
+			thGenerateECM.stop();
+			sendECMExecutor.shutdown();
 		} else {
 			ecmExecutor.shutdown();
 			ffmpegExecutor.shutdown();
@@ -558,16 +522,22 @@ public class Encryption {
 		// send model.getScramblingControl() + ecm 
 		
 		try {
-			 	//InetAddress dst = InetAddress.getLocalHost();
-			 	InetAddress group = InetAddress.getByName("239.0.0.1");
-			    int port = 5005;
-			    byte[] outbuf = ecmEncrypted.getBytes();
-			    
+			// default server = rtp://239.0.0.1:5004
+			String server = configModel.getServer();
+			String[] rtpSplit = server.split("://");
+			// rtp = rtpSplit[0]
+			String ipPort = rtpSplit[1];
+			String[] ip = ipPort.split(":");
+			InetAddress group = InetAddress.getByName(ip[0].trim());
+			int port = Integer.parseInt(ip[1].trim()) + 1;
+//			InetAddress group = InetAddress.getByName("239.0.0.1");
+//			int port = 5005;
+			byte[] outbuf = ecmEncrypted.getBytes();
 
-			    DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
-			    DatagramSocket socket = new DatagramSocket();
-			    socket.send(packet);
-			    socket.close();
+			DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
+			DatagramSocket socket = new DatagramSocket();
+			socket.send(packet);
+			socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

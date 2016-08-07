@@ -16,16 +16,13 @@ public class DecryptionECM {
 	private String ecmMAC;
 	private String ecmCRC;
 	
-	public DecryptionECM (){
-		
-	}
 	
 	public String getEcmHeader() {
 		return ecmHeader;
 	}
 
-	public void setEcmHeader(String eHeader) {
-		ecmHeader = eHeader;
+	public void setEcmHeader(String ecmHeader) {
+		this.ecmHeader = ecmHeader;
 	}
 
 	public String getEcmProtocol() {
