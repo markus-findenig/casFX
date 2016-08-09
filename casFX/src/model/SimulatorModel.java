@@ -2,9 +2,6 @@ package model;
 
 import java.io.File;
 
-import javafx.collections.ObservableList;
-import javafx.scene.chart.XYChart;
-import javafx.scene.media.Media;
 import javafx.stage.Stage;
 
 /**

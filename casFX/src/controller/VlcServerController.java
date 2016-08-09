@@ -1,24 +1,17 @@
 package controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static java.nio.file.StandardCopyOption.*;
-
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import model.ConfigModel;
 import model.EncryptionECM;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
+import uk.co.caprica.vlcj.player.MediaMeta;
+import uk.co.caprica.vlcj.player.MediaMetaData;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
@@ -37,8 +30,6 @@ public class VlcServerController {
 	// Encryption ECM Model
 	private static EncryptionECM encryptionECM;
 
-	public static Thread thStreamVLC;
-	
 	private static ProcessBuilder pb;
 	public static Process p;
 	
@@ -49,8 +40,6 @@ public class VlcServerController {
 	
 	public static HeadlessMediaPlayer headlessMediaPlayer;
 	
-	private static boolean state;
-
 	private static String vlcPath;
 
 	private static String inFileOdd;
@@ -62,8 +51,8 @@ public class VlcServerController {
 	private static String[] standardVlcOptions;
 	private static String[] standardMediaOptions;
 	
-	private static double startTime;
-	private static double stopTime;
+//	private static double startTime;
+//	private static double stopTime;
 
 	public static void initVLC() {
 		model = SimulatorViewController.getModel();
@@ -79,14 +68,10 @@ public class VlcServerController {
 		streamFileEven = Paths.get(model.getInputFile().getParent() + "\\streamEven.mp4");
 		
 		// first init state true for odd
-		setState(true);
-		
-		thStreamVLC = null;
-
 		
 		// init Timer
-		setStartTime(0);
-		setStopTime(model.getCwTime());
+//		setStartTime(0);
+//		setStopTime(model.getCwTime());
 
 //		MediaPlayerFactory mediaPlayerFactory = new MediaPlayerFactory();
 //		mediaPlayer = mediaPlayerFactory.newEmbeddedMediaPlayer();
@@ -99,41 +84,42 @@ public class VlcServerController {
 			
 		// rtp = "rtp{proto=udp,mux=ts,dst=239.0.0.1,port=5004}"
 		String rtp = formatRtpStream(configModel.getServer());
+		
+		LocalDateTime dateTime;
+		// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
 
+		
 		List<String> vlcArgs = new ArrayList<String>();
 		vlcArgs.clear();
-		vlcArgs.add("--intf=dummy");
-		vlcArgs.add("--dummy-quiet");
+//		vlcArgs.add("--intf=dummy");
+//		vlcArgs.add("--dummy-quiet");
 		
-		vlcArgs.add("--sout=#"+ rtp);
-//		vlcArgs.add("--sout=#duplicate{dst=" + rtp + ",dst=display}");
+//		vlcArgs.add("--sout=#"+ rtp);
+		vlcArgs.add("--sout=#duplicate{dst=" + rtp + ",dst=display}");
 		
 		vlcArgs.add("--sout-ts-crypt-video");
 		vlcArgs.add("--sout-ts-crypt-audio");
 		
-//		vlcArgs.add("--no-repeat");
-//		vlcArgs.add("--no-loop");
+		vlcArgs.add("--no-repeat");
+		vlcArgs.add("--no-loop");
 		vlcArgs.add("--ttl=1");
 		vlcArgs.add("--no-sout-rtp-sap");
 		vlcArgs.add("--no-sout-standard-sap");
 		vlcArgs.add("--sout-all");
 		vlcArgs.add("--sout-keep");
-//		vlcArgs.add("--no-plugins-cache");
-//		vlcArgs.add("vlc://quit");
+		vlcArgs.add("--no-plugins-cache");
+		vlcArgs.add("vlc://quit");
 		
-	
-
 		// -------------------------------------------------
 		// if true = odd
-		if (isState()) {
+		if (EncryptionController.isStateECMType()) {
 			vlcArgs.add("--sout-ts-csa-use=1");
-			//vlcArgs.add("--sout-ts-csa-ck=0123456789ABCDEF");
-			vlcArgs.add("--sout-ts-csa-ck=" + encryptionECM.getEcmCwOdd());
+			vlcArgs.add("--sout-ts-csa-ck=0123456789ABCDEF");
+			
+			//vlcArgs.add("--sout-ts-csa-ck=" + encryptionECM.getEcmCwOdd());
 			String[] standardVlcOptions = vlcArgs.toArray(new String[vlcArgs.size()]);
 			
-			// switch
-			setState(false);
-		
 			runPlayer(inFileOdd, standardVlcOptions);
 			
 		}
@@ -141,21 +127,17 @@ public class VlcServerController {
 		// if else = even
 		else {
 			vlcArgs.add("--sout-ts-csa-use=2");
-			//vlcArgs.add("--sout-ts-csa2-ck=FEDABC9876543210");
-			vlcArgs.add("--sout-ts-csa2-ck=" + encryptionECM.getEcmCwEven());
+			vlcArgs.add("--sout-ts-csa2-ck=FEDABC9876543210");
+			//vlcArgs.add("--sout-ts-csa2-ck=" + encryptionECM.getEcmCwEven());
 			String[] standardVlcOptions = vlcArgs.toArray(new String[vlcArgs.size()]);
 			
-			// switch
-			setState(true);
-					
 			runPlayer(inFileEven, standardVlcOptions);
 			
 		} // end if else
 	}
 	
-	private static void runPlayer(String file, String[] standardMediaOptions) {
-		
-		mediaPlayerFactory = new MediaPlayerFactory(standardMediaOptions);
+	private static void runPlayer(String file, String[] standardVlcOptions) {
+		mediaPlayerFactory = new MediaPlayerFactory(standardVlcOptions);
 		headlessMediaPlayer = mediaPlayerFactory.newHeadlessMediaPlayer();
 		headlessMediaPlayer.setVolume(0);
 		headlessMediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
@@ -163,17 +145,26 @@ public class VlcServerController {
 			@Override
 			public void playing(MediaPlayer mediaPlayer) {
 				System.out.println("playing: " + file);
+				// switch ECM Type
+				if (EncryptionController.isStateECMType()) {
+					EncryptionController.setStateECMType(false);
+				} else {
+					EncryptionController.setStateECMType(true);
+				}
+				FFmpegController.runFFmpeg();
+				EncryptionController.generateECM();
+				EncryptionController.sendECM();
 			}
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
 				System.out.println("finished: " + file);
-				//mediaPlayer.stop();
-				mediaPlayer.release();
+				headlessMediaPlayer.stop();
+				headlessMediaPlayer.release();
 				mediaPlayerFactory.release();
 				streamVLCmediaPlayer();
 			}
 		});
-		
+
 		headlessMediaPlayer.playMedia(file);
 	}
 	
@@ -251,7 +242,8 @@ public class VlcServerController {
 		String[] ip = ipPort.split(":");
 
 		StringBuilder sb = new StringBuilder(200);
-		sb.append("rtp{proto=udp,mux=ts{use-key-frames},dst=");
+		//sb.append("rtp{proto=udp,mux=ts{use-key-frames},dst=");
+		sb.append("rtp{proto=udp,mux=ts,dst=");
 		sb.append(ip[0]);
 		sb.append(",port=");
 		sb.append(ip[1]);
@@ -260,28 +252,28 @@ public class VlcServerController {
 	}
 	
 
-	public static boolean isState() {
-		return state;
-	}
-
-	public static void setState(boolean s) {
-		state = s;
-	}
+//	public static boolean isState() {
+//		return state;
+//	}
+//
+//	public static void setState(boolean s) {
+//		state = s;
+//	}
 	
-	public static double getStartTime() {
-		return startTime;
-	}
-
-	public static void setStartTime(double sTime) {
-		startTime = sTime;
-	}
-
-	public static double getStopTime() {
-		return stopTime;
-	}
-
-	public static void setStopTime(double sTime) {
-		stopTime = sTime;
-	}
+//	public static double getStartTime() {
+//		return startTime;
+//	}
+//
+//	public static void setStartTime(double sTime) {
+//		startTime = sTime;
+//	}
+//
+//	public static double getStopTime() {
+//		return stopTime;
+//	}
+//
+//	public static void setStopTime(double sTime) {
+//		stopTime = sTime;
+//	}
 
 }

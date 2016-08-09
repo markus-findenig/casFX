@@ -10,7 +10,6 @@ import javax.swing.WindowConstants;
 
 import controller.PlayerControlsPanel;
 import controller.PlayerViewController;
-import model.SimulatorModel;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
@@ -20,7 +19,10 @@ public class OutputPlayerView {
 	private static JFrame videoOutputF;
 
 	private static Canvas videoOutputC;
-
+	
+	private static JPanel videoOutputP;
+	
+	
 	int width = 500;
 	int height = 300;
 
@@ -43,9 +45,9 @@ public class OutputPlayerView {
 				
 				// PlayerViewController.thInitPlayerOutput.stop();
 				//SimulatorModel.setDecryptionState(false);
-				embeddedMediaPlayer.stop();
-				embeddedMediaPlayer.release();
-				mediaPlayerFactory.release();
+//				embeddedMediaPlayer.stop();
+//				embeddedMediaPlayer.release();
+//				mediaPlayerFactory.release();
 				videoOutputF.dispose();
 
 			}
@@ -53,7 +55,7 @@ public class OutputPlayerView {
 		videoOutputF.setVisible(true);
 		videoOutputC = new Canvas();
 		videoOutputC.setBackground(Color.black);
-		JPanel videoOutputP = new JPanel();
+		videoOutputP = new JPanel();
 		videoOutputP.setLayout(new BorderLayout());
 		videoOutputP.add(videoOutputC, BorderLayout.CENTER);
 		videoOutputF.add(videoOutputP, BorderLayout.CENTER);
@@ -63,7 +65,7 @@ public class OutputPlayerView {
 	public void reInitOutputPlayerView(EmbeddedMediaPlayer embeddedMediaPlayer, MediaPlayerFactory mediaPlayerFactory,
 			EmbeddedMediaPlayerComponent mediaPlayerComponent, PlayerControlsPanel controlsPanel) {
 		
-		videoOutputF = new JFrame("Video Output Player");
+		//videoOutputF = new JFrame("Video Output Player");
 		videoOutputF.setLayout(new BorderLayout());
 		videoOutputF.setSize(width, height);
 		videoOutputF.setLocation(600, 10);
@@ -81,9 +83,9 @@ public class OutputPlayerView {
 			}
 		});
 		videoOutputF.setVisible(true);
-		videoOutputC = new Canvas();
+		//videoOutputC = new Canvas();
 		videoOutputC.setBackground(Color.black);
-		JPanel videoOutputP = new JPanel();
+		//videoOutputP = new JPanel();
 		videoOutputP.setLayout(new BorderLayout());
 		videoOutputP.add(videoOutputC, BorderLayout.CENTER);
 		videoOutputF.add(videoOutputP, BorderLayout.CENTER);

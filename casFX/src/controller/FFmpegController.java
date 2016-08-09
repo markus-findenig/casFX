@@ -1,9 +1,6 @@
 package controller;
 
-import java.io.File;
 import java.io.IOException;
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import model.ConfigModel;
 import model.SimulatorModel;
 
@@ -24,12 +21,7 @@ public class FFmpegController {
 	@SuppressWarnings("unused")
 	private static Process pFFmpeg;
 
-	/**
-	 * @true Odd File
-	 * @false Even File
-	 */
-	private static Boolean stateFileType;
-
+	
 	private static double startTime;
 	private static double stopTime;
 
@@ -49,7 +41,6 @@ public class FFmpegController {
 		// init Timer
 		setStartTime(5);
 		//setStopTime(model.getCwTime());
-		setStateFileType(true);
 		
 	}
 
@@ -66,26 +57,30 @@ public class FFmpegController {
 
 		// --------------------------------------------------------
 		// File Odd
-		if (getStateFileType()) {
+		if (EncryptionController.isStateECMType()) {
 			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
 					"-y", 
-					"-ss", Double.toString(getStartTime()), 
+					"-ss", Double.toString(getStartTime() - 0.01), 
 					"-i", infile, 
-					"-t", Double.toString(model.getCwTime()), 
 					"-vcodec", "copy", 
 					"-acodec", "copy", 
-					"-async", "1",
+					"-t", Double.toString(model.getCwTime()), 
 					"-avoid_negative_ts", "1",
 					outFileOdd);
+			
+			// "-t", Double.toString(model.getCwTime()), 
+			// "-c", "copy",
+			// "-async", "1",
+			// "-vcodec", "copy", 
+			// "-acodec", "copy", 
+			// "-vframes", Double.toString(25 * model.getCwTime()),
+			// "-avoid_negative_ts", "1",
 			
 			try {
 				pb.start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			// switch file type
-			setStateFileType(false);
 
 			// --------------------------------------------------------
 			// File Even
@@ -94,10 +89,9 @@ public class FFmpegController {
 					"-y", 
 					"-ss", Double.toString(getStartTime()), 
 					"-i", infile, 
-					"-t", Double.toString(model.getCwTime()), 
 					"-vcodec", "copy", 
 					"-acodec", "copy", 
-					"-async", "1",
+					"-t", Double.toString(model.getCwTime() - 0.01), 
 					"-avoid_negative_ts", "1",
 					outFileEven);
 			
@@ -108,7 +102,7 @@ public class FFmpegController {
 			}
 
 			// switch file type
-			setStateFileType(true);
+			//setStateFileType(true);
 
 		}
 
@@ -116,15 +110,6 @@ public class FFmpegController {
 		setStartTime(getStartTime() + model.getCwTime());
 	}
 	
-
-
-	public static Boolean getStateFileType() {
-		return stateFileType;
-	}
-
-	public static void setStateFileType(Boolean state) {
-		stateFileType = state;
-	}
 
 	public static double getStartTime() {
 		return startTime;

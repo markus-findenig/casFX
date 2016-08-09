@@ -28,7 +28,7 @@ import model.EncryptionECM;
 import model.SimulatorModel;
 import view.SimulatorView;
 
-public class EncryptionController {
+public class EncryptionController_backup {
 
 	/**
 	 * Simulator View
@@ -163,7 +163,7 @@ public class EncryptionController {
 		configModel = ConfigViewController.getConfigModel();
 		
 		// set scrambling, CW odd for first init
-		//model.setScramblingControl("11");
+		model.setScramblingControl("11");
 
 		encryptionECM = new EncryptionECM();
 		
@@ -191,12 +191,8 @@ public class EncryptionController {
 		// first init parameter
 		FFmpegController.initFFmpegController();
 		VlcServerController.initVLC();
-		
 		setStateECMType(true);
 		
-
-		// sperre die CW Time
-		view.getCwTimeTF().setDisable(true);
 
 		// Constant CW
 		if (model.getCwTime() == 0) {
@@ -205,45 +201,36 @@ public class EncryptionController {
 		}
 		// Intervall CW
 		else {
-			
-			FFmpegController.runFFmpeg();
-			generateECM();
-			sendECM();
-			VlcServerController.streamVLCmediaPlayer();
-			
-			
-			
-			
-//			Runnable runGenerateECM = new Runnable() {
-//				@Override
-//				public void run() {
-//					generateECM();
-//				}
-//			};
-//
-//			Runnable runFFmpeg = new Runnable() {
-//				@Override
-//				public void run() {
-//					FFmpegController.runFFmpeg();
-//				}
-//			};
-//
-//			Runnable runVLCmediaPlayer = new Runnable() {
-//				@Override
-//				public void run() {
-//					VlcServerController.streamVLCmediaPlayer();
-//				}
-//			};
-//
-//			ecmExecutor = Executors.newScheduledThreadPool(1);
-//			ecmExecutor.scheduleWithFixedDelay(runGenerateECM, 0, model.getCwTime(), TimeUnit.SECONDS);
-//
-//			ffmpegExecutor = Executors.newScheduledThreadPool(1);
-//			ffmpegExecutor.scheduleWithFixedDelay(runFFmpeg, 1, model.getCwTime(), TimeUnit.SECONDS);
-//
-//			vlcExecutor = Executors.newScheduledThreadPool(1);
-//			//vlcExecutor.scheduleWithFixedDelay(encryptionRunnableThird, 3, model.getCwTime(), TimeUnit.SECONDS);
-//			vlcExecutor.schedule(runVLCmediaPlayer, 3, TimeUnit.SECONDS);
+			Runnable runGenerateECM = new Runnable() {
+				@Override
+				public void run() {
+					generateECM();
+				}
+			};
+
+			Runnable runFFmpeg = new Runnable() {
+				@Override
+				public void run() {
+					FFmpegController.runFFmpeg();
+				}
+			};
+
+			Runnable runVLCmediaPlayer = new Runnable() {
+				@Override
+				public void run() {
+					VlcServerController.streamVLCmediaPlayer();
+				}
+			};
+
+			ecmExecutor = Executors.newScheduledThreadPool(1);
+			ecmExecutor.scheduleWithFixedDelay(runGenerateECM, 0, model.getCwTime(), TimeUnit.SECONDS);
+
+			ffmpegExecutor = Executors.newScheduledThreadPool(1);
+			ffmpegExecutor.scheduleWithFixedDelay(runFFmpeg, 1, model.getCwTime(), TimeUnit.SECONDS);
+
+			vlcExecutor = Executors.newScheduledThreadPool(1);
+			//vlcExecutor.scheduleWithFixedDelay(encryptionRunnableThird, 3, model.getCwTime(), TimeUnit.SECONDS);
+			vlcExecutor.schedule(runVLCmediaPlayer, 3, TimeUnit.SECONDS);
 				
 		}
 
@@ -262,7 +249,7 @@ public class EncryptionController {
 		} 
 		// Intervall CW, halbe CW Time
 		else {
-			//sendECMExecutor.scheduleWithFixedDelay(sendECMRunnable, 1, model.getCwTime() / 2, TimeUnit.SECONDS);
+			sendECMExecutor.scheduleWithFixedDelay(sendECMRunnable, 1, model.getCwTime() / 2, TimeUnit.SECONDS);
 		}
 		
 
@@ -281,9 +268,9 @@ public class EncryptionController {
 			sendECMExecutor.shutdownNow();
 		} else {
 			//thGenerateECM.stop();
-//			ecmExecutor.shutdownNow();
-//			ffmpegExecutor.shutdownNow();
-//			vlcExecutor.shutdownNow();
+			ecmExecutor.shutdownNow();
+			ffmpegExecutor.shutdownNow();
+			vlcExecutor.shutdownNow();
 			VlcServerController.headlessMediaPlayer.stop();
 			VlcServerController.headlessMediaPlayer.release();
 			VlcServerController.mediaPlayerFactory.release();
@@ -308,6 +295,9 @@ public class EncryptionController {
 				LocalDateTime dateTime;
 				// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
+
+				// sperre die CW Time
+				view.getCwTimeTF().setDisable(true);
 
 				// erzeuge ein cw
 				String cw = getRandomHex(16);
@@ -341,9 +331,7 @@ public class EncryptionController {
 				// ECM Scrambling Control Pointer for CW odd
 				if (isStateECMType()) {
 					encryptionECM.setEcmCwOdd(cw);
-					encryptionECM.setEcmCwEven("0000000000000000");
 				} else {
-					encryptionECM.setEcmCwOdd("0000000000000000");
 					encryptionECM.setEcmCwEven(cw);
 				}
 
@@ -351,7 +339,7 @@ public class EncryptionController {
 				encryptionECM.setEcmProgramType("C8");
 
 				// ECM Date/Time setzen
-				dateTime = LocalDateTime.now();
+				dateTime = LocalDateTime.now().plusSeconds(3);
 				//dateTime = LocalDateTime.now().plusSeconds(3);
 				// plus die VLC verzögerung
 				// plus die ECM CW Time Gültigkeitsdauer
@@ -370,13 +358,6 @@ public class EncryptionController {
 
 				// setze ECM CRC
 				encryptionECM.setEcmCRC(getCRC());
-				
-				// odd/even Scrambling Control
-				if (isStateECMType()) {
-					model.setScramblingControl("11");
-				} else {
-					model.setScramblingControl("10");
-				}
 
 				// GUI updaten
 				Platform.runLater(new Runnable() {
@@ -386,7 +367,14 @@ public class EncryptionController {
 					}
 				});
 
-				
+				// switch odd/even Scrambling Control
+				if (isStateECMType()) {
+					model.setScramblingControl("11");
+					setStateECMType(false);
+				} else {
+					model.setScramblingControl("10");
+					setStateECMType(true);
+				}
 
 //				return null;
 //			} // end call
@@ -410,6 +398,9 @@ public class EncryptionController {
 				LocalDateTime dateTime;
 				// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
+
+				// sperre die CW Time
+				view.getCwTimeTF().setDisable(true);
 
 				// hohle constant cw in der config
 				String cw = ConfigModel.getConstantCw();
@@ -435,7 +426,7 @@ public class EncryptionController {
 
 				// set cw for odd and even
 				encryptionECM.setEcmCwOdd(cw);
-				encryptionECM.setEcmCwEven("0000000000000000");
+				encryptionECM.setEcmCwEven(cw);
 
 				// ECM Program type
 				encryptionECM.setEcmProgramType("C8");
@@ -456,9 +447,6 @@ public class EncryptionController {
 
 				// setze ECM CRC
 				encryptionECM.setEcmCRC(getCRC());
-				
-				// TS Scrambling Control auf odd
-				model.setScramblingControl("11");
 
 				// GUI updaten
 				Platform.runLater(new Runnable() {
@@ -585,7 +573,7 @@ public class EncryptionController {
 		return String.format("%02X", x.getValue());
 	}
 
-	public static void sendECM() {
+	private static void sendECM() {
 		// get ecm and ecmEncrypted
 		ecm = ecmHeader + ecmPayload + encryptionECM.getEcmMAC() + encryptionECM.getEcmCRC();
 		ecmEncrypted = ecmHeader + ecmPayloadEncrypted + encryptionECM.getEcmCRC();
@@ -654,25 +642,24 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Gibt an welcher ECM Type gerade aktiv ist.
 	 * 
-	 * @return - @true für Odd und @false für Even
+	 * @return
 	 */
 	public static boolean isStateECMType() {
 		return stateECMType;
 	}
 
 	/**
-	 * Setzt den ECM Type: @true für Odd und @false für Even.
+	 * Setzt anhand des Parameters @true für Odd und @false für Even
 	 * 
-	 * @param type - Typ der aktuellen ECM.
+	 * @param state Status Typ der aktuellen ECM.
 	 */
-	public static void setStateECMType(boolean type) {
-		stateECMType = type;
+	public static void setStateECMType(boolean state) {
+		stateECMType = state;
 	}
 	
 	public static EncryptionECM getEncryptionECM () {
-		return encryptionECM;
+	return encryptionECM;
 }
 
 }

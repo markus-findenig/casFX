@@ -96,11 +96,11 @@ public class DecryptionController {
 	private static String msgEcmCRC;
 
 	public static void runDecryption() {
-		decryptionECM = new DecryptionECM();
-		//decryptionECM = PlayerViewController.decryptionECM;
 		model = SimulatorViewController.getModel();
 		view = SimulatorViewController.getView();
 		configModel = ConfigViewController.getConfigModel();
+		
+		decryptionECM = new DecryptionECM();
 		
 		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
 		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
@@ -125,10 +125,14 @@ public class DecryptionController {
 		thReceiveMessage.start();
 		
 	}
+	
+	public static void stopDecryption() {
+		view.getCwOutTF().setText("-- WAIT FOR ECM --");
+		PlayerViewController.exitOutputPlayerView();
+		
+	}
 
 	public static void receiveMessage() throws Exception {
-		
-		
 		// default server = rtp://239.0.0.1:5004
 		String client = configModel.getClient();
 		String[] rtpSplit = client.split("://");
@@ -150,8 +154,6 @@ public class DecryptionController {
 		//System.err.println("while :" + PlayerViewController.embeddedMediaPlayer.isPlaying());
 
 		while (model.getDecryptionState()) {
-		//while (true) {
-			//System.err.println("while in:" + PlayerViewController.embeddedMediaPlayer.isPlaying());
 			// Wait to receive a datagram
 			socket.receive(packet);
 
@@ -162,9 +164,7 @@ public class DecryptionController {
 			// msg);
 
 			if (msg.length() == ECM_LENGTH) {
-
 				receivedECM(msg);
-
 			}
 			
 			// TODO EMM Length
@@ -175,22 +175,13 @@ public class DecryptionController {
 		
 		socket.leaveGroup(group);
 		socket.close();
-//		
-//	return null;
-//
-//		// socket.leaveGroup(group);
-//		// socket.close();
-//		//
-//
-//		}
-//	};
-//	// start the task
-//	Thread thReceiveMessage = new Thread(taskReceiveMessage);
-//	thReceiveMessage.setDaemon(true);
-//	thReceiveMessage.start();
-
 	}
 
+	/**
+	 * Empfange ECM Nachricht
+	 * @param msg - Aktuelle ECM Nachricht
+	 * @throws Exception - Fehlerhafte ECM Nachricht
+	 */
 	private static void receivedECM(String msg) throws Exception {
 		// spit msg into substrings
 		msgEcmHeader = msg.substring(0, 16);
@@ -238,6 +229,7 @@ public class DecryptionController {
 
 		// check CRC
 		if (!validateCRC(msgEcmCRC, validCRC)) {
+			stopDecryption();
 			throw new IOException("CRC Mismatch");
 		}
 
@@ -248,6 +240,7 @@ public class DecryptionController {
 
 		// check MAC
 		if (!validateMAC(validMAC, ecmHeader + ecmPayloadDecrypted)) {
+			stopDecryption();
 			throw new IOException("MAC Mismatch");
 		}
 		
@@ -255,7 +248,6 @@ public class DecryptionController {
 		
 		// check Date/Time save only new ecm
 		String ecmDateTime = ecmPayloadDecrypted.substring(34, 44);
-		
 		if (Integer.parseInt(ecmDateTime.trim()) > Integer.parseInt(decryptionECM.getEcmDateTime().trim())) {
 			
 			// TODO
@@ -263,6 +255,14 @@ public class DecryptionController {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
+					// if cw is odd = 8000000000000000
+					if (decryptionECM.getEcmHeader().equals("8000000000000000")) {
+						view.getCwOutTF().setText(decryptionECM.getEcmCwOdd());
+					}
+					// if cw is even = 8100000000000000
+					else {
+						view.getCwOutTF().setText(decryptionECM.getEcmCwEven());
+					}
 					view.getEcmDecryptedTA().setText(ecmDecrypted);
 				}
 			});
@@ -395,6 +395,8 @@ public class DecryptionController {
 	public static DecryptionECM getDecryptionECM() {
 		return decryptionECM;
 	}
+
+
 
 
 

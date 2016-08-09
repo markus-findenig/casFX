@@ -9,7 +9,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Toggle;
 import javafx.stage.FileChooser;
-import model.ConfigModel;
 import model.SimulatorModel;
 import view.SimulatorView;
 
@@ -158,17 +157,17 @@ public class SimulatorViewController {
 			// Decryption State ON (true) or OFF (false)
 			if (event.getSource() == view.getDecryption()) {
 				if (view.getDecryption().isSelected()) {
+					// run Decryption
 					view.getDecryption().setText("ON");
 					model.setDecryptionState(true);
 					view.getVideoOutputButton().setDisable(false);
-					// run Decryption
 					DecryptionController.runDecryption();
 				} else {
 					// stop Decryption
 					view.getDecryption().setText("OFF");
 					model.setDecryptionState(false);
 					view.getVideoOutputButton().setDisable(true);
-					PlayerViewController.exitOutputPlayerView();
+					DecryptionController.stopDecryption();
 				}
 			
 			}

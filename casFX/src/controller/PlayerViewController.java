@@ -1,7 +1,14 @@
 package controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import model.ConfigModel;
 import model.DecryptionECM;
@@ -9,6 +16,7 @@ import model.EncryptionECM;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.medialist.MediaList;
+import uk.co.caprica.vlcj.player.MediaMeta;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
@@ -136,27 +144,14 @@ public class PlayerViewController {
 
 	}
 
+	/**
+	 * Erzeuge eine Output Player
+	 */
 	public static void getPlayerOutput() {
 
 		model = SimulatorViewController.getModel();
 		configModel = ConfigViewController.getConfigModel();
 		view = SimulatorViewController.getView();
-
-		// Runnable receiveMessage = new Runnable() {
-		// @Override
-		// public void run() {
-		// // init received Messages
-		// try {
-		// DecryptionController.receiveMessage();
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// };
-		//
-		// thReceiveMessage = new Thread(receiveMessage);
-		// thReceiveMessage.setDaemon(true);
-		// thReceiveMessage.start();
 
 		Runnable initPlayer = new Runnable() {
 			@Override
@@ -189,63 +184,180 @@ public class PlayerViewController {
 	}
 
 	private static void initIntervallPlayerOutput() {
-		System.err.println("decryptionECM.getEcmCwOdd() : " + decryptionECM.getEcmCwOdd());
+		
 
 		// // Video Player Output Initialisieren
 		// Task<Void> taskInitPlayerOutput = new Task<Void>() {
 		// @Override
 		// protected Void call() throws Exception {
+		
+		// init player
+		mediaOutputPlayerFactory = new MediaPlayerFactory();
+		embeddedOutputMediaPlayer = mediaOutputPlayerFactory.newEmbeddedMediaPlayer();
+
+		controlsOutputPanel = new PlayerControlsPanel(embeddedOutputMediaPlayer);
+		mediaOutputPlayerComponent = new EmbeddedMediaPlayerComponent();
+		mediaOutputPlayerComponent.add(controlsOutputPanel);
+
+		outputPlayerView = new OutputPlayerView(embeddedOutputMediaPlayer, mediaOutputPlayerFactory,
+				mediaOutputPlayerComponent, controlsOutputPanel);
 
 		List<String> vlcArgs = new ArrayList<String>();
+		
+		// check Date/Time
+		
+		System.err.println("decryptionECM.getEcmDateTime() : " + decryptionECM.getEcmDateTime());
 
-		// if cw is odd = 8000000000000000
-		if (encryptionECM.getEcmHeader().equals("8000000000000000")) {
-			view.getCwOutTF().setText(encryptionECM.getEcmCwOdd());
-			vlcArgs.add("--ts-csa-ck=" + encryptionECM.getEcmCwOdd());
-		}
-		// if cw is even = 8100000000000000
-		else {
-			view.getCwOutTF().setText(encryptionECM.getEcmCwEven());
-			vlcArgs.add("--ts-csa2-ck=" + encryptionECM.getEcmCwEven());
-		}
+		LocalDateTime dateTime;
+		// Datum Formatieren: Monat Tag Stunden Minuten Sekunden
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmmss");
+		
+		// ECM Gültigkeit von
+		int msgDateTime = Integer.parseInt(decryptionECM.getEcmDateTime().trim());
+		
+		// ECM Intervall Zeit
+		int cwIntervall = Integer.parseInt(decryptionECM.getEcmVariablePart().trim());
+		
+		// Aktuelle Zeit
+		dateTime = LocalDateTime.now();
+		// 0808105420
+		int currentTime = Integer.parseInt(dateTime.format(formatter).trim());
+		
+		// aktuelle zeit gleich ecm zeit
+		int delayRunTime = 0;
+		// aktuelle zeit keiner als ecm zeit
+		if (currentTime < msgDateTime) {
+			delayRunTime = msgDateTime - currentTime;
+		} else
+			// aktuelle zeit größer als ecm zeit
+			if (currentTime > msgDateTime) {
+				delayRunTime = msgDateTime + cwIntervall - currentTime;
+			}
+		
+				
+		System.out.println("delayRunTime : " + delayRunTime);
+		System.out.println("cwIntervall : " + cwIntervall);
 
-		// // update decrypted ECM
-		// String ecm = encryptionECM.getEcmHeader() +
-		// encryptionECM.getEcmProtocol() +
-		// encryptionECM.getEcmBroadcastId() +
-		// encryptionECM.getEcmWorkKeyId() +
-		// encryptionECM.getEcmCwOdd() +
-		// encryptionECM.getEcmCwEven() +
-		// encryptionECM.getEcmProgramType() +
-		// encryptionECM.getEcmDateTime() +
-		// encryptionECM.getEcmRecordControl() +
-		// encryptionECM.getEcmVariablePart() +
-		// encryptionECM.getEcmMAC() +
-		// encryptionECM.getEcmCRC();
-		//
-		// view.getEcmDecryptedTA().setText(ecm);
+		//runIntervallPlayerOutput(configModel.getClient().toString(), standardVlcOptions);
 
-		String[] standardVlcOptions = vlcArgs.toArray(new String[vlcArgs.size()]);
+		// Video Player Output Initialisieren
+//		Task<Void> taskInitPlayerOutput = new Task<Void>() {
+//			@Override
+//			protected Void call() throws Exception {
+				embeddedOutputMediaPlayer.stop();
+				embeddedOutputMediaPlayer.release();
+				mediaOutputPlayerFactory.release();
+				
+				// if cw is odd = 8000000000000000
+				if (decryptionECM.getEcmHeader().equals("8000000000000000")) {
+					view.getCwOutTF().setText(decryptionECM.getEcmCwOdd());
+					//vlcArgs.add("--ts-csa-ck=" + decryptionECM.getEcmCwOdd());
+					vlcArgs.add("--sout-ts-csa-ck=0123456789ABCDEF");
+				}
+				// if cw is even = 8100000000000000
+				else {
+					view.getCwOutTF().setText(decryptionECM.getEcmCwEven());
+					//vlcArgs.add("--ts-csa2-ck=" + decryptionECM.getEcmCwEven());
+					vlcArgs.add("--sout-ts-csa2-ck=FEDABC9876543210");
+				}
+							
+				
+				String[] standardVlcOptions = vlcArgs.toArray(new String[vlcArgs.size()]);
+				
+				//runIntervallPlayerOutput_TEST(configModel.getClient().toString(), standardVlcOptions);
+				
+			
+				mediaOutputPlayerFactory = new MediaPlayerFactory(standardVlcOptions);
+				embeddedOutputMediaPlayer = mediaOutputPlayerFactory.newEmbeddedMediaPlayer();
+				// embeddedMediaPlayer.setVolume(0);
 
-		runConstantPlayerOutput(configModel.getClient().toString(), standardVlcOptions);
+				controlsOutputPanel = new PlayerControlsPanel(embeddedOutputMediaPlayer);
+				mediaOutputPlayerComponent = new EmbeddedMediaPlayerComponent();
+				mediaOutputPlayerComponent.add(controlsOutputPanel);
 
-		// Platform.runLater(new Runnable() {
-		// @Override
-		// public void run() {
-		// embeddedMediaPlayer.playMedia(ConfigModel.getClient());
-		// }
-		// });
-		// return null;
-		// }
-		// };
-		// // start the task
-		// thInitPlayerOutput = new Thread(taskInitPlayerOutput);
-		// thInitPlayerOutput.setDaemon(true);
-		// thInitPlayerOutput.start();
+				// Set Player Volume 0
+				controlsOutputPanel.updateVolume(0);
+				
+				// TODO update outputPlayer
+				outputPlayerView.reInitOutputPlayerView(embeddedOutputMediaPlayer, mediaOutputPlayerFactory, mediaOutputPlayerComponent, controlsOutputPanel);
+//				outputPlayerView = new OutputPlayerView(embeddedOutputMediaPlayer, mediaOutputPlayerFactory,
+//						mediaOutputPlayerComponent, controlsOutputPanel);
+				
+				embeddedOutputMediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
+					@Override
+					public void playing(MediaPlayer mediaPlayer) {
+						System.out.println("Intervall playing: ");
+						
+						System.out.println("Intervall getMediaMeta: " + embeddedOutputMediaPlayer.getMediaMeta());
+						System.out.println("Intervall getMediaDetails: " + embeddedOutputMediaPlayer.getMediaDetails());
+						System.out.println("Intervall getMediaMetaData: " + embeddedOutputMediaPlayer.getMediaMetaData());
+						
+						// TODO
+						MediaMeta mediaMeta = embeddedOutputMediaPlayer.getMediaMeta();
+					}
+
+					@Override
+					public void finished(MediaPlayer mediaPlayer) {
+						System.out.println("Intervall finished: ");
+						// mediaPlayer.stop();
+						mediaPlayer.release();
+						mediaOutputPlayerFactory.release();
+						// streamVLCmediaPlayer();
+						// Thread.currentThread().notify();
+						// generatePlayer();
+
+					}
+
+					@Override
+					public void error(MediaPlayer mediaPlayer) {
+						System.out.println("Constant error: ");
+					}
+				});
+
+				System.out.println("01 embeddedOutputMediaPlayer.programScrambled(): " + embeddedOutputMediaPlayer.programScrambled());
+				
+				embeddedOutputMediaPlayer.playMedia(configModel.getClient().toString());
+				
+				
+				
+				System.out.println("02 embeddedOutputMediaPlayer.programScrambled(): " + embeddedOutputMediaPlayer.programScrambled());
+				
+
+//
+//				Platform.runLater(new Runnable() {
+//					@Override
+//					public void run() {
+//						runIntervallPlayerOutput(configModel.getClient().toString(), standardVlcOptions);
+//					}
+//				});
+
+				
+				
+				
+				
+//				return null;
+//			}
+//		};
+		
+		ScheduledExecutorService playerOutputExecutor = Executors.newScheduledThreadPool(1);
+		//playerOutputExecutor.scheduleWithFixedDelay(taskInitPlayerOutput, 0, model.getCwTime(), TimeUnit.SECONDS);
+		
+		//playerOutputExecutor.scheduleAtFixedRate(taskInitPlayerOutput, delayRunTime, cwIntervall, TimeUnit.SECONDS);
+		
+//		playerOutputExecutor.scheduleWithFixedDelay(taskInitPlayerOutput, delayRunTime, cwIntervall, TimeUnit.SECONDS);
+		
+		//playerOutputExecutor.scheduleAtFixedRate(taskInitPlayerOutput, 0, 10, TimeUnit.SECONDS);
+		
+		//playerOutputExecutor.schedule(taskInitPlayerOutput, 0, TimeUnit.SECONDS);
+		
+//		// start the task
+//		 thInitPlayerOutput = new Thread(taskInitPlayerOutput);
+//		 thInitPlayerOutput.setDaemon(true);
+//		 thInitPlayerOutput.start();
 
 	}
 
-	private static void runConstantPlayerOutput(String stream, String[] standardVlcOptions) {
+	private static void runIntervallPlayerOutput(String stream, String[] standardVlcOptions) {
 
 		mediaOutputPlayerFactory = new MediaPlayerFactory(standardVlcOptions);
 		embeddedOutputMediaPlayer = mediaOutputPlayerFactory.newEmbeddedMediaPlayer();
@@ -257,17 +369,27 @@ public class PlayerViewController {
 
 		// Set Player Volume 0
 		controlsOutputPanel.updateVolume(0);
-
+		
+		
 		embeddedOutputMediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
 
 			@Override
 			public void playing(MediaPlayer mediaPlayer) {
-				System.out.println("Constant playing: " + stream);
+				System.out.println("Intervall playing: " + stream);
+				
+				System.out.println("Intervall getMediaMeta: " + embeddedOutputMediaPlayer.getMediaMeta());
+				
+				System.out.println("Intervall getMediaDetails: " + embeddedOutputMediaPlayer.getMediaDetails());
+				
+				System.out.println("Intervall getMediaMetaData: " + embeddedOutputMediaPlayer.getMediaMetaData());
+				
+				// TODO
+				MediaMeta mediaMeta = embeddedOutputMediaPlayer.getMediaMeta();
 			}
 
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
-				System.out.println("Constant finished: " + stream);
+				System.out.println("Intervall finished: " + stream);
 				// mediaPlayer.stop();
 				mediaPlayer.release();
 				mediaOutputPlayerFactory.release();
@@ -284,20 +406,47 @@ public class PlayerViewController {
 				System.exit(0);
 
 			}
-
+			
+			
 		});
 
 		outputPlayerView = new OutputPlayerView(embeddedOutputMediaPlayer, mediaOutputPlayerFactory,
 				mediaOutputPlayerComponent, controlsOutputPanel);
 
-		embeddedOutputMediaPlayer.playMedia(stream);
-
+		
+		
+		
 		// try {
 		// Thread.currentThread().wait();
 		// } catch (InterruptedException e) {
 		// e.printStackTrace();
 		// }
 
+	}
+	
+	private static void runIntervallPlayerOutput_TEST(String stream, String[] standardVlcOptions) {
+		
+		mediaOutputPlayerFactory = new MediaPlayerFactory(standardVlcOptions);
+		embeddedOutputMediaPlayer = mediaOutputPlayerFactory.newEmbeddedMediaPlayer();
+		// embeddedMediaPlayer.setVolume(0);
+
+		controlsOutputPanel = new PlayerControlsPanel(embeddedOutputMediaPlayer);
+		mediaOutputPlayerComponent = new EmbeddedMediaPlayerComponent();
+		mediaOutputPlayerComponent.add(controlsOutputPanel);
+
+		// Set Player Volume 0
+		controlsOutputPanel.updateVolume(0);
+		
+		outputPlayerView = new OutputPlayerView(embeddedOutputMediaPlayer, mediaOutputPlayerFactory,
+				mediaOutputPlayerComponent, controlsOutputPanel);
+
+
+		System.out.println("embeddedOutputMediaPlayer.programScrambled(): " + embeddedOutputMediaPlayer.programScrambled());
+		
+		while (embeddedOutputMediaPlayer.programScrambled()) {
+			embeddedOutputMediaPlayer.playMedia(stream);
+		}
+		
 	}
 
 	/**
@@ -309,6 +458,9 @@ public class PlayerViewController {
 
 		// Update GUI Output CW
 		view.getCwOutTF().setText(decryptionECM.getEcmCwOdd());
+		
+		// stop Decryption Receive Message
+		model.setDecryptionState(false);
 
 		// generate media player
 		mediaOutputPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));
@@ -327,7 +479,8 @@ public class PlayerViewController {
 
 	public static void exitOutputPlayerView() {
 
-		thInitOutputPlayer.stop();
+		// TODO
+		//thInitOutputPlayer.stop();
 
 	}
 
