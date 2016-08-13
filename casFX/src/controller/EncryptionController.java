@@ -557,7 +557,7 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Liefert die Encryption ECM {@link encryptionECM}
+	 * Liefert die Encryption ECM {@link encryptionECM}.
 	 * 
 	 * @return - Gibt die Encryption ECM zurück.
 	 */

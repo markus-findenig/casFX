@@ -1,6 +1,5 @@
 package controller;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -22,6 +21,11 @@ import model.DecryptionECM;
 import model.SimulatorModel;
 import view.SimulatorView;
 
+/**
+ * 
+ * Decryption Controller. Steuert die Entschlüsselung.
+ *
+ */
 public class DecryptionController {
 
 	/**
@@ -96,7 +100,7 @@ public class DecryptionController {
 	private static String msgEcmCRC;
 
 	/**
-	 * Startet die Entschlüsselung
+	 * Startet die Entschlüsselung.
 	 */
 	public static void runDecryption() {
 		model = SimulatorViewController.getModel();
@@ -137,6 +141,9 @@ public class DecryptionController {
 
 	}
 
+	/**
+	 * Stoppt die Entschlüsselung.
+	 */
 	public static void stopDecryption() {
 		view.getDecryption().setText("OFF");
 		model.setDecryptionState(false);
@@ -147,6 +154,10 @@ public class DecryptionController {
 
 	}
 
+	/**
+	 * Empfängt die Broadcast Nachrichten. Leitet die Nachrichten anhand ihres Typs (ECM/EMM) weiter.
+	 * @throws Exception - Fehler beim erstellen des Sockets.
+	 */
 	public static void receiveMessage() throws Exception {
 		// default server = rtp://239.0.0.1:5004
 		String client = configModel.getClient();
@@ -193,7 +204,7 @@ public class DecryptionController {
 	}
 
 	/**
-	 * Empfange ECM Nachricht
+	 * Empfange ECM Nachricht.
 	 * 
 	 * @param msg
 	 *            - Aktuelle ECM Nachricht
@@ -326,12 +337,12 @@ public class DecryptionController {
 
 	/**
 	 * Überprüft den Cyclic Redundancy Check (CRC) anhand des Eingabe
-	 * Strings @param crc mit @param msgEcmCrc
+	 * Strings {@link validCRC} mit {@link msgEcmCrc}.
 	 * 
 	 * @param msgEcmCrc
-	 *            - Aktueller CRC
+	 *            - Aktueller CRC.
 	 * @param validCRC
-	 *            - String zum Validieren
+	 *            - String zum Validieren.
 	 * @return true if CRC Match or false if CRC Fail
 	 */
 	private static boolean validateCRC(String msgEcmCrc, String validCRC) {
@@ -352,8 +363,8 @@ public class DecryptionController {
 	 * Entschlüsselt die ECM Nachricht (ecmPayload + Payload MAC).
 	 * 
 	 * @param ecm
-	 *            - Nachricht zum Entschlüsseln
-	 * @return Entschlüsselte ECM
+	 *            - Nachricht zum Entschlüsseln.
+	 * @return Entschlüsselte ECM Nachricht.
 	 */
 	private static String decryptedECM(String ecm) {
 		// generate the decrypted key with the current Authorization Key
@@ -377,10 +388,10 @@ public class DecryptionController {
 	 * (MAC) gültig ist.
 	 * 
 	 * @param validMAC
-	 *            - Aktueller MAC
+	 *            - Aktueller MAC.
 	 * @param getMAC
-	 *            - String zum Überprüfen
-	 * @return true if MAC Match or false if MAC Fail
+	 *            - String zum Überprüfen.
+	 * @return true if MAC Match or false if MAC Fail.
 	 */
 	private static boolean validateMAC(String validMAC, String getMAC) {
 		// generate a key
@@ -409,6 +420,11 @@ public class DecryptionController {
 		}
 	}
 
+	/**
+	 * Liefert die Decryption ECM {@link decryptionECM}.
+	 * 
+	 * @return - Gibt die Decryption ECM zurück.
+	 */
 	public static DecryptionECM getDecryptionECM() {
 		return decryptionECM;
 	}
