@@ -16,6 +16,16 @@ public class ConfigView {
 	private Scene sceneConfig;
 	private GridPane grid;
 	//private ConfigModel configModel;
+	
+	/**
+	 * Breite von der Config View
+	 */
+	private double width = 500;
+	
+	/**
+	 * Höhe von der Config View
+	 */
+	private double height = 220;
 
 	// Config Parameter
 	private static Label ffmpegPathL;
@@ -38,7 +48,6 @@ public class ConfigView {
 
 	/**
 	 * Config View
-	 * 
 	 */
 	public ConfigView() {
 		//configModel = cModel;
@@ -53,15 +62,22 @@ public class ConfigView {
 		// Initialisiere Config Parameter
 		initConfig();
 
-		sceneConfig = new Scene(grid, 500, 220);
+		sceneConfig = new Scene(grid, width, height);
 	}
 
+	/**
+	 * Zeigt die Config View an.
+	 * @param dialogStage - Aktuelle Stage.
+	 */
 	public void show(Stage dialogStage) {
 		dialogStage.setTitle("Config");
 		dialogStage.setScene(sceneConfig);
 		dialogStage.show();
 	}
 
+	/**
+	 * Initialisiert die Config View.
+	 */
 	public void initConfig() {
 
 		// TODO Debug // Spalte, Zeile
@@ -79,19 +95,19 @@ public class ConfigView {
 		grid.add(vlcPathL, 1, 2);
 		vlcPathTF = new TextField();
 		GridPane.setColumnSpan(vlcPathTF, 2);
-		vlcPathTF.setTooltip(new Tooltip("Path to the VLC Libary (libvlc)."));
+		vlcPathTF.setTooltip(new Tooltip("Path to the VLC Libary (libvlc, vlc.exe)."));
 		grid.add(vlcPathTF, 2, 2);
 
 		serverL = new Label("Input Player (Server):");
 		grid.add(serverL, 1, 3);
 		serverTF = new TextField();
-		serverTF.setTooltip(new Tooltip("Server IP and Port, Default http://127.0.0.1:7777"));
+		serverTF.setTooltip(new Tooltip("Server IP and Port, Default rtp://239.0.0.1:5004"));
 		grid.add(serverTF, 2, 3);
 
 		clientL = new Label("Output Player (Client):");
 		grid.add(clientL, 1, 4);
 		clientTF = new TextField();
-		clientTF.setTooltip(new Tooltip("Client IP and Port, Default http://127.0.0.1:7777"));
+		clientTF.setTooltip(new Tooltip("Client IP and Port, Default rtp://239.0.0.1:5004"));
 		grid.add(clientTF, 2, 4);
 		
 		

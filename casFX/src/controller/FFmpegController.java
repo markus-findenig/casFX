@@ -1,30 +1,67 @@
 package controller;
 
 import java.io.IOException;
+
 import model.ConfigModel;
 import model.SimulatorModel;
+import uk.co.caprica.vlcj.player.MediaPlayerFactory;
+import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 
+/**
+ * FFmpeg Controller. Steuert die Parameter und Ausführungen vom FFmpeg Programm.
+ */
 public class FFmpegController {
 
+	/**
+	 * Simulator Model
+	 */
 	private static SimulatorModel model;
+	
+	/**
+	 * Config Model
+	 */
 	private static ConfigModel configModel;
 
-	private static String ffmpegPath; // = "D:\\Securety\\Programms\\ffmpeg\\bin\\";
+	/**
+	 * Dateipfad zur FFmpeg Programm Bibliothek
+	 */
+	private static String ffmpegPath; // "D:\\Securety\\Programms\\ffmpeg\\bin\\";
 
+	/**
+	 * Dateipfad der aktuellen Input Video Datei
+	 */
 	private static String infile;
-	private static String outFileOdd;
-	private static String outFileEven;
 
-	private static Thread thFFmpeg;
+	/**
+	 * Dateipfad zur Ausgabedatei odd.mp4
+	 */
+	private static String fileOdd;
 	
+	/**
+	 * Dateipfad zur Ausgabedatei even.mp4
+	 */
+	private static String fileEven;
+
+	/**
+	 * Process Builder für die Ausführung von FFmpeg
+	 */
 	private static ProcessBuilder pb;
-	@SuppressWarnings("unused")
-	private static Process pFFmpeg;
 
-	
+	/**
+	 * Start Zeit von wo das Input Video geschnitten wird.
+	 */
 	private static double startTime;
-	private static double stopTime;
 
+	/**
+	 * Länge der Input Datei in Sekunden
+	 */
+	private static double maxTime;
+
+	/**
+	 * Initialisiert die Parameter für FFmpeg. Setzt die Pfade zu den Ausgabe
+	 * Dateien odd.mp4 und even.mp4 und speichert diese im Input Video Dateipfad
+	 * ab.
+	 */
 	public static void initFFmpegController() {
 		configModel = ConfigViewController.getConfigModel();
 		model = SimulatorViewController.getModel();
@@ -32,50 +69,43 @@ public class FFmpegController {
 		ffmpegPath = configModel.getFfmpegPath();
 
 		infile = model.getInputFile().toString();
-		outFileOdd = model.getInputFile().getParent() + "\\odd.mp4";
-		outFileEven = model.getInputFile().getParent() + "\\even.mp4";
+		fileOdd = model.getInputFile().getParent() + "\\odd.mp4";
+		fileEven = model.getInputFile().getParent() + "\\even.mp4";
 
-		// init Thread
-		thFFmpeg = null;
-		
 		// init Timer
 		setStartTime(5);
-		//setStopTime(model.getCwTime());
-		
+
+		// get max Time
+		MediaPlayerFactory factory = new MediaPlayerFactory();
+		HeadlessMediaPlayer mp = factory.newHeadlessMediaPlayer();
+		mp.prepareMedia(infile);
+
+		// Parse die Media Datei
+		mp.parseMedia();
+		// setzt die maximale Länge der Input Video Datei
+		setMaxTime(mp.getMediaMeta().getLength() / 1000);
+
 	}
 
+	/**
+	 * Startet FFmpeg. Schneidet die Input Video Datei anhand vom ECM
+	 * Nachrichtentyp in odd.mp4 oder in even.mp4 und speichert diese im Input
+	 * Video Pfad.
+	 */
 	public static void runFFmpeg() {
-		
-		// TODO
-		// 1. init odd file
-		// 2. switch
-		// 3. even file
-		// 4. switch
-		// 5. odd file
-		// 6. goto 2
 
+		// überprüft ob die Input Video Datei zu ende ist
+		if (getStartTime() > getMaxTime()) {
+			EncryptionController.stopEncryption();
+			return;
+		}
 
 		// --------------------------------------------------------
 		// File Odd
 		if (EncryptionController.isStateECMType()) {
-			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
-					"-y", 
-					"-ss", Double.toString(getStartTime() - 0.01), 
-					"-i", infile, 
-					"-vcodec", "copy", 
-					"-acodec", "copy", 
-					"-t", Double.toString(model.getCwTime()), 
-					"-avoid_negative_ts", "1",
-					outFileOdd);
-			
-			// "-t", Double.toString(model.getCwTime()), 
-			// "-c", "copy",
-			// "-async", "1",
-			// "-vcodec", "copy", 
-			// "-acodec", "copy", 
-			// "-vframes", Double.toString(25 * model.getCwTime()),
-			// "-avoid_negative_ts", "1",
-			
+			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", "-y", "-ss", Double.toString(getStartTime()), "-i", infile,
+					"-vcodec", "copy", "-acodec", "copy", "-t", Double.toString(model.getCwTime() - 0.1),
+					"-avoid_negative_ts", "1", fileOdd);
 			try {
 				pb.start();
 			} catch (IOException e) {
@@ -85,46 +115,57 @@ public class FFmpegController {
 			// --------------------------------------------------------
 			// File Even
 		} else {
-			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", 
-					"-y", 
-					"-ss", Double.toString(getStartTime()), 
-					"-i", infile, 
-					"-vcodec", "copy", 
-					"-acodec", "copy", 
-					"-t", Double.toString(model.getCwTime() - 0.01), 
-					"-avoid_negative_ts", "1",
-					outFileEven);
-			
+			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", "-y", "-ss", Double.toString(getStartTime()), "-i", infile,
+					"-vcodec", "copy", "-acodec", "copy", "-t", Double.toString(model.getCwTime() - 0.1),
+					"-avoid_negative_ts", "1", fileEven);
 			try {
 				pb.start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
-			// switch file type
-			//setStateFileType(true);
+		} // end if else
 
-		}
-
-		// Update Start Time
+		// Update nächste Start Zeit
 		setStartTime(getStartTime() + model.getCwTime());
 	}
-	
 
+	/**
+	 * Liefert die aktuelle Startzeit.
+	 * 
+	 * @return - Start Zeit
+	 */
 	public static double getStartTime() {
 		return startTime;
 	}
 
+	/**
+	 * Setzt die nächste Startzeit, von wo die Datei geschnitten wird.
+	 * 
+	 * @param sTime
+	 *            - Start Zeit
+	 */
 	public static void setStartTime(double sTime) {
 		startTime = sTime;
 	}
 
-	public static double getStopTime() {
-		return stopTime;
+	/**
+	 * Liefert die maximale Laufzeit der Input Video Datei in Sekunden.
+	 * 
+	 * @return - Maximale Laufzeit in Sekunden.
+	 */
+	public static double getMaxTime() {
+		return maxTime;
 	}
 
-	public static void setStopTime(double sTime) {
-		stopTime = sTime;
+	/**
+	 * Setzt die Laufzeit von der Input Video Datei.
+	 * 
+	 * @param mTime
+	 *            - Maximale Laufzeit in Sekunden.
+	 */
+	public static void setMaxTime(double mTime) {
+		maxTime = mTime;
 	}
-
+	
 }

@@ -41,6 +41,10 @@ public class ConfigViewController {
 		
 		// set VLC Native Library
 		NativeLibrary.addSearchPath("libvlc", configModel.getVlcPath());
+		System.setProperty("VLC_PLUGIN_PATH", configModel.getVlcPath() + "\\plugins");
+		
+	   // System.setProperty("jna.library.path", "");
+
 
 		ConfigEventHandler configEventHandler = new ConfigEventHandler();
 
@@ -78,6 +82,11 @@ public class ConfigViewController {
 					configModel.setServer(configView.getServer().getText());
 					configModel.setClient(configView.getClient().getText());
 					configModel.setConstantCw(configView.getConstantCwTF().getText());
+					
+					// update VLC Native Library
+					NativeLibrary.addSearchPath("libvlc", configModel.getVlcPath());
+					System.setProperty("VLC_PLUGIN_PATH", configModel.getVlcPath() + "\\plugins");
+					
 					configModel.getDialogStage().close();
 				}
 			}

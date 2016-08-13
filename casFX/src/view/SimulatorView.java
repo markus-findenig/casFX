@@ -21,19 +21,35 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 /**
- * Input View
+ * Simulator View
  */
 public class SimulatorView {
 
+	/**
+	 * Scene für die Simulator View.
+	 */
 	private Scene scene;
+	
+	/**
+	 * Grid Pane für die Simulator View.
+	 */
 	private GridPane grid;
+	
+	/**
+	 * Breite von der Simulator View.
+	 */
+	private double width = 1024;
+	
+	/**
+	 * Höhe von der Simulator View.
+	 */
+	private double height = 650;
 
-	// private SimulatorModel model;
 
 	// Menu
-	private final Menu menu1 = new Menu("File");
-	private final Menu menu2 = new Menu("Options");
-	private final Menu menu3 = new Menu("Help");
+	private final Menu menuFile = new Menu("File");
+	private final Menu menuOptions = new Menu("Options");
+	private final Menu menuHelp = new Menu("Help");
 
 	private final MenuItem open = new MenuItem("Open");
 
@@ -127,13 +143,9 @@ public class SimulatorView {
 	private static Button videoOutputB;
 
 	/**
-	 * Input View
-	 * 
-	 * @param model
-	 *            SimulatorModel
+	 * Konstruktor Simulator View
 	 */
 	public SimulatorView() {
-		// model = sModel;
 
 		// Layout
 		grid = new GridPane();
@@ -144,29 +156,30 @@ public class SimulatorView {
 
 		// Menu Bar
 		MenuBar menuBar = new MenuBar();
-		menuBar.getMenus().addAll(menu1, menu2, menu3);
+		menuBar.getMenus().addAll(menuFile, menuOptions, menuHelp);
 		GridPane.setColumnSpan(menuBar, 20);
 		// menuBar.prefWidthProperty().bind(SimulatorModel.getPrimaryStage().widthProperty());
 		grid.add(menuBar, 0, 0);
 
-		menu1.getItems().add(open);
-		menu1.getItems().add(exit);
+		menuFile.getItems().add(open);
+		menuFile.getItems().add(exit);
 
-		menu2.getItems().add(config);
+		menuOptions.getItems().add(config);
 
-		menu3.getItems().add(test);
+		menuHelp.getItems().add(test);
 
 		initGUI();
-		// initPlayerInput();
-		// initPlayerOutput();
-		// initBarChartInput();
 
-		scene = new Scene(grid, 1024, 650);
+		// Erstellt eine neue Scene
+		scene = new Scene(grid, width, height);
 		scene.setRoot(grid);
-		// show(model.getPrimaryStage());
 
 	}
 
+	/**
+	 * Zeigt die Simulator View an.
+	 * @param stage - Aktuelle Stage.
+	 */
 	public void show(Stage stage) {
 		stage.setTitle("CAS-Simulator");
 		stage.setScene(scene);
@@ -198,6 +211,9 @@ public class SimulatorView {
 		return test;
 	}
 
+	/**
+	 * Initialisiert die start GUI Elemente.
+	 */
 	public void initGUI() {
 
 		// TODO Debug
@@ -481,43 +497,6 @@ public class SimulatorView {
 
 	}
 
-	// /**
-	// * Video Player Input
-	// */
-	// public void initPlayerInput() {
-	// // create media player 1 fx
-	// setMediaPlayerInput(new MediaPlayer(SimulatorModel.getMediaInput()));
-	// mediaControlInput = new MediaControl(getMediaPlayerInput());
-	// GridPane.setColumnSpan(mediaControlInput, 3);
-	// GridPane.setRowSpan(mediaControlInput, 8);
-	// mediaControlInput.setMinSize(300, 225);
-	// mediaControlInput.setPrefSize(300, 225);
-	// mediaControlInput.setMaxSize(300, 225);
-	// grid.add(mediaControlInput, 1, 4);
-	//
-	// }
-
-//	/**
-//	 * BarChar Input Stream
-//	 */
-//	public void initBarChartInput() {
-//		xAxis = new CategoryAxis();
-//		yAxis = new NumberAxis();
-//
-//		xAxis.setLabel("X"); // Beschriftung
-//		yAxis.setLabel("Y");
-//
-//		bc1 = new BarChart<String, Number>(xAxis, yAxis);
-//		GridPane.setColumnSpan(bc1, 3);
-//		GridPane.setRowSpan(bc1, 2);
-//		bc1.setMaxWidth(350);
-//		bc1.setData(SimulatorModel.observableArrayList);
-//		// bc1.setScaleX(0.5);
-//		// bc1.setScaleY(0.5);
-//		// bc1.setMaxSize(10, 10);
-//		// bc1.setMinSize(60, 20);
-//		grid.add(bc1, 0, 17);
-//	}
 
 	public TextField getEcmHeaderTF() {
 		return ecmHeaderTF;

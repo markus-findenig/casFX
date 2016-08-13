@@ -57,7 +57,7 @@ public class SimulatorViewController {
 		view.getVideoOutputButton().setOnAction(casEventHandler);
 		
 		
-
+		// Radio Buttons
 		view.getRadioButtonGroup().selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			@Override
 			public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
@@ -68,34 +68,44 @@ public class SimulatorViewController {
 		view.test().setOnAction(event -> {
 
 			// TODO
-			VlcServerController.streamVLCmediaPlayer();
 			
 			//VlcServerController.streamVlcFile(model.getInputFile().toString());
-//			
-//			Runnable myRunnable = new Runnable(){
-//			     public void run(){
-//			    	 
-//			    	 VlcServerController.streamVlcFile(model.getInputFile().toString());
-//			     }
-//			   };
+			
+			Runnable myRunnable = new Runnable(){
+			     public void run(){
+			    	 
+			    	 try {
+						OutputPlayerController.initIntervallOutputPlayer();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			     }
+			   };
 			   
 			//FFmpegController.runFFmpeg();
 			
 //			System.out.println(model.getInputFile().toString());
 //			
 //			System.out.println("error" + configModel.getServer());
-//			
-//			   myRunnable.run();
+			
+			   myRunnable.run();
 			
 
 		});
 	}
 
+	/**
+	 * Zeigt die Simulator View an.
+	 */
 	public void show() {
 		view.show(model.getPrimaryStage());
 	}
 
-	class CasEventHandler implements EventHandler<ActionEvent> {
+	/**
+	 * Cas Event Handler. Steuert alle Events im CAS-Simulator.
+	 */
+	public class CasEventHandler implements EventHandler<ActionEvent> {
 
 		@Override
 		public void handle(ActionEvent event) {
@@ -112,21 +122,22 @@ public class SimulatorViewController {
 					view.getEncryption().setDisable(false);
 				}
 
-				// set 128 bit Authorization Keys input and output
-				String key0 = EncryptionController.getRandomHex(32);
-				String key1 = EncryptionController.getRandomHex(32);
-
-				// setze Authorizations Keys im Model
-				model.setAuthorizationInputKey0(key0);
-				model.setAuthorizationOutputKey0(key0);
-				model.setAuthorizationInputKey1(key1);
-				model.setAuthorizationOutputKey1(key1);
-
-				// GUI Update Autorisation Keys
-				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
-				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
-				view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
-				view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
+				// TODO
+//				// set 128 bit Authorization Keys input and output
+//				String key0 = EncryptionController.getRandomHex(32);
+//				String key1 = EncryptionController.getRandomHex(32);
+//
+//				// setze Authorizations Keys im Model
+//				model.setAuthorizationInputKey0(key0);
+//				model.setAuthorizationOutputKey0(key0);
+//				model.setAuthorizationInputKey1(key1);
+//				model.setAuthorizationOutputKey1(key1);
+//
+//				// GUI Update Autorisation Keys
+//				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
+//				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
+//				view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
+//				view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
 				
 			}
 			
@@ -135,22 +146,11 @@ public class SimulatorViewController {
 				System.out.println("INFO: " + model.getInputFile());
 				// get Encryption Button State + check if file is exists
 				if (view.getEncryption().isSelected()) {
-					view.getEncryption().setText("ON");
-					view.getVideoInputButton().setDisable(false);
-					model.setEncryptionState(true);
 					// run Encryption
 					EncryptionController.runEncryption();
 				} else {
 					// stop Encryption
 					EncryptionController.stopEncryption();
-					view.getEncryption().setText("OFF");
-					view.getVideoInputButton().setDisable(true);
-					model.setEncryptionState(false);
-					// no scrambling
-					model.setScramblingControl("00");
-					view.getScramblingControlTF().setText("00");
-					// Entsperre die CW Time
-					view.getCwTimeTF().setDisable(false);
 				}
 			}
 
@@ -158,28 +158,21 @@ public class SimulatorViewController {
 			if (event.getSource() == view.getDecryption()) {
 				if (view.getDecryption().isSelected()) {
 					// run Decryption
-					view.getDecryption().setText("ON");
-					model.setDecryptionState(true);
-					view.getVideoOutputButton().setDisable(false);
 					DecryptionController.runDecryption();
 				} else {
 					// stop Decryption
-					view.getDecryption().setText("OFF");
-					model.setDecryptionState(false);
-					view.getVideoOutputButton().setDisable(true);
 					DecryptionController.stopDecryption();
 				}
-			
 			}
 			
 			// Input Player
 			if (event.getSource() == view.getVideoInputButton()) {
-				PlayerViewController.runPlayerInput();
+				InputPlayerController.getInputPlayer();
 			}
 
 			// Output Player
 			if (event.getSource() == view.getVideoOutputButton()) {
-				PlayerViewController.getPlayerOutput();
+				OutputPlayerController.getOutputPlayer();
 			}
 			
 			// Config Popup

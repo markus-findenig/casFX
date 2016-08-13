@@ -28,12 +28,12 @@ public class DecryptionController {
 	 * Simulator Model
 	 */
 	private static SimulatorModel model;
-	
+
 	/**
 	 * Simulator View
 	 */
 	private static SimulatorView view;
-	
+
 	/**
 	 * Config Model
 	 */
@@ -95,19 +95,30 @@ public class DecryptionController {
 	private static String msgEcmMAC;
 	private static String msgEcmCRC;
 
+	/**
+	 * Startet die Entschlüsselung
+	 */
 	public static void runDecryption() {
 		model = SimulatorViewController.getModel();
 		view = SimulatorViewController.getView();
 		configModel = ConfigViewController.getConfigModel();
 		
+		view.getDecryption().setText("ON");
+		model.setDecryptionState(true);
+
 		decryptionECM = new DecryptionECM();
-		
+
+		OutputPlayerController.initOutputPlayer();
+
 		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
 		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
-		
+
 		// init Date/Time
 		decryptionECM.setEcmDateTime("0");
-		
+
+		// GUI update
+		view.getCwOutTF().setText("-- WAIT FOR ECM --");
+
 		Runnable runReceiveMessage = new Runnable() {
 			@Override
 			public void run() {
@@ -118,18 +129,22 @@ public class DecryptionController {
 				}
 			}
 		};
-		
-		// start the task 
+
+		// start the task
 		Thread thReceiveMessage = new Thread(runReceiveMessage);
 		thReceiveMessage.setDaemon(true);
 		thReceiveMessage.start();
-		
+
 	}
-	
+
 	public static void stopDecryption() {
-		view.getCwOutTF().setText("-- WAIT FOR ECM --");
-		PlayerViewController.exitOutputPlayerView();
+		view.getDecryption().setText("OFF");
+		model.setDecryptionState(false);
+		view.getVideoOutputButton().setDisable(true);
 		
+		view.getCwOutTF().setText("-- WAIT FOR ECM --");
+		OutputPlayerController.stopOutputPlayer();
+
 	}
 
 	public static void receiveMessage() throws Exception {
@@ -140,18 +155,18 @@ public class DecryptionController {
 		String ipPort = rtpSplit[1];
 		String[] ip = ipPort.split(":");
 
-		// Port = 5005
+		// port = 5005
 		MulticastSocket socket = new MulticastSocket(Integer.parseInt(ip[1].trim()) + 1);
+		// group = 239.0.0.1
 		InetAddress group = InetAddress.getByName(ip[0].trim());
-//		MulticastSocket socket = new MulticastSocket(5005);
-//		InetAddress group = InetAddress.getByName("239.0.0.1");
 		socket.joinGroup(group);
 
 		byte[] buffer = new byte[2048];
 
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-		
-		//System.err.println("while :" + PlayerViewController.embeddedMediaPlayer.isPlaying());
+
+		// System.err.println("while :" +
+		// PlayerViewController.embeddedMediaPlayer.isPlaying());
 
 		while (model.getDecryptionState()) {
 			// Wait to receive a datagram
@@ -159,28 +174,31 @@ public class DecryptionController {
 
 			// Convert the contents to a string, and display them
 			String msg = new String(buffer, 0, packet.getLength());
-			//System.out.println(msg);
+			// System.out.println(msg);
 			// System.out.println(packet.getAddress().getHostName() + ": " +
 			// msg);
 
 			if (msg.length() == ECM_LENGTH) {
 				receivedECM(msg);
 			}
-			
+
 			// TODO EMM Length
 
 			// Reset the length of the packet before reusing it.
 			packet.setLength(buffer.length);
 		}
-		
+
 		socket.leaveGroup(group);
 		socket.close();
 	}
 
 	/**
 	 * Empfange ECM Nachricht
-	 * @param msg - Aktuelle ECM Nachricht
-	 * @throws Exception - Fehlerhafte ECM Nachricht
+	 * 
+	 * @param msg
+	 *            - Aktuelle ECM Nachricht
+	 * @throws Exception
+	 *             - Fehlerhafte ECM Nachricht
 	 */
 	private static void receivedECM(String msg) throws Exception {
 		// spit msg into substrings
@@ -197,30 +215,32 @@ public class DecryptionController {
 		msgEcmMAC = msg.substring(78, 86);
 		msgEcmCRC = msg.substring(86, 94);
 
-//		System.out.println("msgHeader : " + msgEcmHeader);
-//		System.out.println("msgProtocol : " + msgEcmProtocol);
-//		System.out.println("msgBroadcastId : " + msgEcmBroadcastId);
-//		System.out.println("msgWorkKeyId : " + msgEcmWorkKeyId);
-//		System.out.println("msgCwOdd : " + msgEcmCwOdd);
-//		System.out.println("msgCwEven : " + msgEcmCwEven);
-//		System.out.println("msgProgramType : " + msgEcmProgramType);
-//		System.out.println("msgDateTime : " + msgEcmDateTime);
-//		System.out.println("msgRecordControl : " + msgEcmRecordControl);
-//		System.out.println("msgVariablePart : " + msgEcmVariablePart);
-//		System.out.println("msgMAC : " + msgEcmMAC);
-//		System.out.println("msgCRC : " + msgEcmCRC);
+		// System.out.println("msgHeader : " + msgEcmHeader);
+		// System.out.println("msgProtocol : " + msgEcmProtocol);
+		// System.out.println("msgBroadcastId : " + msgEcmBroadcastId);
+		// System.out.println("msgWorkKeyId : " + msgEcmWorkKeyId);
+		// System.out.println("msgCwOdd : " + msgEcmCwOdd);
+		// System.out.println("msgCwEven : " + msgEcmCwEven);
+		// System.out.println("msgProgramType : " + msgEcmProgramType);
+		// System.out.println("msgDateTime : " + msgEcmDateTime);
+		// System.out.println("msgRecordControl : " + msgEcmRecordControl);
+		// System.out.println("msgVariablePart : " + msgEcmVariablePart);
+		// System.out.println("msgMAC : " + msgEcmMAC);
+		// System.out.println("msgCRC : " + msgEcmCRC);
 
 		// get the current Authorization Key
 		if (msgEcmWorkKeyId.equals("00")) {
 			ecmWorkKey = model.getAuthorizationOutputKey0();
-			//ecmWorkKey = "465284AA69A329782CA898EB3701F546";
+			// ecmWorkKey = "465284AA69A329782CA898EB3701F546";
 		} else {
 			ecmWorkKey = model.getAuthorizationOutputKey1();
-			//ecmWorkKey = "F7577079D48B3D5ECAF3E53FDCCDFDFE";
+			// ecmWorkKey = "F7577079D48B3D5ECAF3E53FDCCDFDFE";
 		}
 
+		// set ECM Header
 		ecmHeader = msgEcmHeader + msgEcmProtocol + msgEcmBroadcastId + msgEcmWorkKeyId;
 
+		// set ECM Playload
 		ecmPayload = msgEcmCwOdd + msgEcmCwEven + msgEcmProgramType + msgEcmDateTime + msgEcmRecordControl
 				+ msgEcmVariablePart;
 
@@ -229,8 +249,8 @@ public class DecryptionController {
 
 		// check CRC
 		if (!validateCRC(msgEcmCRC, validCRC)) {
-			stopDecryption();
-			throw new IOException("CRC Mismatch");
+			System.err.println("CRC Mismatch");
+			return;
 		}
 
 		// Decrypted ECM and separate Payload and MAC
@@ -240,33 +260,16 @@ public class DecryptionController {
 
 		// check MAC
 		if (!validateMAC(validMAC, ecmHeader + ecmPayloadDecrypted)) {
-			stopDecryption();
-			throw new IOException("MAC Mismatch");
+			System.err.println("MAC Mismatch");
+			return;
 		}
-		
+
 		ecmDecrypted = ecmHeader + decrypted + msgEcmCRC;
-		
+
 		// check Date/Time save only new ecm
 		String ecmDateTime = ecmPayloadDecrypted.substring(34, 44);
 		if (Integer.parseInt(ecmDateTime.trim()) > Integer.parseInt(decryptionECM.getEcmDateTime().trim())) {
-			
-			// TODO
-			// update GUI decrypted ecm
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					// if cw is odd = 8000000000000000
-					if (decryptionECM.getEcmHeader().equals("8000000000000000")) {
-						view.getCwOutTF().setText(decryptionECM.getEcmCwOdd());
-					}
-					// if cw is even = 8100000000000000
-					else {
-						view.getCwOutTF().setText(decryptionECM.getEcmCwEven());
-					}
-					view.getEcmDecryptedTA().setText(ecmDecrypted);
-				}
-			});
-			
+
 			System.out.println("SAVE ECM : ");
 			// save valid ecm
 			decryptionECM.setEcmHeader(msgEcmHeader);
@@ -281,29 +284,43 @@ public class DecryptionController {
 			decryptionECM.setEcmVariablePart(ecmPayloadDecrypted.substring(46, 56));
 			decryptionECM.setEcmMAC(validMAC);
 			decryptionECM.setEcmCRC(msgEcmCRC);
+
+			// TODO del
+			System.out.println("msgHeader : " + msgEcmHeader);
+			System.out.println("msgProtocol : " + msgEcmProtocol);
+			System.out.println("msgBroadcastId : " + msgEcmBroadcastId);
+			System.out.println("msgWorkKeyId : " + msgEcmWorkKeyId);
+			System.out.println("msgCwOdd : " + ecmPayloadDecrypted.substring(0, 16));
+			System.out.println("msgCwEven : " + ecmPayloadDecrypted.substring(16, 32));
+			System.out.println("msgProgramType : " + ecmPayloadDecrypted.substring(32, 34));
+			System.out.println("msgDateTime : " + ecmPayloadDecrypted.substring(34, 44));
+			System.out.println("msgRecordControl : " + ecmPayloadDecrypted.substring(44, 46));
+			System.out.println("msgVariablePart : " + ecmPayloadDecrypted.substring(46, 56));
+			System.out.println("msgMAC : " + validMAC);
+			System.out.println("msgCRC : " + msgEcmCRC);
+
+			// TODO
+			// update GUI decrypted ecm
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					// Ouput Player View Button freigeben
+					view.getVideoOutputButton().setDisable(false);
+
+					// TODO
+//					// if cw is odd = 8000000000000000
+//					if (decryptionECM.getEcmHeader().equals("8100000000000000")) {
+//						view.getCwOutTF().setText(decryptionECM.getEcmCwOdd());
+//					}
+//					// if cw is even = 8100000000000000
+//					else {
+//						view.getCwOutTF().setText(decryptionECM.getEcmCwEven());
+//					}
+					view.getEcmDecryptedTA().setText(ecmDecrypted);
+				}
+			});
+
 		}
-
-		
-
-		// TODO del
-		 System.out.println("msgHeader : " + msgEcmHeader);
-		 System.out.println("msgProtocol : " + msgEcmProtocol);
-		 System.out.println("msgBroadcastId : " + msgEcmBroadcastId);
-		 System.out.println("msgWorkKeyId : " + msgEcmWorkKeyId);
-		 System.out.println("msgCwOdd : " + ecmPayloadDecrypted.substring(0,
-		 16));
-		 System.out.println("msgCwEven : " + ecmPayloadDecrypted.substring(16,
-		 32));
-		 System.out.println("msgProgramType : " +
-		 ecmPayloadDecrypted.substring(32, 34));
-		 System.out.println("msgDateTime : " +
-		 ecmPayloadDecrypted.substring(34, 44));
-		 System.out.println("msgRecordControl : " +
-		 ecmPayloadDecrypted.substring(44, 46));
-		 System.out.println("msgVariablePart : " +
-		 ecmPayloadDecrypted.substring(46, 56));
-		 System.out.println("msgMAC : " + validMAC);
-		 System.out.println("msgCRC : " + msgEcmCRC);
 
 	}
 
@@ -356,8 +373,8 @@ public class DecryptionController {
 	}
 
 	/**
-	 * Überprüft die ECM (Header + Payload) ob der Message Authentication
-	 * Code (MAC) gültig ist.
+	 * Überprüft die ECM (Header + Payload) ob der Message Authentication Code
+	 * (MAC) gültig ist.
 	 * 
 	 * @param validMAC
 	 *            - Aktueller MAC
@@ -395,9 +412,5 @@ public class DecryptionController {
 	public static DecryptionECM getDecryptionECM() {
 		return decryptionECM;
 	}
-
-
-
-
 
 }

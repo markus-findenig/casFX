@@ -7,6 +7,9 @@ import model.SimulatorModel;
 import controller.ConfigViewController;
 import controller.SimulatorViewController;
 
+/**
+ * Main. Startet den CAS-Simulator.
+ */
 public class Main extends Application {
 
 	/**
@@ -34,8 +37,6 @@ public class Main extends Application {
 			// Controller View aufrufen
 			SimulatorViewController inputVC = new SimulatorViewController(simulatorModel);
 			inputVC.show();
-			
-			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
