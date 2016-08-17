@@ -15,9 +15,9 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Hex;
 
-import javafx.application.Platform;
 import model.ConfigModel;
 import model.DecryptionECM;
+import model.DecryptionEMM;
 import model.SimulatorModel;
 import view.SimulatorView;
 
@@ -47,11 +47,21 @@ public class DecryptionController {
 	 * Encryption ECM Model
 	 */
 	private static DecryptionECM decryptionECM;
+	
+	/**
+	 * Encryption ECM Model
+	 */
+	private static DecryptionEMM decryptionEMM;
 
 	/**
 	 * Static ECM length
 	 */
 	private static int ECM_LENGTH = 94;
+	
+	/**
+	 * Static EMM length
+	 */
+	private static int EMM_LENGTH = 144;
 
 	/**
 	 * ecmHeader = ECM Section Header + Protocol number + Broadcast group id +
@@ -84,20 +94,150 @@ public class DecryptionController {
 	 * Aktueller Authorization Key
 	 */
 	private static String ecmWorkKey;
-
-	// input ECM Message
+	
+	/**
+	 * ECM Section Header
+	 */
 	private static String msgEcmHeader;
+
+	/**
+	 * ECM Protocol number. Code that serves to identify processing functions on
+	 * the IC card, encryption algorithms, etc.
+	 */
 	private static String msgEcmProtocol;
+	
+	/**
+	 * ECM Broadcaster group identifier. Code used to identify broadcaster
+	 * groups in conditional access system operation. Combined with the work key
+	 * identifier, specifies the work.
+	 */
 	private static String msgEcmBroadcastId;
+	
+	/**
+	 * ECM Work key identifier. Specifies the work key used to encrypt ECM, is
+	 * combined with the broadcaster group identifier.
+	 */
 	private static String msgEcmWorkKeyId;
+	
+	/**
+	 * ECM Control Word (CW), Scrambling key odd.
+	 */
 	private static String msgEcmCwOdd;
+	
+	/**
+	 *
+	 * ECM Control Word (CW), Scrambling key even.
+	 */
 	private static String msgEcmCwEven;
+	
+	/**
+	 * ECM Program type. Indicates the viewing program type (free, tier, PPV, etc.).
+	 */
 	private static String msgEcmProgramType;
+	
+	/**
+	 * ECM Date Time. Indicates the current date/time to check authorization of viewing.
+	 */
 	private static String msgEcmDateTime;
+	
+	/**
+	 * ECM Recording control. Indicate the recording conditions for the program
+	 * in question (recordable, not recordable, recordable by subscribers only,
+	 * etc.).
+	 */
 	private static String msgEcmRecordControl;
+	
+	/**
+	 * ECM Payload
+	 */
 	private static String msgEcmVariablePart;
+	
+	/**
+	 * ECM Message Authentication Code (MAC, 4 Bytes).
+	 */
 	private static String msgEcmMAC;
+	
+	/**
+	 * ECM Cyclic Redundancy Check (CRC, 4 Bytes).
+	 */
 	private static String msgEcmCRC;
+	
+	/**
+	 * Master Private Key (256 bit).
+	 */
+	private static String emmKey;
+	
+	/**
+	 * EMM Section Header
+	 */
+	private static String msgEmmHeader;
+	
+	/**
+	 * EMM Smartcard ID
+	 */
+	private static String msgEmmSmartcardId;
+	
+	/**
+	 * EMM Length from Protocol Number to the MAC Field
+	 */
+	private static String msgEmmLength;
+	
+	/**
+	 * EMM Protocol
+	 */
+	private static String msgEmmProtocol;
+	
+	/**
+	 * EMM Broadcast Group Identifier
+	 */
+	private static String msgEmmBroadcastId;
+	
+	/**
+	 * EMM Update number. Number that is increased when individual information is updated.
+	 */
+	private static String msgEmmUpdateId;
+	
+	/**
+	 * EMM Expiration date. Indicates when individual information expires. 
+	 */
+	private static String msgEmmExpirationDate;
+	
+	/**
+	 * EMM Payload
+	 */
+	private static String msgEmmVariablePart;
+	
+	/**
+	 * EMM Message Authentication Code (MAC, 4 Bytes).
+	 */
+	private static String msgEmmMAC;
+	
+	/**
+	 * EMM Cyclic Redundancy Check (CRC, 4 Bytes).
+	 */
+	private static String msgEmmCRC;
+	
+	/**
+	 * emmHeader = EMM Section Header + Smartcard id + Length + Protocol number
+	 * + Broadcast group id + Update number + Expiration date
+	 */
+	private static String emmHeader;
+	
+	
+	/**
+	 * emmPayload = msgEmmVariablePart
+	 */
+	private static String emmPayload;
+	
+	/**
+	 * ecmPayloadDecrypted = emmPayload + Payload MAC
+	 */
+	private static String emmPayloadDecrypted;
+	
+	/**
+	 * emmDecrypted = emmHeader + emmPayloadDecrypted + Section CRC
+	 */
+	private static String emmDecrypted;
 
 	/**
 	 * Startet die Entschlüsselung.
@@ -111,6 +251,8 @@ public class DecryptionController {
 		model.setDecryptionState(true);
 
 		decryptionECM = new DecryptionECM();
+		
+		decryptionEMM = new DecryptionEMM();
 
 		OutputPlayerController.initOutputPlayer();
 
@@ -158,7 +300,7 @@ public class DecryptionController {
 	 * Empfängt die Broadcast Nachrichten. Leitet die Nachrichten anhand ihres Typs (ECM/EMM) weiter.
 	 * @throws Exception - Fehler beim erstellen des Sockets.
 	 */
-	public static void receiveMessage() throws Exception {
+	private static void receiveMessage() throws Exception {
 		// default server = rtp://239.0.0.1:5004
 		String client = configModel.getClient();
 		String[] rtpSplit = client.split("://");
@@ -176,24 +318,22 @@ public class DecryptionController {
 
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-		// System.err.println("while :" +
-		// PlayerViewController.embeddedMediaPlayer.isPlaying());
-
 		while (model.getDecryptionState()) {
 			// Wait to receive a datagram
 			socket.receive(packet);
-
 			// Convert the contents to a string, and display them
 			String msg = new String(buffer, 0, packet.getLength());
-			// System.out.println(msg);
-			// System.out.println(packet.getAddress().getHostName() + ": " +
-			// msg);
+			
+			System.out.println("KEY 0 : " + model.getAuthorizationOutputKey0());
 
-			if (msg.length() == ECM_LENGTH) {
+			// ECM Message, Prüfe ob Keys vorhanden sind
+			if (msg.length() == ECM_LENGTH && (!model.getAuthorizationOutputKey0().equals("") || !model.getAuthorizationOutputKey1().equals(""))) {
 				receivedECM(msg);
 			}
-
-			// TODO EMM Length
+			// EMM Message
+			if (msg.length() == EMM_LENGTH) {
+				receivedEMM(msg);
+			}
 
 			// Reset the length of the packet before reusing it.
 			packet.setLength(buffer.length);
@@ -238,15 +378,21 @@ public class DecryptionController {
 		// System.out.println("msgVariablePart : " + msgEcmVariablePart);
 		// System.out.println("msgMAC : " + msgEcmMAC);
 		// System.out.println("msgCRC : " + msgEcmCRC);
+		
+		// set new Authorization Key 0 and 1 from the GUI
+		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
+		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
 
 		// get the current Authorization Key
 		if (msgEcmWorkKeyId.equals("00")) {
 			ecmWorkKey = model.getAuthorizationOutputKey0();
-			// ecmWorkKey = "465284AA69A329782CA898EB3701F546";
 		} else {
 			ecmWorkKey = model.getAuthorizationOutputKey1();
-			// ecmWorkKey = "F7577079D48B3D5ECAF3E53FDCCDFDFE";
 		}
+		
+		// GUI update current Authorization Key 0 and 1
+		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
+		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
 
 		// set ECM Header
 		ecmHeader = msgEcmHeader + msgEcmProtocol + msgEcmBroadcastId + msgEcmWorkKeyId;
@@ -260,7 +406,7 @@ public class DecryptionController {
 
 		// check CRC
 		if (!validateCRC(msgEcmCRC, validCRC)) {
-			System.err.println("CRC Mismatch");
+			System.err.println("ECM CRC Mismatch!");
 			return;
 		}
 
@@ -270,8 +416,8 @@ public class DecryptionController {
 		String validMAC = decrypted.substring(56, 64);
 
 		// check MAC
-		if (!validateMAC(validMAC, ecmHeader + ecmPayloadDecrypted)) {
-			System.err.println("MAC Mismatch");
+		if (!validateMAC(validMAC, ecmHeader + ecmPayloadDecrypted, "ecm")) {
+			System.err.println("ECM MAC Mismatch!");
 			return;
 		}
 
@@ -310,28 +456,12 @@ public class DecryptionController {
 			System.out.println("msgMAC : " + validMAC);
 			System.out.println("msgCRC : " + msgEcmCRC);
 
-			// TODO
-			// update GUI decrypted ecm
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					// Ouput Player View Button freigeben
-					view.getVideoOutputButton().setDisable(false);
-
-					// TODO
-//					// if cw is odd = 8000000000000000
-//					if (decryptionECM.getEcmHeader().equals("8100000000000000")) {
-//						view.getCwOutTF().setText(decryptionECM.getEcmCwOdd());
-//					}
-//					// if cw is even = 8100000000000000
-//					else {
-//						view.getCwOutTF().setText(decryptionECM.getEcmCwEven());
-//					}
-					view.getEcmDecryptedTA().setText(ecmDecrypted);
-				}
-			});
-
-		}
+			// GUI updates, Video Player View Button freigeben
+			view.getVideoOutputButton().setDisable(false);
+			// view decrypted ECM
+			view.getEcmDecryptedTA().setText(ecmDecrypted);
+			
+		} // end if
 
 	}
 
@@ -388,14 +518,21 @@ public class DecryptionController {
 	 * (MAC) gültig ist.
 	 * 
 	 * @param validMAC
-	 *            - Aktueller MAC.
+	 *            Aktueller MAC.
 	 * @param getMAC
-	 *            - String zum Überprüfen.
+	 *            String zum Überprüfen.
+	 * @param msgTyp
+	 *            Aktueller Nachrichtentyp.
 	 * @return true if MAC Match or false if MAC Fail.
 	 */
-	private static boolean validateMAC(String validMAC, String getMAC) {
-		// generate a key
-		SecretKeySpec macKey = new SecretKeySpec(ecmWorkKey.getBytes(), "HmacSHA1");
+	private static boolean validateMAC(String validMAC, String getMAC, String msgTyp) {
+		SecretKeySpec macKey = null;
+		// check message type
+		if (msgTyp.equals("ecm")) {
+			macKey = new SecretKeySpec(ecmWorkKey.getBytes(), "HmacSHA1");
+		} else if (msgTyp.equals("emm")) {
+			macKey = new SecretKeySpec(emmKey.getBytes(), "HmacSHA1");
+		}
 		String macString = null;
 		// ALG_DES_MAC4_ISO9797_M1 for SmartCards
 		try {
@@ -423,10 +560,117 @@ public class DecryptionController {
 	/**
 	 * Liefert die Decryption ECM {@link decryptionECM}.
 	 * 
-	 * @return - Gibt die Decryption ECM zurück.
+	 * @return Gibt die Decryption ECM zurück.
 	 */
 	public static DecryptionECM getDecryptionECM() {
 		return decryptionECM;
+	}
+
+	/**
+	 * Empfange EMM Nachricht.
+	 * 
+	 * @param msg
+	 *            Aktuelle EMM Nachricht
+	 * @throws Exception
+	 *             Fehlerhafte EMM Nachricht
+	 */
+	private static void receivedEMM(String msg) throws Exception {
+		// spit msg into substrings
+		msgEmmHeader = msg.substring(0, 16);
+		msgEmmSmartcardId = msg.substring(16, 28);
+		msgEmmLength= msg.substring(28, 30);
+		msgEcmProtocol = msg.substring(30, 32);
+		msgEcmBroadcastId = msg.substring(32, 34);
+		msgEmmUpdateId = msg.substring(34, 36);
+		msgEmmExpirationDate = msg.substring(36, 40);
+		msgEmmVariablePart = msg.substring(40, 128);
+		msgEmmMAC = msg.substring(128, 136);
+		msgEmmCRC = msg.substring(136, 144);
+				
+		// check if EMM is update Authorization Keys, Protocol Type CC
+		if (!msgEcmProtocol.equals("CC")) {
+			return;
+		}
+
+		// set EMM Header
+		emmHeader = msgEmmHeader + msgEmmSmartcardId + msgEmmLength + msgEcmProtocol + msgEcmBroadcastId
+				+ msgEmmUpdateId + msgEmmExpirationDate;
+
+		// set EMM Playload
+		emmPayload = msgEmmVariablePart;
+
+		// String to Validation
+		String validCRC = emmHeader + emmPayload + msgEmmMAC;
+
+		// check CRC
+		if (!validateCRC(msgEmmCRC, validCRC)) {
+			System.err.println("EMM CRC Mismatch!");
+			return;
+		}
+		
+		// hohle EMM Key
+		emmKey = view.getMpkOutTA().getText().toString();
+
+		// Decrypted ECM and separate Payload and MAC
+		String decrypted = decryptedEMM(emmPayload + msgEmmMAC);
+		
+		System.out.println("decrypted:" + decrypted);
+		
+		
+		emmPayloadDecrypted = decrypted.substring(0, 88);
+		String validMAC = decrypted.substring(88, 96);
+
+		// check MAC
+		if (!validateMAC(validMAC, emmHeader + emmPayloadDecrypted, "emm")) {
+			System.err.println("EMM MAC Mismatch!");
+			return;
+		}
+
+		emmDecrypted = emmHeader + decrypted + msgEmmCRC;
+		// set new Authorization Key 0 and 1
+		model.setAuthorizationOutputKey0(decrypted.substring(0, 32));
+		model.setAuthorizationOutputKey1(decrypted.substring(32, 64));
+		
+		// save valid EMM
+		decryptionEMM.setEmmHeader(msgEmmHeader);
+		decryptionEMM.setEmmSmartcardId(msgEmmSmartcardId);
+		decryptionEMM.setEmmLength(msgEmmLength);
+		decryptionEMM.setEmmProtocol(msgEmmProtocol);
+		decryptionEMM.setEmmBroadcastId(msgEmmBroadcastId);
+		decryptionEMM.setEmmExpirationDate(msgEmmExpirationDate);
+		decryptionEMM.setEmmVariablePart(decrypted);
+		decryptionEMM.setEmmMAC(validMAC);
+		decryptionEMM.setEmmCRC(msgEmmCRC);
+		
+		// GUI Updates
+		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
+		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
+		view.getEmmDecryptedTA().setText(emmDecrypted);
+		
+	}
+	
+	/**
+	 * Entschlüsselt die EMM Nachricht (emmPayload + Payload MAC).
+	 * 
+	 * @param emm
+	 *           Nachricht zum Entschlüsseln.
+	 * @return Entschlüsselte EMM Nachricht.
+	 */
+	private static String decryptedEMM(String ecm) {
+		// generate the decrypted key with the current Authorization Key
+		SecretKey key = new SecretKeySpec(DatatypeConverter.parseHexBinary(emmKey), "AES");
+		Cipher cipher;
+		byte[] result = null;
+
+		try {
+			cipher = Cipher.getInstance("AES/ECB/NoPadding");
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			result = cipher.doFinal(DatatypeConverter.parseHexBinary(ecm));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return DatatypeConverter.printHexBinary(result);
 	}
 
 }

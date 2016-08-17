@@ -59,7 +59,9 @@ public class PlayerControlsPanel extends JPanel {
 
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
-    private final EmbeddedMediaPlayer mediaPlayer;
+    private EmbeddedMediaPlayer mediaPlayer;
+    
+    UpdateRunnable update;
 
     private JLabel timeLabel;
 //    private JProgressBar positionProgressBar;
@@ -89,13 +91,29 @@ public class PlayerControlsPanel extends JPanel {
     private JFileChooser fileChooser;
 
     private boolean mousePressedPlaying = false;
+    
+    private int currentVolume;
 
     public PlayerControlsPanel(EmbeddedMediaPlayer mediaPlayer) {
         this.mediaPlayer = mediaPlayer;
-
+        
         createUI();
-
+        
         executorService.scheduleAtFixedRate(new UpdateRunnable(mediaPlayer), 0L, 1L, TimeUnit.SECONDS);
+    }
+    
+    public void reInitPlayerControlsPanel(EmbeddedMediaPlayer mediaPlayer) {
+    	// set the actual volume slider state
+    	setCurrentVolume(volumeSlider.getValue());
+         
+     	// overwrite player
+        this.mediaPlayer = mediaPlayer;
+        
+        // set gui volume
+        updateVolume(getCurrentVolume());
+        // set player volume
+        this.mediaPlayer.setVolume(getCurrentVolume());
+        
     }
 
     private void createUI() {
@@ -289,7 +307,7 @@ public class PlayerControlsPanel extends JPanel {
         mediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
             @Override
             public void playing(MediaPlayer mediaPlayer) {
-//                updateVolume(mediaPlayer.getVolume());
+                updateVolume(mediaPlayer.getVolume());
             }
         });
 
@@ -434,15 +452,21 @@ public class PlayerControlsPanel extends JPanel {
         });
     }
 
-    private final class UpdateRunnable implements Runnable {
+    public final class UpdateRunnable implements Runnable {
 
-        private final MediaPlayer mediaPlayer;
+        private MediaPlayer mediaPlayer;
 
-        private UpdateRunnable(MediaPlayer mediaPlayer) {
+        public UpdateRunnable(MediaPlayer mediaPlayer) {
             this.mediaPlayer = mediaPlayer;
         }
 
-        @Override
+        public Runnable reInitUpdate(MediaPlayer mediaPlayer) {
+        	this.mediaPlayer = mediaPlayer;
+        	run();
+			return null;
+		}
+
+		@Override
         public void run() {
             final long time = mediaPlayer.getTime();
             final int position = (int)(mediaPlayer.getPosition() * 1000.0f);
@@ -482,6 +506,20 @@ public class PlayerControlsPanel extends JPanel {
     }
 
     public void updateVolume(int value) {
-        volumeSlider.setValue(value);
+    	volumeSlider.setValue(value);
     }
+
+	/**
+	 * @return the currentVolume
+	 */
+	public int getCurrentVolume() {
+		return currentVolume;
+	}
+
+	/**
+	 * @param currentVolume the currentVolume to set
+	 */
+	public void setCurrentVolume(int currentVolume) {
+		this.currentVolume = currentVolume;
+	}
 }

@@ -17,10 +17,17 @@
 	<classpathentry kind="lib" path="lib/sound.jar"/>
 	<classpathentry kind="lib" path="lib/jmf-2.1.1e.jar"/>
 	<classpathentry kind="lib" path="lib/libjitsi.jar"/>
-	<classpathentry kind="lib" path="lib/vlcj-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vlcj-3.9.0-tests.jar"/>
+	<classpathentry kind="lib" path="lib/vlcj-3.9.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/casFX/doc/vlcj-3.9.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/vlcj-3.9.0-tests.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/casFX/doc/vlcj-3.9.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/jna-4.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/vlcj-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/jffmpeg-1.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jmf.jar"/>
@@ -32,5 +39,7 @@
 	<classpathentry kind="lib" path="lib/xuggle-xuggler-4.jar"/>
 	<classpathentry kind="lib" path="lib/ffmpeg-2.7.1-1.0-windows-x86_64.jar"/>
 	<classpathentry kind="lib" path="lib/ffmpeg-2.7.1-1.0.jar"/>
+	<classpathentry kind="lib" path="lib_crypto/local_policy.jar"/>
+	<classpathentry kind="lib" path="lib_crypto/US_export_policy.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

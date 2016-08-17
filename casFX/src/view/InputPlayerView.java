@@ -3,80 +3,240 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
-
-import controller.PlayerControlsPanel;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
-import uk.co.caprica.vlcj.player.list.MediaListPlayer;
+import controller.PlayerControlsPanel;
+import controller.SimulatorViewController;
 
+/**
+ * Input Player View
+ */
 public class InputPlayerView {
 	
+	/**
+	 * Input Player View Frame
+	 */
 	private static JFrame videoInputF;
 	
+	/**
+	 * Input Player View Canvas
+	 */
 	private static Canvas videoInputC;
 	
+	/**
+	 * Input Player View JPanel
+	 */
 	private static JPanel videoInputP;
 
+	/**
+	 * Input Player View width
+	 */
 	private static int width = 500;
+	
+	/**
+	 * Input Player View height
+	 */
 	private static int height = 300;
 
+//	/**
+//	 * Erzeugt eine Input Player View
+//	 * @param embeddedMediaPlayer - Media Player
+//	 * @param mediaPlayerFactory - Media Player Factory
+//	 * @param mediaPlayerComponent - Media Player Component
+//	 * @param controlsPanel - Media Player control Panel
+//	 */
+//	public InputPlayerView(EmbeddedMediaPlayer embeddedMediaPlayer, MediaPlayerFactory mediaPlayerFactory,
+//			EmbeddedMediaPlayerComponent mediaPlayerComponent, PlayerControlsPanel controlsPanel) {
+//		videoInputF = new JFrame("Video Input Player");
+//		videoInputF.setVisible(true);
+//		videoInputF.setAlwaysOnTop(true);
+//		videoInputF.setLayout(new BorderLayout());
+//		videoInputF.setSize(width, height);
+//		videoInputF.setLocation(10, 10);
+//		//videoInputF.setContentPane(mediaPlayerComponent);
+//		
+//		videoInputF.add(controlsPanel, BorderLayout.SOUTH);
+//		videoInputF.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+//		videoInputF.addWindowListener(new java.awt.event.WindowAdapter() {
+//			@Override
+//			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+//				//controlsPanel.updateVolume(0);
+//				videoInputF.setVisible(false);
+//			}
+//		});
+//		
+//		videoInputF.addKeyListener(new KeyAdapter() {
+//            @Override
+//            public void keyPressed(KeyEvent e) {
+//               SimulatorViewController.getPlayers().get(0).mediaPlayer().pause();
+//            }
+//		});
+//		
+//		
+//		
+//		
+//		videoInputC = new Canvas();
+//		videoInputC.setBackground(Color.black);
+//		
+//		
+//		
+//		
+////		videoInputP.add(videoInputC, BorderLayout.CENTER);
+//		
+//		//SimulatorViewController.getPlayers().get(0).mediaPlayer().setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
+//		
+//		//controlsPanel.updateVolume(0);
+//		//embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
+//		
+//		SimulatorViewController.getPlayers().get(0).mediaPlayer().setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
+////		
+////		videoInputP.add(SimulatorViewController.getPlayers().get(0).videoSurface(), BorderLayout.CENTER);
+//		
+//		videoInputP = new JPanel();
+//		videoInputP.setLayout(new BorderLayout());
+//		videoInputP.add(SimulatorViewController.getPlayers().get(0).videoSurface());
+//		
+//		videoInputF.add(videoInputP, BorderLayout.CENTER);
+//		
+//		
+//		
+//	}
+	
+	/**
+	 * Erzeugt eine Input Player View
+	 * @param embeddedMediaPlayer - Media Player
+	 * @param mediaPlayerFactory - Media Player Factory
+	 * @param mediaPlayerComponent - Media Player Component
+	 * @param controlsPanel - Media Player control Panel
+	 */
 	public InputPlayerView(EmbeddedMediaPlayer embeddedMediaPlayer, MediaPlayerFactory mediaPlayerFactory,
 			EmbeddedMediaPlayerComponent mediaPlayerComponent, PlayerControlsPanel controlsPanel) {
 		
-		//controlsPanel.updateVolume(0);
-		
+		// mainFrame
 		videoInputF = new JFrame("Video Input Player");
 		videoInputF.setAlwaysOnTop(true);
 		videoInputF.setLayout(new BorderLayout());
 		videoInputF.setSize(width, height);
 		videoInputF.setLocation(10, 10);
+		
 		videoInputF.setContentPane(mediaPlayerComponent);
 		videoInputF.add(controlsPanel, BorderLayout.SOUTH);
+		
 		videoInputF.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		videoInputF.addWindowListener(new java.awt.event.WindowAdapter() {
+		videoInputF.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 				controlsPanel.updateVolume(0);
 				videoInputF.setVisible(false);
-				//PlayerViewController.thInitPlayerInput.stop();
-				//embeddedMediaPlayer.stop();
-				//videoInputF.dispose();
 			}
 		});
-		videoInputF.setVisible(true);
+		
+		videoInputF.addKeyListener(new KeyAdapter() {
+           @Override
+           public void keyPressed(KeyEvent e) {
+              SimulatorViewController.getPlayers().get(0).mediaPlayer().setVolume(0);
+           }
+		});
+
+		// Video Anzeige
 		videoInputC = new Canvas();
 		videoInputC.setBackground(Color.black);
 		
+		// Video ins Panel
 		videoInputP = new JPanel();
 		videoInputP.setLayout(new BorderLayout());
 		videoInputP.add(videoInputC, BorderLayout.CENTER);
+		
+		// Video Panel ins Frame
 		videoInputF.add(videoInputP, BorderLayout.CENTER);
+		videoInputF.setVisible(true);
+		
+		// Player Anzeige ins Canvas
 		embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
+		
 		
 	}
 	
-	public InputPlayerView(MediaListPlayer mediaListPlayer, MediaPlayerFactory factory) {
-		// TODO Auto-generated constructor stub
+	public InputPlayerView(EmbeddedMediaPlayer mediaPlayer, MediaPlayerFactory mediaPlayerFactory) {
+		// mainFrame
+		videoInputF = new JFrame("Video Input Player");
+		videoInputF.setAlwaysOnTop(true);
+		videoInputF.setLayout(new BorderLayout());
+		videoInputF.setSize(width, height);
+		videoInputF.setLocation(10, 10);
+		
+		videoInputF.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		videoInputF.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				videoInputF.setVisible(false);
+			}
+		});
+		
+		videoInputF.addKeyListener(new KeyAdapter() {
+           @Override
+           public void keyPressed(KeyEvent e) {
+              SimulatorViewController.getPlayers().get(0).mediaPlayer().setVolume(0);
+           }
+		});
+
+		// Video Anzeige
+		videoInputC = new Canvas();
+		videoInputC.setBackground(Color.black);
+		
+		// Video ins Panel
+		videoInputP = new JPanel();
+		videoInputP.setLayout(new BorderLayout());
+		videoInputP.add(videoInputC, BorderLayout.CENTER);
+		
+		// Video Panel ins Frame
+		videoInputF.add(videoInputP, BorderLayout.CENTER);
+		videoInputF.setVisible(true);
+		
+		// Player Anzeige ins Canvas
+		mediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
+	}
+	
+	public void reInitInputPlayerView(EmbeddedMediaPlayer mediaPlayer, MediaPlayerFactory mediaPlayerFactory) {
+		// Player Anzeige ins Canvas
+		mediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
+
 	}
 
+	/**
+	 * Aktualisiert die aktuelle Input Player View
+	 * @param embeddedMediaPlayer - Media Player
+	 * @param mediaPlayerFactory - Media Player Factory
+	 * @param mediaPlayerComponent - Media Player Component
+	 * @param controlsPanel - Media Player control Panel
+	 */
 	public void reInitInputPlayerView(EmbeddedMediaPlayer embeddedMediaPlayer, MediaPlayerFactory mediaPlayerFactory,
 			EmbeddedMediaPlayerComponent mediaPlayerComponent, PlayerControlsPanel controlsPanel) {
-		
-		//controlsPanel.updateVolume(0);
-		
+
 		//videoOutputF = new JFrame("Video Output Player");
 //		videoInputF.setAlwaysOnTop(true);
 //		videoInputF.setLayout(new BorderLayout());
 //		videoInputF.setSize(width, height);
 //		videoInputF.setLocation(10, 10);
+		//videoInputF.remove(mediaPlayerComponent);
+		
+		
+		
 		videoInputF.setContentPane(mediaPlayerComponent);
-//		videoInputF.removeAll();
-		videoInputF.add(controlsPanel, BorderLayout.SOUTH);
+//		videoInputF.remove(controlsPanel);
+		//videoInputF.add(controlsPanel, BorderLayout.SOUTH);
+		
+		
+		
+		
 //		videoInputF.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 //		videoInputF.addWindowListener(new java.awt.event.WindowAdapter() {
 //			@SuppressWarnings("deprecation")
@@ -100,12 +260,23 @@ public class InputPlayerView {
 //		videoInputP.add(videoInputC, BorderLayout.CENTER);
 //		videoInputF.add(videoInputP, BorderLayout.CENTER);
 		
+		//controlsPanel.updateVolume(0);
 		embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoInputC));
+		
+		
+		
+		
 	}
 
+	/**
+	 * Liefert das aktuelle Frame {@link videoInputF} von der Input Player View.
+	 * @return Gibt das aktuelle Frame zurück.
+	 */
 	public static JFrame getVideoInputF() {
 		return videoInputF;
 	}
+
+
 
 	
 }

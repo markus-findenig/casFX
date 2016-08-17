@@ -25,7 +25,7 @@ public class FFmpegController {
 	/**
 	 * Dateipfad zur FFmpeg Programm Bibliothek
 	 */
-	private static String ffmpegPath; // "D:\\Securety\\Programms\\ffmpeg\\bin\\";
+	private static String ffmpegPath;
 
 	/**
 	 * Dateipfad der aktuellen Input Video Datei
@@ -46,7 +46,7 @@ public class FFmpegController {
 	 * Process Builder für die Ausführung von FFmpeg
 	 */
 	private static ProcessBuilder pb;
-
+	
 	/**
 	 * Start Zeit von wo das Input Video geschnitten wird.
 	 */
@@ -72,8 +72,9 @@ public class FFmpegController {
 		fileOdd = model.getInputFile().getParent() + "\\odd.mp4";
 		fileEven = model.getInputFile().getParent() + "\\even.mp4";
 
-		// init Timer
-		setStartTime(5);
+		// init Timer TODO
+		//setStartTime(5);
+		setStartTime(300);
 
 		// get max Time
 		MediaPlayerFactory factory = new MediaPlayerFactory();
@@ -104,7 +105,7 @@ public class FFmpegController {
 		// File Odd
 		if (EncryptionController.isStateECMType()) {
 			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", "-y", "-ss", Double.toString(getStartTime()), "-i", infile,
-					"-vcodec", "copy", "-acodec", "copy", "-t", Double.toString(model.getCwTime() - 0.1),
+					"-vcodec", "copy", "-acodec", "copy", "-t", Double.toString(model.getCwTime() - 0.9),
 					"-avoid_negative_ts", "1", fileOdd);
 			try {
 				pb.start();
@@ -116,7 +117,7 @@ public class FFmpegController {
 			// File Even
 		} else {
 			pb = new ProcessBuilder(ffmpegPath + "\\ffmpeg", "-y", "-ss", Double.toString(getStartTime()), "-i", infile,
-					"-vcodec", "copy", "-acodec", "copy", "-t", Double.toString(model.getCwTime() - 0.1),
+					"-vcodec", "copy", "-acodec", "copy", "-t", Double.toString(model.getCwTime() - 0.9),
 					"-avoid_negative_ts", "1", fileEven);
 			try {
 				pb.start();
@@ -128,6 +129,7 @@ public class FFmpegController {
 
 		// Update nächste Start Zeit
 		setStartTime(getStartTime() + model.getCwTime());
+		
 	}
 
 	/**

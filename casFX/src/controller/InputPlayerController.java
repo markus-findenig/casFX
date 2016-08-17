@@ -13,7 +13,9 @@ import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
+import uk.co.caprica.vlcj.test.multi.PlayerInstance;
 import view.InputPlayerView;
+import view.OutputPlayerView;
 
 /**
  * Input Player Controller. 
@@ -98,7 +100,10 @@ public class InputPlayerController {
 	 * Dateipfad zur Ausgabedatei even_stream.ts
 	 */
 	private static String streamFileEven;
-
+	
+	
+	//private static List<PlayerInstance> players;
+	
 
 	/**
 	 * Initialisiert den Input Media Player
@@ -128,16 +133,33 @@ public class InputPlayerController {
 		mediaInputPlayerFactory = new MediaPlayerFactory();
 		embeddedInputMediaPlayer = mediaInputPlayerFactory.newEmbeddedMediaPlayer();
 
-		embeddedInputMediaPlayer.setVolume(0);
-		controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
-		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
-		mediaInputPlayerComponent.add(controlsInputPanel);
-		// mediaInputPlayerComponent.disable();
+		//embeddedInputMediaPlayer.setVolume(0);
+		
+		
 
-		controlsInputPanel.updateVolume(0);
+		
+		//players = SimulatorViewController.getPlayers();
+//		
+//		// sperre die Controller für den Input Player
+//		mediaInputPlayerComponent.disable();
+		
+		PlayerInstance playerInstance = new PlayerInstance(embeddedInputMediaPlayer);
+		SimulatorViewController.getPlayers().add(0, playerInstance);
+//		
+//		controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
+//		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
+//		mediaInputPlayerComponent.add(controlsInputPanel);
+//		// setze die Lautstärke auf null
+//		controlsInputPanel.updateVolume(0);
+//		
+//		// TODO
+//		mediaInputPlayerComponent.disable();
+//		controlsInputPanel.disable();
 
-		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory,
-				mediaInputPlayerComponent, controlsInputPanel);
+//		inputPlayerView = new InputPlayerView(SimulatorViewController.getPlayers().get(0).mediaPlayer(), mediaInputPlayerFactory,
+//				mediaInputPlayerComponent, controlsInputPanel);
+		
+		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory);
 
 	}
 
@@ -155,14 +177,14 @@ public class InputPlayerController {
 		// if odd
 		if (EncryptionController.isStateECMType()) {
 			streamInputPlayer().run();
-			startInputPlayer(fileOdd);
+			startInputPlayerView(fileOdd);
 			// switch ECM Type
 			//EncryptionController.setStateECMType(false);
 		} 
 		// else even
 		else {
 			streamInputPlayer().run();
-			startInputPlayer(fileEven);
+			startInputPlayerView(fileEven);
 			// switch ECM Type
 			//EncryptionController.setStateECMType(true);
 		}
@@ -242,7 +264,7 @@ public class InputPlayerController {
 	}
 
 	/**
-	 * Startet den Stream Input Media Player.
+	 * Startet den Stream Input Media Player (keine View).
 	 * 
 	 * @param file
 	 *            - Datei zum Abspielen.
@@ -271,39 +293,35 @@ public class InputPlayerController {
 	 * @param file
 	 *            - Datei für die Wiedergabe.
 	 */
-	private static void startInputPlayer(String file) {
+	private static void startInputPlayerView(String file) {
 		mediaInputPlayerFactory = new MediaPlayerFactory();
 		embeddedInputMediaPlayer = mediaInputPlayerFactory.newEmbeddedMediaPlayer();
+		// TODO
+		embeddedInputMediaPlayer.setVolume(0);
 		embeddedInputMediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
 
 			@Override
 			public void playing(MediaPlayer mediaPlayer) {
-				System.out.println("playing: ");
-
 				// switch
 				if (EncryptionController.isStateECMType()) {
 					EncryptionController.setStateECMType(false);
 				} else {
 					EncryptionController.setStateECMType(true);
 				}
-
+				// bereite nächste Datei vor
 				FFmpegController.runFFmpeg();
-
 			}
 
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
-				System.out.println("finished: ");
-
-				//
-
+				// ECM für vorbereitete Datei
 				EncryptionController.generateECM();
 				EncryptionController.sendECM();
-
-				// embeddedInputMediaPlayer.stop();
+				// release Player
 				mediaPlayer.release();
 				embeddedInputMediaPlayer.release();
 				mediaInputPlayerFactory.release();
+				// starte vorbereitete Datei
 				runInputPlayer();
 			}
 		});
@@ -311,16 +329,43 @@ public class InputPlayerController {
 //		controlsInputPanel = null;
 //		mediaInputPlayerComponent = null;
 //
-//		controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
+		//controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
 //		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
-//		mediaInputPlayerComponent.add(controlsInputPanel);
+		//mediaInputPlayerComponent.add(controlsInputPanel);
 //		controlsInputPanel.updateVolume(0);
+		
+		//controlsInputPanel.reInitPlayerControlsPanel(embeddedInputMediaPlayer);
+		
+		// TODO
+		//mediaInputPlayerComponent.release();
+		//mediaInputPlayerComponent.remove(controlsInputPanel);
+		
+		
+		embeddedInputMediaPlayer.prepareMedia(file);
+		
+		
+		//controlsInputPanel.reInitPlayerControlsPanel(embeddedInputMediaPlayer);
+		
+		// entferne alten Player
+		SimulatorViewController.getPlayers().remove(0);
+//		
+		// erstellen neuen Player
+		PlayerInstance playerInstance = new PlayerInstance(embeddedInputMediaPlayer);
+		SimulatorViewController.getPlayers().add(0, playerInstance);
+		
+		//mediaInputPlayerComponent.add(controlsInputPanel);
 
 		// View the Player
-		inputPlayerView.reInitInputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory,
-				mediaInputPlayerComponent, controlsInputPanel);
+//		inputPlayerView.reInitInputPlayerView(SimulatorViewController.getPlayers().get(0).mediaPlayer(), mediaInputPlayerFactory,
+//				mediaInputPlayerComponent, controlsInputPanel);
+		
+		inputPlayerView.reInitInputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory);
+		
+		
 		// Play the file
-		embeddedInputMediaPlayer.playMedia(file);
+		//embeddedInputMediaPlayer.play();
+		SimulatorViewController.getPlayers().get(0).mediaPlayer().play();
+		//embeddedInputMediaPlayer.playMedia(file);
 
 	}
 
@@ -354,25 +399,40 @@ public class InputPlayerController {
 		vlcArgs.add("--sout-keep");
 		vlcArgs.add("--no-plugins-cache");
 		vlcArgs.add("vlc://quit");
+		
 
 		// erzeugt eine media player
 		mediaInputPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));
 		embeddedInputMediaPlayer = mediaInputPlayerFactory.newEmbeddedMediaPlayer();
+		
+		embeddedInputMediaPlayer.setVolume(0);
+		
+		//embeddedInputMediaPlayer.prepareMedia(outfile);
 
 		// erzeugt die Steuerelemente für den media player
-		controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
-		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
-		mediaInputPlayerComponent.add(controlsInputPanel);
-
-		// setze die Lautstärke auf null
-		controlsInputPanel.updateVolume(0);
-
+//		controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
+//		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
+//		mediaInputPlayerComponent.add(controlsInputPanel);
+//
+//		// setze die Lautstärke auf null
+//		controlsInputPanel.updateVolume(0);
+//		mediaInputPlayerComponent.disable();
+//		controlsInputPanel.disable();
+		
+		embeddedInputMediaPlayer.prepareMedia(outfile);
+		
+		PlayerInstance playerInstance = new PlayerInstance(embeddedInputMediaPlayer);
+		SimulatorViewController.getPlayers().add(0, playerInstance);
+		
 		// erzeugt die GUI für den media player
-		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory,
-				mediaInputPlayerComponent, controlsInputPanel);
+//		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory,
+//				mediaInputPlayerComponent, controlsInputPanel);
+		
+		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory);
 
 		// streamt die Datei
-		embeddedInputMediaPlayer.playMedia(outfile);
+		SimulatorViewController.getPlayers().get(0).mediaPlayer().play();
+		//embeddedInputMediaPlayer.playMedia(outfile);
 
 	}
 

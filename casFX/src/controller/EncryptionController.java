@@ -4,9 +4,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.KeySpec;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
@@ -16,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
@@ -24,6 +29,7 @@ import org.apache.commons.codec.binary.Hex;
 import javafx.application.Platform;
 import model.ConfigModel;
 import model.EncryptionECM;
+import model.EncryptionEMM;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
@@ -53,12 +59,13 @@ public class EncryptionController {
 	 * Encryption ECM Model
 	 */
 	private static EncryptionECM encryptionECM;
+	
 
 	/**
 	 * Scheduled Executor Service. Sendet statisch alle 2 Sekunden die aktuelle
 	 * ECM Nachricht.
 	 */
-	public static ScheduledExecutorService sendECMExecutor;
+	private static ScheduledExecutorService sendECMExecutor;
 
 	/**
 	 * Aktueller ECM Nachrichten Status.
@@ -66,7 +73,7 @@ public class EncryptionController {
 	 * @true - odd ECM
 	 * @false - even ECM
 	 */
-	public static Boolean stateECMType;
+	private static Boolean stateECMType;
 
 	/**
 	 * ecmHeader = ECM Section Header + Protocol number + Broadcast group id +
@@ -81,7 +88,7 @@ public class EncryptionController {
 	private static String ecmPayload;
 
 	/**
-	 * ecmPayloadEncrypted = ecmPayload + Payload MAC
+	 * ecmPayloadEncrypted = ecmPayload + MAC
 	 */
 	private static String ecmPayloadEncrypted;
 
@@ -99,7 +106,43 @@ public class EncryptionController {
 	 * Aktueller Autorisation Key
 	 */
 	private static String ecmWorkKey;
+	
+	/**
+	 * Encryption EMM Model
+	 */
+	private static EncryptionEMM encryptionEMM;
 
+	/**
+	 * emmHeader = EMM Section Header + Smartcard id + Length + Protocol Number
+	 * + Broadcast group id + Update id + Expiration Date
+	 */
+	private static String emmHeader;
+	
+	/**
+	 * emmPayload = Authorization Key 0 + Authorization Key 1
+	 */
+	private static String emmPayload;
+	
+	/**
+	 * emmEncrypted = emmHeader + emmPayloadEncrypted + Section CRC
+	 */
+	private static String emmEncrypted;
+	
+	/**
+	 * Master Private Key (256 bit).
+	 */
+	private static String emmKey;
+	
+	/**
+	 * emmPayloadEncrypted = emmPayload + MAC
+	 */
+	private static String emmPayloadEncrypted;
+
+	/**
+	 * emm = emmHeader + emmPayload + MAC + Section CRC
+	 */
+	private static String emm;
+	
 	/**
 	 * Startet die Verschlüsselung.
 	 */
@@ -158,12 +201,20 @@ public class EncryptionController {
 			InputPlayerController.initIntervallInputPlayer();
 
 			FFmpegController.runFFmpeg();
+			try {
+				// Warte, für die erste Ausführung auf FFmpeg
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
 			generateECM();
 			sendECM();
 			// TODO
 			InputPlayerController.runInputPlayer();
 			// InputPlayerController.streamInputPlayer();
 
+		
 		}
 
 		// send ECM
@@ -184,7 +235,6 @@ public class EncryptionController {
 	 * Stoppt die Verschlüsselung
 	 */
 	public static void stopEncryption() {
-
 		view.getEncryption().setText("OFF");
 		view.getVideoInputButton().setDisable(true);
 		model.setEncryptionState(false);
@@ -193,6 +243,8 @@ public class EncryptionController {
 		view.getScramblingControlTF().setText("00");
 		// Entsperre die CW Time
 		view.getCwTimeTF().setDisable(false);
+		// VLC reset
+		view.getParameterVLCstreamTA().setText("");
 		// TODO
 		InputPlayerController.stopInputPlayer();
 		sendECMExecutor.shutdownNow();
@@ -271,10 +323,10 @@ public class EncryptionController {
 		encryptionECM.setEcmVariablePart(String.format("%010d", model.getCwTime()));
 
 		// setze ECM MAC
-		encryptionECM.setEcmMAC(getMAC());
+		encryptionECM.setEcmMAC(getEcmMAC());
 
 		// setze ECM CRC
-		encryptionECM.setEcmCRC(getCRC());
+		encryptionECM.setEcmCRC(getEcmCRC());
 
 		// odd/even Scrambling Control
 		if (isStateECMType()) {
@@ -296,7 +348,7 @@ public class EncryptionController {
 	/**
 	 * Erzeugt eine Konstante ECM mit Protokoll Typ "BB"
 	 */
-	public static void constantECM() {
+	private static void constantECM() {
 		// Task<Void> taskConstantECM = new Task<Void>() {
 		// @Override
 		// protected Void call() throws Exception {
@@ -346,13 +398,16 @@ public class EncryptionController {
 		encryptionECM.setEcmVariablePart(String.format("%010d", model.getCwTime()));
 
 		// setze ECM MAC
-		encryptionECM.setEcmMAC(getMAC());
+		encryptionECM.setEcmMAC(getEcmMAC());
 
 		// setze ECM CRC
-		encryptionECM.setEcmCRC(getCRC());
+		encryptionECM.setEcmCRC(getEcmCRC());
 
 		// TS Scrambling Control auf odd
 		model.setScramblingControl("11");
+		
+		// View Constant VLC input Stream Parameter
+		view.getParameterVLCstreamTA().setText("vlc " + configModel.getServer().toString() + "\n --ts-csa-ck=" + cw);
 
 		// GUI updaten
 		Platform.runLater(new Runnable() {
@@ -413,13 +468,13 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt einen Message Authentication Code (MAC, 4 Bytes länge) von der
+	 * Erzeugt einen Message Authentication Code (MAC, 4 Byte Länge) von der
 	 * ECM (Header + Payload).
 	 * 
 	 * @return Gibt einen MAC in Hex zurück.
 	 * @throws Exception
 	 */
-	private static String getMAC() {
+	private static String getEcmMAC() {
 		ecmHeader = encryptionECM.getEcmHeader() + encryptionECM.getEcmProtocol() + encryptionECM.getEcmBroadcastId()
 				+ encryptionECM.getEcmWorkKeyId();
 		ecmPayload = encryptionECM.getEcmCwOdd() + encryptionECM.getEcmCwEven() + encryptionECM.getEcmProgramType()
@@ -465,7 +520,7 @@ public class EncryptionController {
 	 * 
 	 * @return Gibt den CRC anhand der aktuellen ECM Header und Payload zurück.
 	 */
-	public static String getCRC() {
+	private static String getEcmCRC() {
 		ecmPayloadEncrypted = encryptedECM(ecmPayload + encryptionECM.getEcmMAC());
 		String getCRC = ecmHeader + ecmPayloadEncrypted;
 		java.util.zip.CRC32 x = new java.util.zip.CRC32();
@@ -563,6 +618,172 @@ public class EncryptionController {
 	 */
 	public static EncryptionECM getEncryptionECM() {
 		return encryptionECM;
+	}
+
+	public static void generateEMM() {
+		// TODO Auto-generated method stub
+		view = SimulatorViewController.getView();
+		model = SimulatorViewController.getModel();
+		encryptionEMM = new EncryptionEMM();
+		
+		LocalDateTime dateTime = LocalDateTime.now();
+		// Datum Formatieren: Monat Tag
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMdd");
+		
+		// Update Input Keys
+		model.setAuthorizationInputKey0(view.getAk0InTF().getText());
+		model.setAuthorizationInputKey1(view.getAk1InTF().getText());
+		
+		encryptionEMM.setEmmHeader("8400000000000000");
+		encryptionEMM.setEmmSmartcardId("111111111111");
+		encryptionEMM.setEmmLength("2D");
+		encryptionEMM.setEmmProtocol("CC");
+		encryptionEMM.setEmmBroadcastId("FF");
+		encryptionEMM.setEmmUpdateId("01");
+		encryptionEMM.setEmmExpirationDate(dateTime.format(formatter));
+		//encryptionEMM.setEmmVariablePart("00112233445566778899AABBCCDDEEFF" + "FFEEDDCCBBAA99887766554433221100" + "000000000000000000000000");
+		encryptionEMM.setEmmVariablePart(model.getAuthorizationInputKey0() + model.getAuthorizationInputKey1() + "000000000000000000000000");
+		encryptionEMM.setEmmMAC(getEmmMAC());
+		encryptionEMM.setEmmCRC(getEmmCRC());
+		
+		System.out.println("getEmmMAC :" + getEmmMAC());
+		System.out.println("getEmmCRC :" + getEmmCRC());
+		
+		sendEMM();
+	}
+
+	private static String getEmmMAC() {
+		emmHeader = encryptionEMM.getEmmHeader() + encryptionEMM.getEmmSmartcardId() + encryptionEMM.getEmmLength() + encryptionEMM.getEmmProtocol() + 
+				encryptionEMM.getEmmBroadcastId() + encryptionEMM.getEmmUpdateId() + encryptionEMM.getEmmExpirationDate();
+		emmPayload = encryptionEMM.getEmmVariablePart();
+
+		String getMAC = emmHeader + emmPayload;
+		String macString = null;
+		emmKey = view.getMpkInTA().getText().toString().trim();
+
+		// generate a key
+		SecretKeySpec macKey = new SecretKeySpec(emmKey.getBytes(), "HmacSHA1");
+
+		// ALG_DES_MAC4_ISO9797_M1 for SmartCards
+		try {
+			Mac mac = Mac.getInstance(macKey.getAlgorithm());
+			mac.init(macKey);
+
+			// get the string as UTF-8 bytes
+			byte[] b = getMAC.toString().getBytes(Charset.forName("UTF-8"));
+			// create a digest from the byte array
+			byte[] digest = mac.doFinal(b);
+
+			// cut first 4 bytes in hex
+			macString = String.valueOf(Hex.encodeHex(digest)).substring(0, 8).toUpperCase();
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("No Such Algorithm:" + e.getMessage());
+		} catch (InvalidKeyException e) {
+			System.out.println("Invalid Key:" + e.getMessage());
+		}
+		return macString;
+
+	}
+	
+	/**
+	 * Erzeugt einen Cyclic Redundancy Check (CRC) vom aktuellen EMM.
+	 * 
+	 * @return Gibt den CRC anhand der aktuellen EMM Header und Payload zurück.
+	 */
+	private static String getEmmCRC() {
+		emmPayloadEncrypted = encryptedEMM(emmPayload + encryptionEMM.getEmmMAC());
+		String getCRC = emmHeader + emmPayloadEncrypted;
+		java.util.zip.CRC32 x = new java.util.zip.CRC32();
+		byte[] bytes = getCRC.getBytes(Charset.forName("UTF-8"));
+		x.update(bytes);
+		return String.format("%02X", x.getValue());
+	}
+	
+	
+	/**
+	 * Verschlüsselt den input Parameter mittels aktuell ausgewählten
+	 * AuthorizationKey (AK)
+	 * 
+	 * @param emm
+	 *            EMM Nachricht zum Verschlüsseln
+	 * @return Verschlüsselte EMM Nachricht.
+	 */
+	private static String encryptedEMM(String emm) {
+		// generate the encrypted key with the current MPK
+		SecretKey key = new SecretKeySpec(DatatypeConverter.parseHexBinary(emmKey), "AES");
+
+		Cipher cipher;
+		byte[] result = null;
+		try {
+			cipher = Cipher.getInstance("AES/ECB/NoPadding");
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+			result = cipher.doFinal(DatatypeConverter.parseHexBinary(emm.trim()));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return DatatypeConverter.printHexBinary(result);
+	
+		// Alternative
+//		byte[] saltBytes = "0000".getBytes();
+//		//byte[] saltBytes = getRandomHex(32).getBytes();
+//		byte[] ciphertext = null;
+//	
+//		try {
+//	        /* Derive the key, given password and salt. */
+//	        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+//	        KeySpec spec = new PBEKeySpec(emmKey.toCharArray(), saltBytes, 65536, 256);
+//	        SecretKey tmp = factory.generateSecret(spec);
+//	        SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+//	        
+//	        /* Encrypt the message. "AES/CBC/PKCS5Padding" "AES/ECB/NoPadding" */ 
+//	        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+//	        cipher.init(Cipher.ENCRYPT_MODE, secret);
+//	        ciphertext = cipher.doFinal(emm.getBytes());
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return DatatypeConverter.printHexBinary(ciphertext);
+		
+	}
+	
+	/**
+	 * Sendet eine aktuelle EMM Nachricht mittels UDP an das Broadcast Netzwerk.
+	 */
+	public static void sendEMM() {
+		// TODO
+		configModel = ConfigViewController.getConfigModel();
+		// get emm and emmEncrypted
+		emm = emmHeader + emmPayload + encryptionEMM.getEmmMAC() + encryptionEMM.getEmmCRC();
+		emmEncrypted = emmHeader + emmPayloadEncrypted + encryptionEMM.getEmmCRC();
+
+		// update GUI
+		view.getEmmTA().setText(emm);
+		view.getEmmEncryptedTA().setText(emmEncrypted);
+
+		try {
+			// default server = rtp://239.0.0.1:5004
+			String server = configModel.getServer();
+			String[] rtpSplit = server.split("://");
+			// rtp = rtpSplit[0]
+			String ipPort = rtpSplit[1];
+			String[] ip = ipPort.split(":");
+			// group = 239.0.0.1;
+			InetAddress group = InetAddress.getByName(ip[0].trim());
+			// port = default server port + 1 (5005);
+			int port = Integer.parseInt(ip[1].trim()) + 1;
+
+			byte[] outbuf = emmEncrypted.getBytes();
+
+			DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
+			DatagramSocket socket = new DatagramSocket();
+			socket.send(packet);
+			socket.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

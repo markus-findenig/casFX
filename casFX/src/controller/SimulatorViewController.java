@@ -1,6 +1,8 @@
 package controller;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -10,6 +12,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Toggle;
 import javafx.stage.FileChooser;
 import model.SimulatorModel;
+import uk.co.caprica.vlcj.test.multi.PlayerInstance;
 import view.SimulatorView;
 
 /**
@@ -26,6 +29,11 @@ public class SimulatorViewController {
 	 * Simulator View
 	 */
 	private static SimulatorView view;
+	
+	/**
+	 * Player Instance List
+	 */
+	private static List<PlayerInstance> players = new ArrayList<PlayerInstance>();
 	
 	/**
 	 * Input View Controller
@@ -48,6 +56,9 @@ public class SimulatorViewController {
 
 		// Encryption Toggle Button registrieren
 		view.getEncryption().setOnAction(casEventHandler);
+		
+		// Send EMM Button registrieren
+		view.getSendEMMButton().setOnAction(casEventHandler);
 		
 		// Decryption Toggle Button registrieren
 		view.getDecryption().setOnAction(casEventHandler);
@@ -72,7 +83,8 @@ public class SimulatorViewController {
 			//VlcServerController.streamVlcFile(model.getInputFile().toString());
 			
 			Runnable myRunnable = new Runnable(){
-			     public void run(){
+			     @Override
+				public void run(){
 			    	 
 			    	 try {
 						OutputPlayerController.initIntervallOutputPlayer();
@@ -93,6 +105,7 @@ public class SimulatorViewController {
 			
 
 		});
+		
 	}
 
 	/**
@@ -120,22 +133,24 @@ public class SimulatorViewController {
 					model.setInputFile(inputFile);
 					// Button Encryption aktivieren
 					view.getEncryption().setDisable(false);
+					// Button Send EMM aktivieren
+					view.getSendEMMButton().setDisable(false);
 				}
 
 				// TODO
-//				// set 128 bit Authorization Keys input and output
-//				String key0 = EncryptionController.getRandomHex(32);
-//				String key1 = EncryptionController.getRandomHex(32);
-//
-//				// setze Authorizations Keys im Model
-//				model.setAuthorizationInputKey0(key0);
-//				model.setAuthorizationOutputKey0(key0);
-//				model.setAuthorizationInputKey1(key1);
-//				model.setAuthorizationOutputKey1(key1);
-//
-//				// GUI Update Autorisation Keys
-//				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
-//				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
+				// set 128 bit Authorization Keys input and output
+				String key0 = EncryptionController.getRandomHex(32);
+				String key1 = EncryptionController.getRandomHex(32);
+
+				// setze Authorizations Keys im Model
+				model.setAuthorizationInputKey0(key0);
+				//model.setAuthorizationOutputKey0(key0);
+				model.setAuthorizationInputKey1(key1);
+				//model.setAuthorizationOutputKey1(key1);
+
+				// GUI Update Autorisation Keys
+				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
+				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
 //				view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
 //				view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
 				
@@ -175,6 +190,11 @@ public class SimulatorViewController {
 				OutputPlayerController.getOutputPlayer();
 			}
 			
+			// EMM Send Button
+			if (event.getSource() == view.getSendEMMButton()) {
+				EncryptionController.generateEMM();
+			}
+			
 			// Config Popup
 			if (event.getSource() == view.getConfig()) {
 				ConfigViewController.show();
@@ -193,12 +213,31 @@ public class SimulatorViewController {
 
 
 
+	/**
+	 * Liefert die aktuelle Simulator View {@link view}.
+	 * 
+	 * @return Gibt die aktuelle Simulator View zurück.
+	 */
 	public static SimulatorView getView() {
 		return view;
 	}
 
+	/**
+	 * Liefert die aktuelle Simulator Model {@link model}.
+	 * 
+	 * @return Gibt das aktuelle Simulator Model zurück.
+	 */
 	public static SimulatorModel getModel() {
 		return model;
+	}
+
+	/**
+	 * Liefert die aktuelle Player Liste {@link players}.
+	 * 
+	 * @return Gibt das aktuelle Player Liste zurück.
+	 */
+	public static List<PlayerInstance> getPlayers() {
+		return players;
 	}
 
 }

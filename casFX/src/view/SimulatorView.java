@@ -59,6 +59,8 @@ public class SimulatorView {
 
 	private final MenuItem config = new MenuItem("Simulator Config");
 
+	
+
 	// Encryption Text Field and Toggle Button
 	private static Label encryptionL;
 	private static ToggleButton encryptionTB;
@@ -66,6 +68,10 @@ public class SimulatorView {
 	// Decryption Text Field and Toggle Button
 	private static Label decryptionL;
 	private static ToggleButton decryptionTB;
+	
+	// EMM send Button
+	private static Label sendEMML;
+	private static Button sendEMMB;
 
 	// Time interval for ControlWord (CW)
 	private static Label cwTimeL;
@@ -78,11 +84,24 @@ public class SimulatorView {
 	private static TextField ak0InTF;
 	private static Label ak1InL;
 	private static TextField ak1InTF;
-	private static Label mpkInL;
-	private static TextArea mpkInTA;
 	private static ToggleGroup groupRB;
 	private static RadioButton ak0InRB;
 	private static RadioButton ak1InRB;
+
+	
+	// EMM Input Key
+	private static Label mpkInL;
+	private static TextArea mpkInTA;
+	
+	/**
+	 * Label für VLC Parameter bei Konstanten Control Word
+	 */
+	private static Label parameterVLCstreamL;
+	
+	/**
+	 * TextField für VLC Parameter bei Konstanten Control Word
+	 */
+	private static TextArea parameterVLCstreamTA;
 
 	// Transport Stream Header
 	private static Label scramblingControlL;
@@ -133,6 +152,15 @@ public class SimulatorView {
 	private static TextArea ecmEncryptedTA;
 	private static Label ecmDecryptedL;
 	private static TextArea ecmDecryptedTA;
+	
+	
+	// EMM's
+	private static Label emmL;
+	private static TextArea emmTA;
+	private static Label emmEncryptedL;
+	private static TextArea emmEncryptedTA;
+	private static Label emmDecryptedL;
+	private static TextArea emmDecryptedTA;
 
 		// Video Input Player
 	private static Label videoInputL;
@@ -222,10 +250,10 @@ public class SimulatorView {
 		// --------------------------------------------------------------------
 		// Encryption Toggle Button
 		encryptionL = new Label("Encryption:");
-		grid.add(encryptionL, 1, 2);
 		encryptionTB = new ToggleButton("OFF");
 		encryptionTB.setDisable(true);
 		encryptionTB.setPrefWidth(80);
+		grid.add(encryptionL, 1, 2);
 		grid.add(encryptionTB, 2, 2);
 
 		// --------------------------------------------------------------------
@@ -239,6 +267,16 @@ public class SimulatorView {
 		grid.add(videoInputB, 2, 4);
 
 		// --------------------------------------------------------------------
+		// EMM Button TODO
+		sendEMML = new Label("EMM:");
+		sendEMMB = new Button("Send");
+		// TODO true
+		sendEMMB.setDisable(true);
+		sendEMMB.setPrefWidth(80);
+		grid.add(sendEMML, 1, 6);
+		grid.add(sendEMMB, 2, 6);
+		
+		// --------------------------------------------------------------------
 		// Time interval for ControlWord (CW)
 		cwTimeL = new Label("Time (sec):");
 		cwTimeTF = new TextField("0");
@@ -246,7 +284,7 @@ public class SimulatorView {
 		cwTimeTF.setTooltip(new Tooltip("Time in seconds"));
 		grid.add(cwTimeL, 1, 8);
 		grid.add(cwTimeTF, 2, 8);
-
+		
 		// --------------------------------------------------------------------
 		// ECM Input Keys
 		cwInL = new Label("CW:");
@@ -287,15 +325,23 @@ public class SimulatorView {
 		mpkInL = new Label("MPK:");
 		mpkInTA = new TextArea("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
 		mpkInTA.setWrapText(true);
-		mpkInTA.setEditable(false);
-		mpkInTA.setTooltip(new Tooltip("Master Private Key (256 bit) \nMPK is not currently in use."));
+		mpkInTA.setTooltip(new Tooltip("Master Private Key (256 bit)."));
 		mpkInTA.setMaxSize(250, 45);
 		grid.add(mpkInL, 1, 14);
 		grid.add(mpkInTA, 2, 14);
+		
+		// --------------------------------------------------------------------
+		// VLC
+		parameterVLCstreamL = new Label("VLC\nParameter:");
+		parameterVLCstreamTA = new TextArea();
+		parameterVLCstreamTA.setEditable(false);
+		parameterVLCstreamTA.setTooltip(new Tooltip("Only if Constant CW, Time (sec) = 0"));
+		parameterVLCstreamTA.setMaxSize(250, 45);
+		grid.add(parameterVLCstreamL, 1, 15);
+		grid.add(parameterVLCstreamTA, 2, 15);
 
 		// --------------------------------------------------------------------
 		// Current ECM
-
 		ecmL = new Label("Current\nECM:");
 		ecmTA = new TextArea("");
 		ecmTA.setWrapText(true);
@@ -304,6 +350,17 @@ public class SimulatorView {
 		ecmTA.setMaxSize(240, 60);
 		grid.add(ecmL, 1, 17);
 		grid.add(ecmTA, 2, 17);
+		
+		// --------------------------------------------------------------------
+		// Current EMM
+		emmL = new Label("Current\nEMM:");
+		emmTA = new TextArea("");
+		emmTA.setWrapText(true);
+		emmTA.setEditable(false);
+		emmTA.setTooltip(new Tooltip("Current EMM."));
+		emmTA.setMaxSize(240, 60);
+		grid.add(emmL, 1, 19);
+		grid.add(emmTA, 2, 19);
 
 		// --------------------------------------------------------------------
 		// Transport Stream Header
@@ -418,7 +475,6 @@ public class SimulatorView {
 
 		// --------------------------------------------------------------------
 		// Encrypted ECM
-
 		ecmEncryptedL = new Label("Encrypted\nECM:");
 		ecmEncryptedTA = new TextArea("");
 		ecmEncryptedTA.setWrapText(true);
@@ -427,7 +483,17 @@ public class SimulatorView {
 		ecmEncryptedTA.setMaxSize(240, 60);
 		grid.add(ecmEncryptedL, 8, 17);
 		grid.add(ecmEncryptedTA, 9, 17);
-
+		
+		// --------------------------------------------------------------------
+		// Encrypted EMM
+		emmEncryptedL = new Label("Encrypted\nEMM:");
+		emmEncryptedTA = new TextArea("");
+		emmEncryptedTA.setWrapText(true);
+		emmEncryptedTA.setEditable(false);
+		emmEncryptedTA.setTooltip(new Tooltip("Encrypted EMM."));
+		emmEncryptedTA.setMaxSize(240, 60);
+		grid.add(emmEncryptedL, 8, 19);
+		grid.add(emmEncryptedTA, 9, 19);
 		
 		// --------------------------------------------------------------------
 		// Encryption Toggle Button
@@ -459,7 +525,7 @@ public class SimulatorView {
 		grid.add(cwOutTF, 17, 10);
 
 		ak0OutL = new Label("AK 00:");
-		ak0OutTF = new TextField("00112233445566778899AABBCCDDEEFF");
+		ak0OutTF = new TextField("");
 		ak0OutTF.setEditable(true);
 		ak0OutTF.setTooltip(new Tooltip("Authorization Key 0 (128 bit)"));
 		ak0OutTF.setMinWidth(230);
@@ -467,7 +533,7 @@ public class SimulatorView {
 		grid.add(ak0OutTF, 17, 12);
 
 		ak1OutL = new Label("AK 01:");
-		ak1OutTF = new TextField("FFEEDDCCBBAA99887766554433221100");
+		ak1OutTF = new TextField("");
 		ak1OutTF.setEditable(true);
 		ak1OutTF.setTooltip(new Tooltip("Authorization Key 1 (128 bit)"));
 		ak1OutTF.setMinWidth(230);
@@ -477,15 +543,13 @@ public class SimulatorView {
 		mpkOutL = new Label("MPK:");
 		mpkOutTA = new TextArea("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
 		mpkOutTA.setWrapText(true);
-		mpkOutTA.setEditable(false);
-		mpkOutTA.setTooltip(new Tooltip("Master Private Key (256 bit) \nMPK is not currently in use."));
+		mpkOutTA.setTooltip(new Tooltip("Master Private Key (256 bit)"));
 		mpkOutTA.setMaxSize(250, 45);
 		grid.add(mpkOutL, 16, 14);
 		grid.add(mpkOutTA, 17, 14);
 
 		// --------------------------------------------------------------------
 		// Decrypted ECM
-
 		ecmDecryptedL = new Label("Decrypted\nECM:");
 		ecmDecryptedTA = new TextArea("");
 		ecmDecryptedTA.setWrapText(true);
@@ -494,8 +558,22 @@ public class SimulatorView {
 		ecmDecryptedTA.setMaxSize(240, 60);
 		grid.add(ecmDecryptedL, 16, 17);
 		grid.add(ecmDecryptedTA, 17, 17);
+		
+
+		// --------------------------------------------------------------------
+		// Decrypted EMM
+		emmDecryptedL = new Label("Decrypted\nEMM:");
+		emmDecryptedTA = new TextArea("");
+		emmDecryptedTA.setWrapText(true);
+		emmDecryptedTA.setEditable(false);
+		emmDecryptedTA.setTooltip(new Tooltip("Decrypted EMM."));
+		emmDecryptedTA.setMaxSize(240, 60);
+		grid.add(emmDecryptedL, 16, 19);
+		grid.add(emmDecryptedTA, 17, 19);
 
 	}
+
+
 
 
 	public TextField getEcmHeaderTF() {
@@ -590,6 +668,27 @@ public class SimulatorView {
 		return ecmDecryptedTA;
 	}
 	
+	/**
+	 * @return the emmTA
+	 */
+	public TextArea getEmmTA() {
+		return emmTA;
+	}
+
+	/**
+	 * @return the emmEncryptedTA
+	 */
+	public TextArea getEmmEncryptedTA() {
+		return emmEncryptedTA;
+	}
+
+	/**
+	 * @return the emmDecryptedTA
+	 */
+	public TextArea getEmmDecryptedTA() {
+		return emmDecryptedTA;
+	}
+	
 	public ToggleButton getEncryption() {
 		return encryptionTB;
 	}
@@ -597,5 +696,33 @@ public class SimulatorView {
 	public ToggleButton getDecryption() {
 		return decryptionTB;
 	}
+
+	/**
+	 * @return the parameterVLCstreamTF
+	 */
+	public TextArea getParameterVLCstreamTA() {
+		return parameterVLCstreamTA;
+	}
+
+	/**
+	 * @return the send EMM Button
+	 */
+	public Button getSendEMMButton() {
+		return sendEMMB;
+	}
 	
+	/**
+	 * @return the Input Master Private Key (256 bit)
+	 */
+	public TextArea getMpkInTA() {
+		return mpkInTA;
+	}
+	
+	/**
+	 * @return the Output Master Private Key (256 bit)
+	 */
+	public TextArea getMpkOutTA() {
+		return mpkOutTA;
+	}
+
 }

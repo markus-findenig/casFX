@@ -52,7 +52,6 @@ public class SimulatorModel {
 	private String scramblingControl;
 
 
-	// Authorization Keys for Input and Output Player
 	/**
 	 * Authorization Key 00 for Input Player
 	 */

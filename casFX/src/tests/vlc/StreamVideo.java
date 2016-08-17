@@ -1,11 +1,5 @@
 package tests.vlc;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Window;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -14,39 +8,11 @@ import java.util.concurrent.TimeUnit;
 
 import com.sun.jna.NativeLibrary;
 
-import uk.co.caprica.vlcj.binding.internal.libvlc_logo_position_e;
-import uk.co.caprica.vlcj.binding.internal.libvlc_marquee_position_e;
-import uk.co.caprica.vlcj.binding.internal.libvlc_media_parse_flag_t;
-import uk.co.caprica.vlcj.binding.internal.libvlc_media_player_t;
-import uk.co.caprica.vlcj.binding.internal.libvlc_media_stats_t;
-import uk.co.caprica.vlcj.binding.internal.libvlc_media_t;
-import uk.co.caprica.vlcj.binding.internal.libvlc_media_type_e;
-import uk.co.caprica.vlcj.binding.internal.libvlc_position_e;
-import uk.co.caprica.vlcj.binding.internal.libvlc_state_t;
-import uk.co.caprica.vlcj.binding.internal.libvlc_track_type_t;
-import uk.co.caprica.vlcj.medialist.MediaList;
-import uk.co.caprica.vlcj.player.AudioDevice;
-import uk.co.caprica.vlcj.player.ChapterDescription;
-import uk.co.caprica.vlcj.player.DeinterlaceMode;
-import uk.co.caprica.vlcj.player.Equalizer;
-import uk.co.caprica.vlcj.player.Logo;
-import uk.co.caprica.vlcj.player.Marquee;
-import uk.co.caprica.vlcj.player.MediaDetails;
 import uk.co.caprica.vlcj.player.MediaMeta;
-import uk.co.caprica.vlcj.player.MediaMetaData;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
-import uk.co.caprica.vlcj.player.MediaPlayerEventListener;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
-import uk.co.caprica.vlcj.player.TitleDescription;
-import uk.co.caprica.vlcj.player.TrackDescription;
-import uk.co.caprica.vlcj.player.TrackInfo;
-import uk.co.caprica.vlcj.player.TrackType;
-import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
-import uk.co.caprica.vlcj.player.embedded.FullScreenStrategy;
-import uk.co.caprica.vlcj.player.embedded.videosurface.CanvasVideoSurface;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
-import uk.co.caprica.vlcj.player.media.Media;
 import uk.co.caprica.vlcj.test.VlcjTest;
 
 /* An example of how to stream a media file over HTTP.
