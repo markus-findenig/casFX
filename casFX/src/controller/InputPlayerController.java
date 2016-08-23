@@ -15,7 +15,6 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 import uk.co.caprica.vlcj.test.multi.PlayerInstance;
 import view.InputPlayerView;
-import view.OutputPlayerView;
 
 /**
  * Input Player Controller. 
@@ -132,33 +131,10 @@ public class InputPlayerController {
 		// init player
 		mediaInputPlayerFactory = new MediaPlayerFactory();
 		embeddedInputMediaPlayer = mediaInputPlayerFactory.newEmbeddedMediaPlayer();
-
-		//embeddedInputMediaPlayer.setVolume(0);
-		
-		
-
-		
-		//players = SimulatorViewController.getPlayers();
-//		
-//		// sperre die Controller für den Input Player
-//		mediaInputPlayerComponent.disable();
-		
+		// Registriert Player
 		PlayerInstance playerInstance = new PlayerInstance(embeddedInputMediaPlayer);
 		SimulatorViewController.getPlayers().add(0, playerInstance);
-//		
-//		controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
-//		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
-//		mediaInputPlayerComponent.add(controlsInputPanel);
-//		// setze die Lautstärke auf null
-//		controlsInputPanel.updateVolume(0);
-//		
-//		// TODO
-//		mediaInputPlayerComponent.disable();
-//		controlsInputPanel.disable();
-
-//		inputPlayerView = new InputPlayerView(SimulatorViewController.getPlayers().get(0).mediaPlayer(), mediaInputPlayerFactory,
-//				mediaInputPlayerComponent, controlsInputPanel);
-		
+		// erzeuge View für den Input Player
 		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory);
 
 	}

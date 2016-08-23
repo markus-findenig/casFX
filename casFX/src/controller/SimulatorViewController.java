@@ -33,7 +33,7 @@ public class SimulatorViewController {
 	/**
 	 * Player Instance List
 	 */
-	private static List<PlayerInstance> players = new ArrayList<PlayerInstance>();
+	private static List<PlayerInstance> players;
 	
 	/**
 	 * Input View Controller
@@ -44,6 +44,8 @@ public class SimulatorViewController {
 	public SimulatorViewController(SimulatorModel sModel) {
 		model = sModel;
 		view = new SimulatorView();
+		
+		players = new ArrayList<PlayerInstance>();
 		
 		CasEventHandler casEventHandler = new CasEventHandler();
 
@@ -61,7 +63,7 @@ public class SimulatorViewController {
 		view.getSendEMMButton().setOnAction(casEventHandler);
 		
 		// Decryption Toggle Button registrieren
-		view.getDecryption().setOnAction(casEventHandler);
+		view.getDecryptionTB().setOnAction(casEventHandler);
 		
 		// Video Player
 		view.getVideoInputButton().setOnAction(casEventHandler);
@@ -112,7 +114,7 @@ public class SimulatorViewController {
 	 * Zeigt die Simulator View an.
 	 */
 	public void show() {
-		view.show(model.getPrimaryStage());
+		view.show(SimulatorModel.getPrimaryStage());
 	}
 
 	/**
@@ -123,36 +125,40 @@ public class SimulatorViewController {
 		@Override
 		public void handle(ActionEvent event) {
 
-
 			// Input Video Open
 			if (event.getSource() == view.getOpen()) {
 				FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle("Open Resource File");
-				File inputFile = fileChooser.showOpenDialog(model.getPrimaryStage());
-				if (inputFile != null) {
+				File inputFile = fileChooser.showOpenDialog(SimulatorModel.getPrimaryStage());
+				if (inputFile != null && ConfigViewController.checkPath()) {
 					model.setInputFile(inputFile);
 					// Button Encryption aktivieren
 					view.getEncryption().setDisable(false);
 					// Button Send EMM aktivieren
 					view.getSendEMMButton().setDisable(false);
+					
+					// TODO
+					// check vlc and ffmpeg
+					
+					
+					// set 128 bit Authorization Keys input and output
+					String key0 = EncryptionController.getRandomHex(32);
+					String key1 = EncryptionController.getRandomHex(32);
+
+					// setze Authorizations Keys im Model
+					model.setAuthorizationInputKey0(key0);
+					model.setAuthorizationInputKey1(key1);
+					//model.setAuthorizationOutputKey0(key0);
+					//model.setAuthorizationOutputKey1(key1);
+
+					// GUI Update Autorisation Keys
+					view.getAk0InTF().setText(model.getAuthorizationInputKey0());
+					view.getAk1InTF().setText(model.getAuthorizationInputKey1());
+					//view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
+					//view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
 				}
 
-				// TODO
-				// set 128 bit Authorization Keys input and output
-				String key0 = EncryptionController.getRandomHex(32);
-				String key1 = EncryptionController.getRandomHex(32);
-
-				// setze Authorizations Keys im Model
-				model.setAuthorizationInputKey0(key0);
-				//model.setAuthorizationOutputKey0(key0);
-				model.setAuthorizationInputKey1(key1);
-				//model.setAuthorizationOutputKey1(key1);
-
-				// GUI Update Autorisation Keys
-				view.getAk0InTF().setText(model.getAuthorizationInputKey0());
-				view.getAk1InTF().setText(model.getAuthorizationInputKey1());
-//				view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
-//				view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
+				
 				
 			}
 			
@@ -170,12 +176,16 @@ public class SimulatorViewController {
 			}
 
 			// Decryption State ON (true) or OFF (false)
-			if (event.getSource() == view.getDecryption()) {
-				if (view.getDecryption().isSelected()) {
+			if (event.getSource() == view.getDecryptionTB()) {
+				if (view.getDecryptionTB().isSelected()) {
 					// run Decryption
+					System.out.println("Decryption run");
+					view.getDecryptionTB().setSelected(true);
 					DecryptionController.runDecryption();
 				} else {
 					// stop Decryption
+					System.out.println("Decryption stop");
+					view.getDecryptionTB().setSelected(false);
 					DecryptionController.stopDecryption();
 				}
 			}

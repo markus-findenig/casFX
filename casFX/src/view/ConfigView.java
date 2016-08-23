@@ -127,11 +127,11 @@ public class ConfigView {
 
 	}
 
-	public TextField getFfmpegPathTF() {
+	public TextField getFfmpegPath() {
 		return ffmpegPathTF;
 	}
 	
-	public TextField getVlcPathTF() {
+	public TextField getVlcPath() {
 		return vlcPathTF;
 	}
 
@@ -143,7 +143,7 @@ public class ConfigView {
 		return clientTF;
 	}
 	
-	public TextField getConstantCwTF() {
+	public TextField getConstantCW() {
 		return constantCwTF;
 	}
 

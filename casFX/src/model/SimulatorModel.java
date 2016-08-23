@@ -80,7 +80,7 @@ public class SimulatorModel {
 		PRIMARY_STAGE = primaryStage;
 	}
 
-	public Stage getPrimaryStage() {
+	public static Stage getPrimaryStage() {
 		return PRIMARY_STAGE;
 	}
 

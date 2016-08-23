@@ -66,7 +66,7 @@ public class FFmpegController {
 		configModel = ConfigViewController.getConfigModel();
 		model = SimulatorViewController.getModel();
 
-		ffmpegPath = configModel.getFfmpegPath();
+		ffmpegPath = configModel.getFFmpegPath();
 
 		infile = model.getInputFile().toString();
 		fileOdd = model.getInputFile().getParent() + "\\odd.mp4";
@@ -145,7 +145,7 @@ public class FFmpegController {
 	 * Setzt die nächste Startzeit, von wo die Datei geschnitten wird.
 	 * 
 	 * @param sTime
-	 *            - Start Zeit
+	 *            Start Zeit
 	 */
 	public static void setStartTime(double sTime) {
 		startTime = sTime;
@@ -154,7 +154,7 @@ public class FFmpegController {
 	/**
 	 * Liefert die maximale Laufzeit der Input Video Datei in Sekunden.
 	 * 
-	 * @return - Maximale Laufzeit in Sekunden.
+	 * @return Maximale Laufzeit in Sekunden.
 	 */
 	public static double getMaxTime() {
 		return maxTime;
@@ -164,7 +164,7 @@ public class FFmpegController {
 	 * Setzt die Laufzeit von der Input Video Datei.
 	 * 
 	 * @param mTime
-	 *            - Maximale Laufzeit in Sekunden.
+	 *            Maximale Laufzeit in Sekunden.
 	 */
 	public static void setMaxTime(double mTime) {
 		maxTime = mTime;
