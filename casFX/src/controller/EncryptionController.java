@@ -610,7 +610,7 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Getter of encryption ECM {@link encryptionECM}.
+	 * Gets the encryption ECM {@link encryptionECM}.
 	 * 
 	 * @return The encryption ECM.
 	 */
@@ -630,8 +630,6 @@ public class EncryptionController {
 		LocalDateTime dateTime = LocalDateTime.now();
 		// Datum Formatieren: Monat Tag
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMdd");
-
-		System.out.println("ERROR : " + view.getAk0InTF().getText());
 
 		// Update Input Keys
 		model.setAuthorizationInputKey0(view.getAk0InTF().getText());

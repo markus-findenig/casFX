@@ -64,7 +64,6 @@ public class PlayerControlsPanel extends JPanel {
     UpdateRunnable update;
 
     private JLabel timeLabel;
-//    private JProgressBar positionProgressBar;
     private JSlider positionSlider;
     private JLabel chapterLabel;
 
@@ -113,7 +112,6 @@ public class PlayerControlsPanel extends JPanel {
         updateVolume(getCurrentVolume());
         // set player volume
         this.mediaPlayer.setVolume(getCurrentVolume());
-        
     }
 
     private void createUI() {
@@ -124,12 +122,6 @@ public class PlayerControlsPanel extends JPanel {
 
     private void createControls() {
         timeLabel = new JLabel("hh:mm:ss");
-
-        // positionProgressBar = new JProgressBar();
-        // positionProgressBar.setMinimum(0);
-        // positionProgressBar.setMaximum(1000);
-        // positionProgressBar.setValue(0);
-        // positionProgressBar.setToolTipText("Time");
 
         positionSlider = new JSlider();
         positionSlider.setMinimum(0);
@@ -210,49 +202,25 @@ public class PlayerControlsPanel extends JPanel {
 
     private void layoutControls() {
         setBorder(new EmptyBorder(4, 4, 4, 4));
-
         setLayout(new BorderLayout());
 
         JPanel positionPanel = new JPanel();
         positionPanel.setLayout(new GridLayout(1, 1));
-        // positionPanel.add(positionProgressBar);
         positionPanel.add(positionSlider);
 
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BorderLayout(8, 0));
-
         topPanel.add(timeLabel, BorderLayout.WEST);
         topPanel.add(positionPanel, BorderLayout.CENTER);
         topPanel.add(chapterLabel, BorderLayout.EAST);
-
         add(topPanel, BorderLayout.NORTH);
 
         JPanel bottomPanel = new JPanel();
-
         bottomPanel.setLayout(new FlowLayout());
-
-//        bottomPanel.add(previousChapterButton);
-//        bottomPanel.add(rewindButton);
-        
         bottomPanel.add(playButton);
-//        bottomPanel.add(pauseButton);
         bottomPanel.add(stopButton);
-        
-//        bottomPanel.add(fastForwardButton);
-//        bottomPanel.add(nextChapterButton);
-
         bottomPanel.add(volumeSlider);
         bottomPanel.add(toggleMuteButton);
-
-//        bottomPanel.add(captureButton);
-//
-//        bottomPanel.add(ejectButton);
-//        bottomPanel.add(connectButton);
-//
-//        bottomPanel.add(fullScreenButton);
-//
-//        bottomPanel.add(subTitlesButton);
-
         add(bottomPanel, BorderLayout.SOUTH);
     }
 

@@ -96,7 +96,8 @@ public class SimulatorViewController {
 
 		@Override
 		public void handle(ActionEvent event) {
-
+			
+			// -------------------------------------------------------
 			// Input Video Open
 			if (event.getSource() == view.getOpen()) {
 				FileChooser fileChooser = new FileChooser();
@@ -108,10 +109,6 @@ public class SimulatorViewController {
 					view.getEncryption().setDisable(false);
 					// Button Send EMM aktivieren
 					view.getSendEMMButton().setDisable(false);
-					
-					// TODO
-					// check vlc and ffmpeg
-					
 					
 					// set 128 bit Authorization Keys input and output
 					String key0 = EncryptionController.getRandomHex(32);
@@ -128,12 +125,10 @@ public class SimulatorViewController {
 					view.getAk1InTF().setText(model.getAuthorizationInputKey1());
 					//view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
 					//view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
-				}
-
-				
-				
+				} // end if
 			}
 			
+			// -------------------------------------------------------
 			// Encryption State ON (true) or OFF (false)
 			if (event.getSource() == view.getEncryption()) {
 				System.out.println("INFO: " + model.getInputFile());
@@ -147,6 +142,7 @@ public class SimulatorViewController {
 				}
 			}
 
+			// -------------------------------------------------------
 			// Decryption State ON (true) or OFF (false)
 			if (event.getSource() == view.getDecryption()) {
 				if (view.getDecryption().isSelected()) {
@@ -162,31 +158,37 @@ public class SimulatorViewController {
 				}
 			}
 			
+			// -------------------------------------------------------
 			// Input Player
 			if (event.getSource() == view.getVideoInputButton()) {
 				InputPlayerController.getInputPlayer();
 			}
 
+			// -------------------------------------------------------
 			// Output Player
 			if (event.getSource() == view.getVideoOutputButton()) {
 				OutputPlayerController.getOutputPlayer();
 			}
 			
+			// -------------------------------------------------------
 			// EMM Send Button
 			if (event.getSource() == view.getSendEMMButton()) {
 				EncryptionController.generateEMM();
 			}
 			
+			// -------------------------------------------------------
 			// Config Popup
 			if (event.getSource() == view.getConfig()) {
 				ConfigViewController.show();
 			}
 			
+			// -------------------------------------------------------
 			// About
 			if (event.getSource() == view.getAbout()) {
 				new AboutView();
 			}
 
+			// -------------------------------------------------------
 			// Exit
 			if (event.getSource() == view.getExit()) {
 				// GUI exit
