@@ -2,13 +2,13 @@ package model;
 
 /**
  * 
- * Encryption ECM
+ * Encryption ECM. The encrypted ECM message.
  *
  */
 public class EncryptionECM {
 	
 	/**
-	 * ECM Section Header
+	 * ECM Section Header.
 	 */
 	private String ecmHeader;
 
@@ -60,7 +60,7 @@ public class EncryptionECM {
 	private String ecmRecordControl;
 	
 	/**
-	 * ECM Payload
+	 * ECM Payload.
 	 */
 	private String ecmVariablePart;
 	

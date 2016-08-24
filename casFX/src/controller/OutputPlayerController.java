@@ -15,7 +15,7 @@ import view.OutputPlayerView;
 import view.SimulatorView;
 
 /**
- * Player View Controller für Input und Output Player
+ * Controller for the Output Media Player View.
  */
 public class OutputPlayerController {
 
@@ -34,31 +34,60 @@ public class OutputPlayerController {
 	 */
 	private static SimulatorView view;
 
+	/**
+	 * Output Player View.
+	 */
 	public static OutputPlayerView outputPlayerView;
 
+	/**
+	 * Decryption ECM
+	 */
 	private static DecryptionECM decryptionECM;
 
+	/**
+	 * VLC parameters.
+	 */
 	private static List<String> vlcArgs;
-	
-	private static String filePath;
-	private static String streamFileOdd;
-	private static String streamFileEven;
 
+	/**
+	 * Output File Path.
+	 */
+	private static String filePath;
+
+	/**
+	 * Embedded Output Media Player. Stream the current odd_stream.ts or
+	 * even_stream.ts file.
+	 */
 	public static EmbeddedMediaPlayer embeddedOutputMediaPlayer;
 
+	/**
+	 * Media Player Factory for the {@link embeddedOutputMediaPlayer}.
+	 */
 	public static MediaPlayerFactory mediaOutputPlayerFactory;
 
+	/**
+	 * Player Controls Panel for the {@link embeddedOutputMediaPlayer}.
+	 */
 	public static PlayerControlsPanel controlsOutputPanel;
 
+	/**
+	 * Embedded Media Player Component for the {@link embeddedOutputMediaPlayer}
+	 * .
+	 */
 	public static EmbeddedMediaPlayerComponent mediaOutputPlayerComponent;
-	
+
+	/**
+	 * Current Volume from Embedded Media Player.
+	 */
 	private static int currentVolume;
 
-	// private static ScheduledExecutorService playerOutputExecutor;
+	/**
+	 * Thread for the current Output Media Player.
+	 */
 	private static Thread thInitOutputPlayer;
 
 	/**
-	 * Initialisiert den Output Media Player
+	 * Initializes the Output Media Player.
 	 */
 	public static void initOutputPlayer() {
 		model = SimulatorViewController.getModel();
@@ -67,9 +96,9 @@ public class OutputPlayerController {
 	}
 
 	/**
-	 * Erzeugt eine Output Player. Für Konstante Kontrollwort (Control Word, CW)
-	 * wird ein Konstanter Media Player und für Intervall Kontrollwörter
-	 * ein Intervall Media Player erzeugt.
+	 * Generate an Output Media Player. For constant Control Word (CW) generated
+	 * a constant Media Player and interval Control Words an interval Media
+	 * Player.
 	 */
 	public static void getOutputPlayer() {
 		Runnable initPlayer = new Runnable() {
@@ -92,7 +121,7 @@ public class OutputPlayerController {
 				}
 			}
 		};
-		
+
 		// Starte einen neuen Thread für den Media Player
 		thInitOutputPlayer = new Thread(initPlayer);
 		thInitOutputPlayer.setDaemon(true);
@@ -101,23 +130,22 @@ public class OutputPlayerController {
 	}
 
 	/**
-	 * Stoppt den aktuellen Output Media Player
+	 * Stop the current Output Media Player.
 	 */
 	@SuppressWarnings("deprecation")
 	public static void stopOutputPlayer() {
-
-		// TODO
 		if (embeddedOutputMediaPlayer != null) {
+			// media player stop
 			embeddedOutputMediaPlayer.stop();
 			embeddedOutputMediaPlayer.release();
 			mediaOutputPlayerFactory.release();
-			
+			// thread stop
 			thInitOutputPlayer.stop();
 		}
 	}
 
 	/**
-	 * Instanziiert den Intervall Output Media Player.
+	 * Instantiates the interval Output Media Player.
 	 */
 	public static void initIntervallOutputPlayer() {
 		// init Media Player
@@ -127,52 +155,49 @@ public class OutputPlayerController {
 		// init Media Player Instance
 		PlayerInstance playerInstance = new PlayerInstance(embeddedOutputMediaPlayer);
 		SimulatorViewController.getPlayers().add(1, playerInstance);
-		
+
 		// add Media Player Control Components
 		controlsOutputPanel = new PlayerControlsPanel(SimulatorViewController.getPlayers().get(1).mediaPlayer());
 		mediaOutputPlayerComponent = new EmbeddedMediaPlayerComponent();
 		mediaOutputPlayerComponent.add(controlsOutputPanel, 1);
-		
+
 		setCurrentVolume(0);
 
 		// init Media Player View
-		outputPlayerView = new OutputPlayerView(SimulatorViewController.getPlayers().get(0).mediaPlayer(), mediaOutputPlayerFactory,
-				mediaOutputPlayerComponent, controlsOutputPanel);
+		outputPlayerView = new OutputPlayerView(SimulatorViewController.getPlayers().get(0).mediaPlayer(),
+				mediaOutputPlayerFactory, mediaOutputPlayerComponent, controlsOutputPanel);
 
 		// VLC Argumente
 		vlcArgs = new ArrayList<String>();
-		
+
 		// aktuelle Input File Dateipfad
 		filePath = model.getInputFile().getParent();
 
-		// output Dateien
-		streamFileOdd = filePath + "\\odd_stream.ts";
-		streamFileEven = filePath + "\\even_stream.ts";
-		
 		// startet den Player
 		streamOutputPlayer();
 
 	}
-	
+
 	/**
-	 * Initialisiert den Intervall Output Media Player. Ist die aktuelle ECM Nachricht
-	 * von Typ EVEN wird der Media Player mit ODD gestartet. Ist die aktuelle
-	 * ECM Nachricht von Typ ODD wird der Media Player mit EVEN gestartet.
+	 * Generate the interval Output Media Player. If the current ECM Message of
+	 * type EVEN starts the media player with ODD. Is the Current ECM message
+	 * type ODD is the Media Player with EVEN Started.
 	 */
 	public static void streamOutputPlayer() {
 		// lösche alte VLC Argumente
 		vlcArgs.clear();
-		
-		// if aktuelle msg ist even = 8100000000000000, folgt odd ist fertig, starte odd file
+
+		// if aktuelle msg ist even = 8100000000000000, folgt odd ist fertig,
+		// starte odd file
 		if (decryptionECM.getEcmHeader().equals("8000000000000000")) {
 			// update GUI
 			view.getCwOutTF().setText("odd:" + decryptionECM.getEcmCwOdd());
 			// set VLC Parameter
 			vlcArgs.add("--ts-csa-ck=" + decryptionECM.getEcmCwOdd());
 			vlcArgs.add("--ts-csa2-ck=0000000000000000");
-		
-			runIntervallOutputPlayer(streamFileOdd, vlcArgs.toArray(new String[vlcArgs.size()]));
-			
+
+			runIntervallOutputPlayer(filePath + "\\odd_stream.ts", vlcArgs.toArray(new String[vlcArgs.size()]));
+
 		}
 		// else msg is odd = 8000000000000000
 		else {
@@ -181,17 +206,20 @@ public class OutputPlayerController {
 			// set VLC Parameter
 			vlcArgs.add("--ts-csa-ck=0000000000000000");
 			vlcArgs.add("--ts-csa2-ck=" + decryptionECM.getEcmCwEven());
-			
-			runIntervallOutputPlayer(streamFileEven, vlcArgs.toArray(new String[vlcArgs.size()]));
-			
+
+			runIntervallOutputPlayer(filePath + "\\even_stream.ts", vlcArgs.toArray(new String[vlcArgs.size()]));
+
 		} // end if else
-		
+
 	}
 
 	/**
-	 * Startet den Intervall Output Media Player.
-	 * @param stream - Datei zum Streamen.
-	 * @param standardVlcOptions - VLC Parameter.
+	 * Run the Intervall Output Media Player.
+	 * 
+	 * @param stream
+	 *            File for streaming.
+	 * @param standardVlcOptions
+	 *            VLC parameters.
 	 */
 	private static void runIntervallOutputPlayer(String stream, String[] standardVlcOptions) {
 		// erzeuge neuen Player
@@ -216,36 +244,35 @@ public class OutputPlayerController {
 		});
 		// Bereite Datei für den Player vor
 		embeddedOutputMediaPlayer.prepareMedia(stream);
-		
+
 		// Entferne alten Player
 		SimulatorViewController.getPlayers().remove(1);
-		
+
 		// Erzeugen eine neue Player Instance
 		PlayerInstance playerInstance = new PlayerInstance(embeddedOutputMediaPlayer);
 		SimulatorViewController.getPlayers().add(1, playerInstance);
 
 		// update Control Panel
 		controlsOutputPanel.reInitPlayerControlsPanel(SimulatorViewController.getPlayers().get(1).mediaPlayer());
-			
+
 		// GUI update output Player
-		outputPlayerView.reInitOutputPlayerView(SimulatorViewController.getPlayers().get(1).mediaPlayer(), mediaOutputPlayerFactory,
-				mediaOutputPlayerComponent, controlsOutputPanel);
-		
+		outputPlayerView.reInitOutputPlayerView(SimulatorViewController.getPlayers().get(1).mediaPlayer(),
+				mediaOutputPlayerFactory, mediaOutputPlayerComponent, controlsOutputPanel);
+
 		// play output Player
 		SimulatorViewController.getPlayers().get(1).mediaPlayer().play();
 
 	}
 
-
 	/**
-	 * Media Player Output mit Constant Control Word (CW).
+	 * Media Player Output with constant Control Word (CW).
 	 */
 	private static void initConstantOutputPlayer() {
 		List<String> vlcArgs = new ArrayList<String>();
 		vlcArgs.add("--ts-csa-ck=" + decryptionECM.getEcmCwOdd());
 
 		// Update GUI Output CW
-		view.getCwOutTF().setText(decryptionECM.getEcmCwOdd());
+		view.getCwOutTF().setText("odd:" + decryptionECM.getEcmCwOdd());
 
 		// stop Decryption Receive Message
 		model.setDecryptionState(false);
@@ -268,18 +295,18 @@ public class OutputPlayerController {
 	}
 
 	/**
-	 * @return the currentVolume
+	 * @return the current Volume
 	 */
 	public static int getCurrentVolume() {
 		return currentVolume;
 	}
 
 	/**
-	 * @param currentVolume the currentVolume to set
+	 * @param cVolume
+	 *            the current Volume to set
 	 */
-	public static void setCurrentVolume(int currentVolume) {
-		OutputPlayerController.currentVolume = currentVolume;
+	public static void setCurrentVolume(int cVolume) {
+		currentVolume = cVolume;
 	}
-
 
 }

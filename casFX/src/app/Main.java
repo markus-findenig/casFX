@@ -8,7 +8,11 @@ import controller.ConfigViewController;
 import controller.SimulatorViewController;
 
 /**
- * Main. Startet den CAS-Simulator.
+ * Run the Conditional Access System (CAS) Simulator (2016).
+ * 
+ * @author Findenig Markus
+ * @version 1.0
+ * @since 2016
  */
 public class Main extends Application {
 

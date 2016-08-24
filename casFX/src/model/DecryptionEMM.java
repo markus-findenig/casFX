@@ -2,7 +2,7 @@ package model;
 
 /**
  * 
- * Decryption EMM
+ * Decryption EMM. The decrypted EMM message.
  *
  */
 public class DecryptionEMM {

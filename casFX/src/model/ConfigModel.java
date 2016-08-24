@@ -3,7 +3,7 @@ package model;
 import javafx.stage.Stage;
 
 /**
- * Model für das Config Popup
+ * Model for the Config Popup.
  */
 public class ConfigModel {
 

@@ -12,41 +12,46 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 import controller.PlayerControlsPanel;
 
 /**
- * Output Player View
+ * Output Media Player View.
  */
 public class OutputPlayerView {
 
 	/**
-	 * Output Player View Frame
+	 * Output Media Player View Frame.
 	 */
 	private JFrame videoOutputF;
 
 	/**
-	 * Output Player View Canvas
+	 * Output Media Player View Canvas.
 	 */
 	private Canvas videoOutputC;
 
 	/**
-	 * Output Player View JPanel
+	 * Output Media Player View JPanel.
 	 */
 	private JPanel videoOutputP;
-	
+
 	/**
-	 * Output Player View width
+	 * Output Media Player View width.
 	 */
 	private static int width = 500;
-	
+
 	/**
-	 * Output Player View height
+	 * Output Media Player View height.
 	 */
 	private static int height = 300;
 
 	/**
-	 * Erzeugt eine Output Player View
-	 * @param embeddedMediaPlayer - Media Player
-	 * @param mediaPlayerFactory - Media Player Factory
-	 * @param mediaPlayerComponent - Media Player Component
-	 * @param controlsPanel - Media Player control Panel
+	 * Generate a output Media Player View.
+	 * 
+	 * @param embeddedMediaPlayer
+	 *            Media Player
+	 * @param mediaPlayerFactory
+	 *            Media Player Factory
+	 * @param mediaPlayerComponent
+	 *            Media Player Component
+	 * @param controlsPanel
+	 *            Media Player control Panel
 	 */
 	public OutputPlayerView(EmbeddedMediaPlayer embeddedMediaPlayer, MediaPlayerFactory mediaPlayerFactory,
 			EmbeddedMediaPlayerComponent mediaPlayerComponent, PlayerControlsPanel controlsPanel) {
@@ -65,92 +70,41 @@ public class OutputPlayerView {
 				videoOutputF.setVisible(false);
 			}
 		});
-		
 		// Video Anzeige
 		videoOutputC = new Canvas();
 		videoOutputC.setBackground(Color.black);
-		
-		//videoOutputC = SimulatorViewController.getPlayers().get(1).videoSurface();
-		
 		// Video ins Panel
 		videoOutputP = new JPanel();
 		videoOutputP.setLayout(new BorderLayout());
 		videoOutputP.add(videoOutputC, BorderLayout.CENTER);
-		
 		// Video Panel ins Frame
 		videoOutputF.add(videoOutputP, BorderLayout.CENTER);
 		videoOutputF.setVisible(true);
-		
-		//controlsPanel.updateVolume(0);
+		// controlsPanel.updateVolume(0);
 		embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoOutputC));
-		
+
 	}
 
 	/**
-	 * Aktualisiert die aktuelle Output Player View
-	 * @param embeddedMediaPlayer - Media Player
-	 * @param mediaPlayerFactory - Media Player Factory
-	 * @param mediaPlayerComponent - Media Player Component
-	 * @param controlsPanel - Media Player control Panel
+	 * Updates the current Output Media Player View.
+	 * 
+	 * @param embeddedMediaPlayer
+	 *            Media Player
+	 * @param mediaPlayerFactory
+	 *            Media Player Factory
+	 * @param mediaPlayerComponent
+	 *            Media Player Component
+	 * @param controlsPanel
+	 *            Media Player control Panel
 	 */
 	public void reInitOutputPlayerView(EmbeddedMediaPlayer embeddedMediaPlayer, MediaPlayerFactory mediaPlayerFactory,
 			EmbeddedMediaPlayerComponent mediaPlayerComponent, PlayerControlsPanel controlsPanel) {
-		
-		
-		
-		//videoOutputC = SimulatorViewController.getPlayers().get(1).videoSurface();
-		
-		//videoOutputF = new JFrame("Video Output Player");
-//		videoOutputF.setLayout(new BorderLayout());
-//		videoOutputF.setSize(width, height);
-//		videoOutputF.setLocation(600, 10);
-		
-		
-		//videoOutputF.removeAll();
-		
+		// update controls
 		videoOutputF.setContentPane(mediaPlayerComponent);
 		videoOutputF.remove(controlsPanel);
 		videoOutputF.add(controlsPanel, BorderLayout.SOUTH, 1);
-		
-		
-//		videoOutputF.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-//		videoOutputF.addWindowListener(new java.awt.event.WindowAdapter() {
-//			@SuppressWarnings("deprecation")
-//			@Override
-//			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-//				// PlayerViewController.thInitPlayerOutput.stop();
-//				embeddedMediaPlayer.stop();
-//				videoOutputF.dispose();
-//
-//			}
-//		});
-//		videoOutputF.setVisible(true);
-//		//videoOutputC = new Canvas();
-//		videoOutputC.setBackground(Color.black);
-//		//videoOutputP = new JPanel();
-//		videoOutputP.setLayout(new BorderLayout());
-		
-//		videoOutputP.add(videoOutputC, BorderLayout.CENTER);
-//		videoOutputF.add(videoOutputP, BorderLayout.CENTER);
-		
-		//videoOutputC = SimulatorViewController.getPlayers().get(1).videoSurface();
-		
-		//controlsPanel.updateVolume(0); SimulatorViewController.getPlayers().get(1).videoSurface()
-
-
+		// update player
 		embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoOutputC));
-		
-		
-		
-		//embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(SimulatorViewController.getPlayers().get(1).videoSurface()));
-		
-		
-		
-		//CanvasVideoSurface surface = mediaPlayerFactory.newVideoSurface(SimulatorViewController.getPlayers().get(1).videoSurface());
-		//SimulatorViewController.getPlayers().get(1).mediaPlayer().setVideoSurface(mediaPlayerFactory.newVideoSurface(SimulatorViewController.getPlayers().get(1).videoSurface()));
 	}
-	
-//	public Canvas getVideoOutputC() {
-//		return videoOutputC;
-//	}
+
 }

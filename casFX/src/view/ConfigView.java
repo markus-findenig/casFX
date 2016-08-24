@@ -12,53 +12,71 @@ import javafx.stage.Stage;
 
 public class ConfigView {
 
-	// Config Scene und Grid
-	private Scene sceneConfig;
-	private GridPane grid;
-	//private ConfigModel configModel;
-	
 	/**
-	 * Breite von der Config View
+	 * Config Scene.
+	 */
+	private Scene sceneConfig;
+
+	/**
+	 * Config Grid Pane.
+	 */
+	private GridPane grid;
+
+	/**
+	 * Width of the Config View.
 	 */
 	private double width = 500;
-	
+
 	/**
-	 * Höhe von der Config View
+	 * Height of the Config View.
 	 */
 	private double height = 220;
 
-	// Config Parameter
-	private static Label ffmpegPathL;
+	/**
+	 * Text Field for FFmpeg Path.
+	 */
 	private static TextField ffmpegPathTF;
-	
-	private static Label vlcPathL;
+
+	/**
+	 * Text Field for VLC Path.
+	 */
 	private static TextField vlcPathTF;
-	
-	private static Label serverL;
+
+	/**
+	 * Text Field for Server. Default is rtp://239.0.0.1:5004.
+	 */
 	private static TextField serverTF;
 
-	private static Label clientL;
+	/**
+	 * Text Field for Client. Default is rtp://239.0.0.1:5004.
+	 */
 	private static TextField clientTF;
-	
-	private static Label constantCwL;
+
+	/**
+	 * Text Field for constant ControlWord (CW).
+	 */
 	private static TextField constantCwTF;
 
+	/**
+	 * OK Button.
+	 */
 	private static Button okB;
+
+	/**
+	 * Cancel Button.
+	 */
 	private static Button cancelB;
 
 	/**
 	 * Config View
 	 */
 	public ConfigView() {
-		//configModel = cModel;
-
 		// Layout
 		grid = new GridPane();
 		grid.setPadding(new Insets(0, 0, 0, 0));
 		grid.setAlignment(Pos.TOP_CENTER);
 		grid.setHgap(5);
 		grid.setVgap(5);
-
 		// Initialisiere Config Parameter
 		initConfig();
 
@@ -66,8 +84,10 @@ public class ConfigView {
 	}
 
 	/**
-	 * Zeigt die Config View an.
-	 * @param dialogStage - Aktuelle Stage.
+	 * Show the Config View.
+	 * 
+	 * @param dialogStage
+	 *            current dialog Stage.
 	 */
 	public void show(Stage dialogStage) {
 		dialogStage.setTitle("Config");
@@ -76,42 +96,41 @@ public class ConfigView {
 	}
 
 	/**
-	 * Initialisiert die Config View.
+	 * Initializes the Config View.
 	 */
 	public void initConfig() {
 
 		// TODO Debug // Spalte, Zeile
 		// grid.setGridLinesVisible(true);
-		
-		ffmpegPathL = new Label("FFMPEG Libary Path:");
+
+		Label ffmpegPathL = new Label("FFMPEG Libary Path:");
 		grid.add(ffmpegPathL, 1, 1);
 		ffmpegPathTF = new TextField();
 		ffmpegPathTF.setMinWidth(300);
 		GridPane.setColumnSpan(ffmpegPathTF, 2);
 		ffmpegPathTF.setTooltip(new Tooltip("Path to the FFMPEG Libary (ffmpeg.exe)."));
 		grid.add(ffmpegPathTF, 2, 1);
-		
-		vlcPathL = new Label("VLC Libary Path:");
+
+		Label vlcPathL = new Label("VLC Libary Path:");
 		grid.add(vlcPathL, 1, 2);
 		vlcPathTF = new TextField();
 		GridPane.setColumnSpan(vlcPathTF, 2);
 		vlcPathTF.setTooltip(new Tooltip("Path to the VLC Libary (libvlc, vlc.exe)."));
 		grid.add(vlcPathTF, 2, 2);
 
-		serverL = new Label("Input Player (Server):");
+		Label serverL = new Label("Input Player (Server):");
 		grid.add(serverL, 1, 3);
 		serverTF = new TextField();
 		serverTF.setTooltip(new Tooltip("Server IP and Port, Default rtp://239.0.0.1:5004"));
 		grid.add(serverTF, 2, 3);
 
-		clientL = new Label("Output Player (Client):");
+		Label clientL = new Label("Output Player (Client):");
 		grid.add(clientL, 1, 4);
 		clientTF = new TextField();
 		clientTF.setTooltip(new Tooltip("Client IP and Port, Default rtp://239.0.0.1:5004"));
 		grid.add(clientTF, 2, 4);
-		
-		
-		constantCwL = new Label("Constant CW:");
+
+		Label constantCwL = new Label("Constant CW:");
 		grid.add(constantCwL, 1, 5);
 		constantCwTF = new TextField();
 		constantCwTF.setTooltip(new Tooltip("If Timer 0, Constant CW in hex with 16 char."));
@@ -127,30 +146,51 @@ public class ConfigView {
 
 	}
 
+	/**
+	 * @return the ffmpeg Path Text Field.
+	 */
 	public TextField getFfmpegPath() {
 		return ffmpegPathTF;
 	}
-	
+
+	/**
+	 * @return the vlcPath Text Field.
+	 */
 	public TextField getVlcPath() {
 		return vlcPathTF;
 	}
 
+	/**
+	 * @return the server Text Field.
+	 */
 	public TextField getServer() {
 		return serverTF;
 	}
 
+	/**
+	 * @return the client Text Field.
+	 */
 	public TextField getClient() {
 		return clientTF;
 	}
-	
-	public TextField getConstantCW() {
+
+	/**
+	 * @return the constant CW Text Field.
+	 */
+	public TextField getConstantCw() {
 		return constantCwTF;
 	}
 
+	/**
+	 * @return the ok Button.
+	 */
 	public Button getOk() {
 		return okB;
 	}
 
+	/**
+	 * @return the cancel Button.
+	 */
 	public Button getCancel() {
 		return cancelB;
 	}

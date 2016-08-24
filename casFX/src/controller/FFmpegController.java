@@ -8,7 +8,8 @@ import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 
 /**
- * FFmpeg Controller. Steuert die Parameter und Ausführungen vom FFmpeg Programm.
+ * FFmpeg Controller. Controls the parameters and configurations of FFmpeg
+ * program.
  */
 public class FFmpegController {
 
@@ -16,51 +17,50 @@ public class FFmpegController {
 	 * Simulator Model
 	 */
 	private static SimulatorModel model;
-	
+
 	/**
 	 * Config Model
 	 */
 	private static ConfigModel configModel;
 
 	/**
-	 * Dateipfad zur FFmpeg Programm Bibliothek
+	 * File path to FFmpeg library program.
 	 */
 	private static String ffmpegPath;
 
 	/**
-	 * Dateipfad der aktuellen Input Video Datei
+	 * File path of the current input video file.
 	 */
 	private static String infile;
 
 	/**
-	 * Dateipfad zur Ausgabedatei odd.mp4
+	 * File path to the output file odd.mp4
 	 */
 	private static String fileOdd;
-	
+
 	/**
-	 * Dateipfad zur Ausgabedatei even.mp4
+	 * File path to the output file even.mp4
 	 */
 	private static String fileEven;
 
 	/**
-	 * Process Builder für die Ausführung von FFmpeg
+	 * Process Builder for running FFmpeg.
 	 */
 	private static ProcessBuilder pb;
-	
+
 	/**
-	 * Start Zeit von wo das Input Video geschnitten wird.
+	 * Starting time from which the video input is cut.
 	 */
 	private static double startTime;
 
 	/**
-	 * Länge der Input Datei in Sekunden
+	 * Length of the input file in seconds.
 	 */
 	private static double maxTime;
 
 	/**
-	 * Initialisiert die Parameter für FFmpeg. Setzt die Pfade zu den Ausgabe
-	 * Dateien odd.mp4 und even.mp4 und speichert diese im Input Video Dateipfad
-	 * ab.
+	 * Initializes the parameters for FFmpeg. Sets odd.mp4 and even.mp4 the
+	 * paths to output files and stores them in the input video file path.
 	 */
 	public static void initFFmpegController() {
 		configModel = ConfigViewController.getConfigModel();
@@ -73,7 +73,7 @@ public class FFmpegController {
 		fileEven = model.getInputFile().getParent() + "\\even.mp4";
 
 		// init Timer TODO
-		//setStartTime(5);
+		// setStartTime(5);
 		setStartTime(300);
 
 		// get max Time
@@ -89,9 +89,8 @@ public class FFmpegController {
 	}
 
 	/**
-	 * Startet FFmpeg. Schneidet die Input Video Datei anhand vom ECM
-	 * Nachrichtentyp in odd.mp4 oder in even.mp4 und speichert diese im Input
-	 * Video Pfad.
+	 * Run FFmpeg. Cuts the input video file based on ECM message type in
+	 * odd.mp4 or even.mp4 and stores them in the input video path.
 	 */
 	public static void runFFmpeg() {
 
@@ -129,45 +128,45 @@ public class FFmpegController {
 
 		// Update nächste Start Zeit
 		setStartTime(getStartTime() + model.getCwTime());
-		
+
 	}
 
 	/**
-	 * Liefert die aktuelle Startzeit.
+	 * Gets the current start time.
 	 * 
-	 * @return - Start Zeit
+	 * @return The current start time.
 	 */
 	public static double getStartTime() {
 		return startTime;
 	}
 
 	/**
-	 * Setzt die nächste Startzeit, von wo die Datei geschnitten wird.
+	 * Set the next start time.
 	 * 
 	 * @param sTime
-	 *            Start Zeit
+	 *            Time to set.
 	 */
 	public static void setStartTime(double sTime) {
 		startTime = sTime;
 	}
 
 	/**
-	 * Liefert die maximale Laufzeit der Input Video Datei in Sekunden.
+	 * Gets the maximum duration in seconds.
 	 * 
-	 * @return Maximale Laufzeit in Sekunden.
+	 * @return Maximum duration in seconds.
 	 */
 	public static double getMaxTime() {
 		return maxTime;
 	}
 
 	/**
-	 * Setzt die Laufzeit von der Input Video Datei.
+	 * Set the maximum duration in seconds.
 	 * 
 	 * @param mTime
-	 *            Maximale Laufzeit in Sekunden.
+	 *            The maximum duration in seconds.
 	 */
 	public static void setMaxTime(double mTime) {
 		maxTime = mTime;
 	}
-	
+
 }

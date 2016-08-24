@@ -1,6 +1,5 @@
 package controller;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -24,7 +23,7 @@ import view.SimulatorView;
 
 /**
  * 
- * Decryption Controller. Steuert die Entschlüsselung.
+ * Decryption Controller. Controls the decryption.
  *
  */
 public class DecryptionController {
@@ -48,7 +47,7 @@ public class DecryptionController {
 	 * Encryption ECM Model
 	 */
 	private static DecryptionECM decryptionECM;
-	
+
 	/**
 	 * Encryption ECM Model
 	 */
@@ -58,7 +57,7 @@ public class DecryptionController {
 	 * Static ECM length
 	 */
 	private static int ECM_LENGTH = 94;
-	
+
 	/**
 	 * Static EMM length
 	 */
@@ -90,7 +89,7 @@ public class DecryptionController {
 	 * Aktueller Authorization Key
 	 */
 	private static String ecmWorkKey;
-	
+
 	/**
 	 * ECM Section Header
 	 */
@@ -101,155 +100,160 @@ public class DecryptionController {
 	 * the IC card, encryption algorithms, etc.
 	 */
 	private static String msgEcmProtocol;
-	
+
 	/**
 	 * ECM Broadcaster group identifier. Code used to identify broadcaster
 	 * groups in conditional access system operation. Combined with the work key
 	 * identifier, specifies the work.
 	 */
 	private static String msgEcmBroadcastId;
-	
+
 	/**
 	 * ECM Work key identifier. Specifies the work key used to encrypt ECM, is
 	 * combined with the broadcaster group identifier.
 	 */
 	private static String msgEcmWorkKeyId;
-	
+
 	/**
 	 * ECM Control Word (CW), Scrambling key odd.
 	 */
 	private static String msgEcmCwOdd;
-	
+
 	/**
 	 *
 	 * ECM Control Word (CW), Scrambling key even.
 	 */
 	private static String msgEcmCwEven;
-	
+
 	/**
-	 * ECM Program type. Indicates the viewing program type (free, tier, PPV, etc.).
+	 * ECM Program type. Indicates the viewing program type (free, tier, PPV,
+	 * etc.).
 	 */
 	private static String msgEcmProgramType;
-	
+
 	/**
-	 * ECM Date Time. Indicates the current date/time to check authorization of viewing.
+	 * ECM Date Time. Indicates the current date/time to check authorization of
+	 * viewing.
 	 */
 	private static String msgEcmDateTime;
-	
+
 	/**
 	 * ECM Recording control. Indicate the recording conditions for the program
 	 * in question (recordable, not recordable, recordable by subscribers only,
 	 * etc.).
 	 */
 	private static String msgEcmRecordControl;
-	
+
 	/**
 	 * ECM Payload
 	 */
 	private static String msgEcmVariablePart;
-	
+
 	/**
 	 * ECM Message Authentication Code (MAC, 4 Bytes).
 	 */
 	private static String msgEcmMAC;
-	
+
 	/**
 	 * ECM Cyclic Redundancy Check (CRC, 4 Bytes).
 	 */
 	private static String msgEcmCRC;
-	
+
 	/**
 	 * Master Private Key (256 bit).
 	 */
 	private static String emmKey;
-	
+
 	/**
 	 * EMM Section Header
 	 */
 	private static String msgEmmHeader;
-	
+
 	/**
 	 * EMM Smartcard ID
 	 */
 	private static String msgEmmSmartcardId;
-	
+
 	/**
 	 * EMM Length from Protocol Number to the MAC Field
 	 */
 	private static String msgEmmLength;
-	
+
 	/**
 	 * EMM Protocol
 	 */
 	private static String msgEmmProtocol;
-	
+
 	/**
 	 * EMM Broadcast Group Identifier
 	 */
 	private static String msgEmmBroadcastId;
-	
+
 	/**
-	 * EMM Update number. Number that is increased when individual information is updated.
+	 * EMM Update number. Number that is increased when individual information
+	 * is updated.
 	 */
 	private static String msgEmmUpdateId;
-	
+
 	/**
-	 * EMM Expiration date. Indicates when individual information expires. 
+	 * EMM Expiration date. Indicates when individual information expires.
 	 */
 	private static String msgEmmExpirationDate;
-	
+
 	/**
 	 * EMM Payload
 	 */
 	private static String msgEmmVariablePart;
-	
+
 	/**
 	 * EMM Message Authentication Code (MAC, 4 Bytes).
 	 */
 	private static String msgEmmMAC;
-	
+
 	/**
 	 * EMM Cyclic Redundancy Check (CRC, 4 Bytes).
 	 */
 	private static String msgEmmCRC;
-	
+
 	/**
 	 * emmHeader = EMM Section Header + Smartcard id + Length + Protocol number
 	 * + Broadcast group id + Update number + Expiration date
 	 */
 	private static String emmHeader;
-	
-	
+
 	/**
 	 * emmPayload = msgEmmVariablePart
 	 */
 	private static String emmPayload;
-	
+
 	/**
 	 * ecmPayloadDecrypted = emmPayload + Payload MAC
 	 */
 	private static String emmPayloadDecrypted;
-	
+
 	/**
 	 * emmDecrypted = emmHeader + emmPayloadDecrypted + Section CRC
 	 */
 	private static String emmDecrypted;
-	
+
+	/**
+	 * Thread for Receive Message.
+	 */
 	private static Thread thReceiveMessage;
 
 	/**
-	 * Startet die Entschlüsselung.
+	 * Run the decryption.
 	 */
 	public static void runDecryption() {
 		model = SimulatorViewController.getModel();
 		view = SimulatorViewController.getView();
 		configModel = ConfigViewController.getConfigModel();
-		
-		view.getDecryptionTB().setText("ON");
+
+		view.getDecryption().setText("ON");
 		model.setDecryptionState(true);
 
 		decryptionECM = new DecryptionECM();
-		
+
 		decryptionEMM = new DecryptionEMM();
 
 		OutputPlayerController.initOutputPlayer();
@@ -263,7 +267,7 @@ public class DecryptionController {
 		Runnable runReceiveMessage = new Runnable() {
 			@Override
 			public void run() {
-					receiveMessage();
+				receiveMessage();
 			}
 		};
 
@@ -275,31 +279,31 @@ public class DecryptionController {
 	}
 
 	/**
-	 * Stoppt die Entschlüsselung.
+	 * Stop the decryption.
 	 */
 	@SuppressWarnings("deprecation")
 	public static void stopDecryption() {
 		thReceiveMessage.stop();
 		view = SimulatorViewController.getView();
-		view.getDecryptionTB().setSelected(false);
-		view.getDecryptionTB().setText("OFF");
+		view.getDecryption().setSelected(false);
+		view.getDecryption().setText("OFF");
 		model.setDecryptionState(false);
 		view.getVideoOutputButton().setDisable(true);
-		
+
 		view.getCwOutTF().setText("-- WAIT FOR ECM/EMM --");
 		OutputPlayerController.stopOutputPlayer();
 
 	}
 
 	/**
-	 * Empfängt die Broadcast Nachrichten. Leitet die Nachrichten anhand ihres Typs (ECM/EMM) weiter.
-	 * @throws Exception - Fehler beim erstellen des Sockets.
+	 * Receives the broadcast messages. Directs messages based on their type
+	 * (ECM / EMM) continues.
 	 */
 	private static void receiveMessage() {
 		model = SimulatorViewController.getModel();
 		view = SimulatorViewController.getView();
 		configModel = ConfigViewController.getConfigModel();
-		
+
 		// default server = rtp://239.0.0.1:5004
 		String client = configModel.getClient();
 		String[] rtpSplit = client.split("://");
@@ -317,7 +321,7 @@ public class DecryptionController {
 			byte[] buffer = new byte[2048];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-			while (model.getDecryptionState()) {
+			while (model.isEncryptionState()) {
 				// Wait to receive a datagram
 				socket.receive(packet);
 				// Convert the contents to a string, and display them
@@ -346,17 +350,15 @@ public class DecryptionController {
 	}
 
 	/**
-	 * Empfange ECM Nachricht.
+	 * Receive ECM message.
 	 * 
 	 * @param msg
-	 *            - Aktuelle ECM Nachricht
-	 * @throws Exception
-	 *             - Fehlerhafte ECM Nachricht
+	 *            Current ECM message.
 	 */
 	private static void receivedECM(String msg) {
-		//reset Error Messages
+		// reset Error Messages
 		view.getErrorOutputTA().setText("");
-		
+
 		// spit msg into substrings
 		msgEcmHeader = msg.substring(0, 16);
 		msgEcmProtocol = msg.substring(16, 18);
@@ -383,7 +385,7 @@ public class DecryptionController {
 		// System.out.println("msgVariablePart : " + msgEcmVariablePart);
 		// System.out.println("msgMAC : " + msgEcmMAC);
 		// System.out.println("msgCRC : " + msgEcmCRC);
-		
+
 		// set new Authorization Key 0 and 1 from the GUI
 		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
 		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
@@ -394,7 +396,7 @@ public class DecryptionController {
 		} else {
 			ecmWorkKey = model.getAuthorizationOutputKey1();
 		}
-		
+
 		// GUI update current Authorization Key 0 and 1
 		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
 		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
@@ -433,7 +435,7 @@ public class DecryptionController {
 		// check Date/Time save only new ecm
 		String ecmDateTime = ecmPayloadDecrypted.substring(34, 44);
 		if (Integer.parseInt(ecmDateTime.trim()) > Integer.parseInt(decryptionECM.getEcmDateTime().trim())) {
-			
+
 			System.out.println("SAVE ECM : ");
 			// save valid ecm
 			decryptionECM.setEcmHeader(msgEcmHeader);
@@ -449,37 +451,23 @@ public class DecryptionController {
 			decryptionECM.setEcmMAC(validMAC);
 			decryptionECM.setEcmCRC(msgEcmCRC);
 
-			// TODO del
-			System.out.println("msgHeader : " + msgEcmHeader);
-			System.out.println("msgProtocol : " + msgEcmProtocol);
-			System.out.println("msgBroadcastId : " + msgEcmBroadcastId);
-			System.out.println("msgWorkKeyId : " + msgEcmWorkKeyId);
-			System.out.println("msgCwOdd : " + ecmPayloadDecrypted.substring(0, 16));
-			System.out.println("msgCwEven : " + ecmPayloadDecrypted.substring(16, 32));
-			System.out.println("msgProgramType : " + ecmPayloadDecrypted.substring(32, 34));
-			System.out.println("msgDateTime : " + ecmPayloadDecrypted.substring(34, 44));
-			System.out.println("msgRecordControl : " + ecmPayloadDecrypted.substring(44, 46));
-			System.out.println("msgVariablePart : " + ecmPayloadDecrypted.substring(46, 56));
-			System.out.println("msgMAC : " + validMAC);
-			System.out.println("msgCRC : " + msgEcmCRC);
-
 			// GUI updates, Video Player View Button freigeben
 			view.getVideoOutputButton().setDisable(false);
 			// view decrypted ECM
 			view.getEcmDecryptedTA().setText(ecmDecrypted);
-			
+
 		} // end if
 
 	}
 
 	/**
-	 * Überprüft den Cyclic Redundancy Check (CRC) von der Nachricht
-	 * {@link message} mit {@link crc}.
+	 * Checks the Cyclic Redundancy Check (CRC) of the message {@link message}
+	 * with {@link crc}.
 	 * 
 	 * @param message
-	 *            - Aktuelle Nachricht.
+	 *            Current Message.
 	 * @param crc
-	 *            - CRC zum Validieren.
+	 *            The CRC to valid.
 	 * @return true if CRC Match or false if CRC Fail.
 	 */
 	private static boolean validateCRC(String message, String crc) {
@@ -497,13 +485,12 @@ public class DecryptionController {
 	}
 
 	/**
-	 * Entschlüsselt die Nachricht {@link message} anhand des Schlüssels
-	 * {@link key}.
+	 * Decrypts the message {@link message} by the key {@link key}.
 	 * 
 	 * @param message
-	 *            - Nachricht zum Entschlüsseln.
+	 *            Message to decrypt.
 	 * @param key
-	 *            - Schlüssel zum Entschlüsseln.
+	 *            Key to decrypt.
 	 * @return Entschlüsselte Nachricht.
 	 */
 	private static String decryptedMessage(String message, String key) {
@@ -522,15 +509,15 @@ public class DecryptionController {
 	}
 
 	/**
-	 * Überprüft den Message Authentication Code (MAC) {@link mac} von der
-	 * Nachricht {@link message} mittels {@link key}.
+	 * Checks the Message Authentication Code (MAC) {@link mac} of the message
+	 * {@link message} with {@link key}.
 	 * 
 	 * @param message
-	 *            - Nachricht
+	 *            The Message.
 	 * @param mac
-	 *            - Zu überprüfender MAC.
+	 *            The MAC to check.
 	 * @param key
-	 *            - Schlüssel für die MAC Erzeugung.
+	 *            The Key for MAC.
 	 * @return true if MAC Match or false if MAC Fail.
 	 */
 	private static boolean validateMAC(String message, String mac, String key) {
@@ -543,15 +530,15 @@ public class DecryptionController {
 			return false;
 		}
 	}
-	
+
 	/**
-	 * Erzeugt einen Message Authentication Code (MAC, 4 Byte Länge).
+	 * Creates a Message Authentication Code (MAC, 4 byte length) in Hex Number.
 	 * 
 	 * @param message
-	 *            - Nachricht
+	 *            Message for the MAC.
 	 * @param key
-	 *            - Schlüssel
-	 * @return Gibt einen MAC in Hex zurück.
+	 *            Key for MAC
+	 * @return The MAC from Message.
 	 */
 	private static String getMAC(String message, String key) {
 		// generate a mac key
@@ -581,24 +568,24 @@ public class DecryptionController {
 	}
 
 	/**
-	 * Liefert die Decryption ECM {@link decryptionECM}.
+	 * Returns the Decryption ECM {@link decryptionECM}.
 	 * 
-	 * @return Gibt die Decryption ECM zurück.
+	 * @return The decryption ECM.
 	 */
 	public static DecryptionECM getDecryptionECM() {
 		return decryptionECM;
 	}
 
 	/**
-	 * Empfange EMM Nachricht.
+	 * Receive EMM message.
 	 * 
 	 * @param msg
-	 *            Aktuelle EMM Nachricht
+	 *            Current EMM message.
 	 */
 	private static void receivedEMM(String msg) {
-		//reset Error Messages
+		// reset Error Messages
 		view.getErrorOutputTA().setText("");
-				
+
 		// spit msg into substrings
 		msgEmmHeader = msg.substring(0, 16);
 		msgEmmSmartcardId = msg.substring(16, 28);
@@ -610,7 +597,7 @@ public class DecryptionController {
 		msgEmmVariablePart = msg.substring(40, 128);
 		msgEmmMAC = msg.substring(128, 136);
 		msgEmmCRC = msg.substring(136, 144);
-				
+
 		// check if EMM is update Authorization Keys, Protocol Type CC
 		if (!msgEcmProtocol.equals("CC")) {
 			view.getErrorOutputTA().setText("EMM not Valid!");
@@ -632,16 +619,15 @@ public class DecryptionController {
 			view.getErrorOutputTA().setText("EMM CRC Mismatch!");
 			return;
 		}
-		
+
 		// hohle EMM Key
 		emmKey = view.getMpkOutTA().getText().toString();
 
 		// Decrypted ECM and separate Payload and MAC
 		String decrypted = decryptedMessage(emmPayload + msgEmmMAC, emmKey);
-		
+
 		System.out.println("decrypted:" + decrypted);
-		
-		
+
 		emmPayloadDecrypted = decrypted.substring(0, 88);
 		String validMAC = decrypted.substring(88, 96);
 
@@ -655,7 +641,7 @@ public class DecryptionController {
 		// set new Authorization Key 0 and 1
 		model.setAuthorizationOutputKey0(decrypted.substring(0, 32));
 		model.setAuthorizationOutputKey1(decrypted.substring(32, 64));
-		
+
 		// save valid EMM
 		decryptionEMM.setEmmHeader(msgEmmHeader);
 		decryptionEMM.setEmmSmartcardId(msgEmmSmartcardId);
@@ -666,12 +652,12 @@ public class DecryptionController {
 		decryptionEMM.setEmmVariablePart(decrypted);
 		decryptionEMM.setEmmMAC(validMAC);
 		decryptionEMM.setEmmCRC(msgEmmCRC);
-		
+
 		// GUI Updates
 		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
 		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
 		view.getEmmDecryptedTA().setText(emmDecrypted);
-		
+
 	}
-	
+
 }

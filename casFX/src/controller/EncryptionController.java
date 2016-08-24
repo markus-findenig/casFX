@@ -31,7 +31,7 @@ import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 import view.SimulatorView;
 
 /**
- * Encryption Controller. Steuert die Verschlüsselung.
+ * Encryption Controller. Controls the encryption.
  */
 public class EncryptionController {
 
@@ -56,16 +56,16 @@ public class EncryptionController {
 	private static EncryptionECM encryptionECM;
 
 	/**
-	 * Scheduled Executor Service. Sendet statisch alle 2 Sekunden die aktuelle
-	 * ECM Nachricht.
+	 * Scheduled Executor Service. Sends statically every 2 seconds the current
+	 * ECM message.
 	 */
 	private static ScheduledExecutorService sendECMExecutor;
 
 	/**
-	 * Aktueller ECM Nachrichten Status.
+	 * Current ECM message status.
 	 * 
-	 * @true - odd ECM
-	 * @false - even ECM
+	 * @true odd ECM.
+	 * @false even ECM.
 	 */
 	private static Boolean stateECMType;
 
@@ -138,7 +138,7 @@ public class EncryptionController {
 	private static String emm;
 
 	/**
-	 * Startet die Verschlüsselung.
+	 * Run the Encryption.
 	 */
 	public static void runEncryption() {
 		model = SimulatorViewController.getModel();
@@ -221,16 +221,16 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Stoppt die Verschlüsselung
+	 * Stop the Encryption.
 	 */
 	public static void stopEncryption() {
-		//view.getEncryption().setSelected(false);
+		// view.getEncryption().setSelected(false);
 		view.getEncryption().setText("OFF");
 		view.getVideoInputButton().setDisable(true);
 		model.setEncryptionState(false);
 		// no scrambling
 		model.setScramblingControl("00");
-		view.getScramblingControlTF().setText("00");
+		view.getScramblingControl().setText("00");
 		// Entsperre die CW Time
 		view.getCwTimeTF().setDisable(false);
 		// VLC reset
@@ -241,7 +241,7 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt eine neue ECM Nachricht mit Protokoll Typ "AA"
+	 * Creates a new ECM message with protocol type "AA".
 	 */
 	public static void generateECM() {
 		MediaPlayerFactory factory = new MediaPlayerFactory();
@@ -335,7 +335,7 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt eine Konstante ECM mit Protokoll Typ "BB"
+	 * Creates a constant ECM with protocol type "BB".
 	 */
 	private static void constantECM() {
 		String rbStatus = view.getRadioButtonGroup().getSelectedToggle().getUserData().toString();
@@ -406,28 +406,28 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Aktualisiert die Parameter des Simulators.
+	 * Updates the parameters of the simulator GUI elements.
 	 */
 	private static void guiECMUpdate() {
 		// Input Player
 		if (isStateECMType()) {
-			view.getCwTF().setText("odd:" + model.getControlWordInput());
+			view.getCwInTF().setText("odd:" + model.getControlWordInput());
 		} else {
-			view.getCwTF().setText("even:" + model.getControlWordInput());
+			view.getCwInTF().setText("even:" + model.getControlWordInput());
 		}
 
 		// TS
-		view.getScramblingControlTF().setText(model.getScramblingControl());
+		view.getScramblingControl().setText(model.getScramblingControl());
 
 		// ECM ---------------------------------------
 		view.getEcmHeaderTF().setText(encryptionECM.getEcmHeader());
 		view.getEcmProtocolTF().setText(encryptionECM.getEcmProtocol());
 		// Broadcast group id
-		view.getEcmWorkKey().setText(encryptionECM.getEcmWorkKeyId());
+		view.getEcmWorkKeyIdTF().setText(encryptionECM.getEcmWorkKeyId());
 		view.getEcmCwOddTF().setText(encryptionECM.getEcmCwOdd());
 		view.getEcmCwEvenTF().setText(encryptionECM.getEcmCwEven());
 		// Program type
-		view.getEcmDateTime().setText(encryptionECM.getEcmDateTime());
+		view.getEcmDateTimeTF().setText(encryptionECM.getEcmDateTime());
 		// Record control
 		view.getEcmVariablePartTF().setText(encryptionECM.getEcmVariablePart());
 		view.getEcmMacTF().setText(encryptionECM.getEcmMAC());
@@ -437,11 +437,11 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt eine Random Hex Nummer
+	 * Creates a Random Hex Number.
 	 * 
 	 * @param length
-	 *            - Länge der Random Hex Nummer
-	 * @return Gibt eine Random Hex Nummer der Länge length zurück.
+	 *            Length of the Random Hex Number.
+	 * @return Returns a Random Hex Number.
 	 */
 	public static String getRandomHex(int length) {
 		SecureRandom randomService = new SecureRandom();
@@ -454,10 +454,10 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt einen Message Authentication Code (MAC, 4 Byte Länge) von der ECM
-	 * (Header + Payload).
+	 * Creates a Message Authentication Code (MAC, 4 byte length) of the ECM
+	 * (Header + payload) in Hex.
 	 * 
-	 * @return Gibt einen MAC in Hex zurück.
+	 * @return The created MAC from ECM Message.
 	 */
 	private static String generateEcmMAC() {
 		// get Message
@@ -476,13 +476,13 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt einen Message Authentication Code (MAC, 4 Byte Länge)
+	 * Creates a Message Authentication Code (MAC, 4 byte length) in Hex Number.
 	 * 
 	 * @param message
-	 *            - Nachricht
+	 *            Message for the MAC.
 	 * @param key
-	 *            - Schlüssel
-	 * @return Gibt einen MAC in Hex zurück.
+	 *            Key for MAC
+	 * @return The MAC from Message.
 	 */
 	private static String getMAC(String message, String key) {
 		// generate a mac key
@@ -510,9 +510,9 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt einen Cyclic Redundancy Check (CRC) vom aktuellen ECM.
+	 * Creates a Cyclic Redundancy Check (CRC) of the current ECM.
 	 * 
-	 * @return Gibt den CRC anhand der aktuellen ECM Header und Payload zurück.
+	 * @return The CRC based on the current ECM header and payload.
 	 */
 	private static String getEcmCRC() {
 		ecmPayloadEncrypted = encryptedMessage(ecmPayload + encryptionECM.getEcmMAC(), ecmWorkKey);
@@ -520,11 +520,11 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt einen Cyclic Redundancy Check (CRC) vom String {@link getCRC}
+	 * Creates a Cyclic Redundancy Check (CRC) of string {@link getCRC}.
 	 * 
 	 * @param getCRC
-	 *            - Input String
-	 * @return Gibt den CRC vom String {@link getCRC} zurück.
+	 *            Input String.
+	 * @return The CRC from Input String {@link getCRC}.
 	 */
 	private static String getCRC(String getCRC) {
 		java.util.zip.CRC32 x = new java.util.zip.CRC32();
@@ -532,9 +532,9 @@ public class EncryptionController {
 		x.update(bytes);
 		return String.format("%02X", x.getValue());
 	}
-	
+
 	/**
-	 * Sendet die aktuelle ECM Nachricht mittels UDP an das Broadcast Netzwerk.
+	 * Sends the current ECM message via UDP to the broadcast network.
 	 */
 	public static void sendECM() {
 		// get ecm and ecmEncrypted
@@ -555,7 +555,7 @@ public class EncryptionController {
 			InetAddress group = InetAddress.getByName(ip[0].trim());
 			// port = default server port + 1 (5005);
 			int port = Integer.parseInt(ip[1].trim()) + 1;
-			
+
 			byte[] outbuf = ecmEncrypted.getBytes();
 
 			DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
@@ -568,19 +568,16 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Verschlüsselt die Nachricht {@link message} anhand des Schlüssels
-	 * {@link key}.
+	 * Encrypts the message {@link message} by the key {@link key}.
 	 * 
 	 * @param message
-	 *            - Nachricht zum Verschlüsseln.
+	 *            Message to encrypt.
 	 * @param key
-	 *            - Schlüssel zum Verschlüsseln.
-	 * @return Verschlüsselte Nachricht.
+	 *            Key for encrypt.
+	 * @return Encrypted message.
 	 */
 	private static String encryptedMessage(String message, String key) {
-		// generate the encrypted key with the current Authorization Key
 		SecretKey secretKey = new SecretKeySpec(DatatypeConverter.parseHexBinary(key), "AES");
-
 		byte[] result = null;
 		try {
 			Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
@@ -594,37 +591,36 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Liefert den aktuellen ECM Nachrichten Typ {@link stateECMType}.
+	 * Returns the current ECM message type {@link stateECMType}.
 	 * 
-	 * @return - Gibt true für Odd und false für Even zurück.
+	 * @return true for odd and false for even.
 	 */
 	public static boolean isStateECMType() {
 		return stateECMType;
 	}
 
 	/**
-	 * Setzt den ECM Type {@link stateECMType}: @true für Odd und @false für
-	 * Even.
+	 * Sets the ECM type {@link stateECMType}: true for odd and false for even.
 	 * 
 	 * @param type
-	 *            - Typ der aktuellen ECM.
+	 *            Type of the current ECM.
 	 */
 	public static void setStateECMType(boolean type) {
 		stateECMType = type;
 	}
 
 	/**
-	 * Liefert die Encryption ECM {@link encryptionECM}.
+	 * Getter of encryption ECM {@link encryptionECM}.
 	 * 
-	 * @return - Gibt die Encryption ECM zurück.
+	 * @return The encryption ECM.
 	 */
 	public static EncryptionECM getEncryptionECM() {
 		return encryptionECM;
 	}
 
 	/**
-	 * Erzeugt eine neue EMM Nachricht mit Protokoll Typ "CC", welche die
-	 * Authorization Key 0 und Authorization Key 1 beinhaltet.
+	 * Creates a new EMM message with protocol type "CC" which contains the
+	 * Authorization Key 0 and Authorization Key 1.
 	 */
 	public static void generateEMM() {
 		view = SimulatorViewController.getView();
@@ -634,7 +630,7 @@ public class EncryptionController {
 		LocalDateTime dateTime = LocalDateTime.now();
 		// Datum Formatieren: Monat Tag
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMdd");
-		
+
 		System.out.println("ERROR : " + view.getAk0InTF().getText());
 
 		// Update Input Keys
@@ -652,15 +648,15 @@ public class EncryptionController {
 				model.getAuthorizationInputKey0() + model.getAuthorizationInputKey1() + "000000000000000000000000");
 		encryptionEMM.setEmmMAC(generateEmmMAC());
 		encryptionEMM.setEmmCRC(generateEmmCRC());
-		
+
 		sendEMM();
 	}
 
 	/**
-	 * Erzeugt einen Message Authentication Code (MAC, 4 Byte Länge) von der EMM
-	 * (Header + Payload).
+	 * Creates a Message Authentication Code (MAC, 4 byte length) of the EMM
+	 * (Header + payload) in Hex.
 	 * 
-	 * @return Gibt einen MAC in Hex zurück.
+	 * @return The created MAC from EMM Message.
 	 */
 	private static String generateEmmMAC() {
 		emmHeader = encryptionEMM.getEmmHeader() + encryptionEMM.getEmmSmartcardId() + encryptionEMM.getEmmLength()
@@ -674,42 +670,17 @@ public class EncryptionController {
 	}
 
 	/**
-	 * Erzeugt einen Cyclic Redundancy Check (CRC) vom aktuellen EMM.
+	 * Creates a Cyclic Redundancy Check (CRC) of the current EMM.
 	 * 
-	 * @return Gibt den CRC anhand der aktuellen EMM Header und Payload zurück.
+	 * @return The CRC based on the current EMM header and payload.
 	 */
 	private static String generateEmmCRC() {
-		emmPayloadEncrypted = encryptedEMM(emmPayload + encryptionEMM.getEmmMAC());
+		emmPayloadEncrypted = encryptedMessage(emmPayload + encryptionEMM.getEmmMAC(), emmKey);
 		return getCRC(emmHeader + emmPayloadEncrypted);
 	}
 
 	/**
-	 * Verschlüsselt den input Parameter mittels aktuell ausgewählten
-	 * AuthorizationKey (AK)
-	 * 
-	 * @param emm
-	 *            EMM Nachricht zum Verschlüsseln
-	 * @return Verschlüsselte EMM Nachricht.
-	 */
-	private static String encryptedEMM(String emm) {
-		// generate the encrypted key with the current MPK
-		SecretKey key = new SecretKeySpec(DatatypeConverter.parseHexBinary(emmKey), "AES");
-
-		Cipher cipher;
-		byte[] result = null;
-		try {
-			cipher = Cipher.getInstance("AES/ECB/NoPadding");
-			cipher.init(Cipher.ENCRYPT_MODE, key);
-			result = cipher.doFinal(DatatypeConverter.parseHexBinary(emm.trim()));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return DatatypeConverter.printHexBinary(result);
-	}
-
-	/**
-	 * Sendet eine aktuelle EMM Nachricht mittels UDP an das Broadcast Netzwerk.
+	 * Sends one EMM message via UDP to that broadcast network.
 	 */
 	public static void sendEMM() {
 		configModel = ConfigViewController.getConfigModel();

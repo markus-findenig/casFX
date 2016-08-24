@@ -2,7 +2,7 @@ package model;
 
 /**
  * 
- * Decryption ECM
+ * Decryption ECM. The decrypted ECM message.
  *
  */
 public class DecryptionECM {

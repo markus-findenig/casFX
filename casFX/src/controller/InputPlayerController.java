@@ -17,7 +17,7 @@ import uk.co.caprica.vlcj.test.multi.PlayerInstance;
 import view.InputPlayerView;
 
 /**
- * Input Player Controller. 
+ * Input Player Controller.
  */
 public class InputPlayerController {
 
@@ -32,80 +32,78 @@ public class InputPlayerController {
 	private static ConfigModel configModel;
 
 	/**
-	 *  Encryption ECM Model. Speichert die aktuelle ECM Nachricht.
+	 * Encryption ECM Model. Saves the current ECM message.
 	 */
 	private static EncryptionECM encryptionECM;
 
 	/**
-	 * Stream Media Player. Verschlüsselt die aktuelle odd.mp4 oder even.mp4 und speichert 
-	 * dieses als odd_stream.ts oder even_stream.ts ab.
+	 * Stream Media Player. Encrypts the current odd.mp4 or even.mp4 and stores
+	 * from as odd_stream.ts or even_stream.ts.
 	 */
 	public static HeadlessMediaPlayer streamMediaPlayer;
-	
+
 	/**
-	 * Media Player Factory für den {@link streamMediaPlayer}
+	 * Media Player Factory for the {@link streamMediaPlayer}.
 	 */
 	public static MediaPlayerFactory mediaStreamPlayerFactory;
-	
+
 	/**
-	 * Embedded Input Media Player. Spielt die aktuelle odd.mp4 oder even.mp4 ab.
+	 * Embedded Input Media Player. Plays the current odd.mp4 or even.mp4 file.
 	 */
 	public static EmbeddedMediaPlayer embeddedInputMediaPlayer;
 
 	/**
-	 * Media Player Factory für den {@link embeddedInputMediaPlayer}
+	 * Media Player Factory for the {@link embeddedInputMediaPlayer}.
 	 */
 	public static MediaPlayerFactory mediaInputPlayerFactory;
 
 	/**
-	 * Player Controls Panel für den {@link embeddedInputMediaPlayer}
+	 * Player Controls Panel for the {@link embeddedInputMediaPlayer}.
 	 */
 	public static PlayerControlsPanel controlsInputPanel;
 
 	/**
-	 * Embedded Media Player Component für den {@link embeddedInputMediaPlayer}
+	 * Embedded Media Player Component for the {@link embeddedInputMediaPlayer}.
 	 */
 	public static EmbeddedMediaPlayerComponent mediaInputPlayerComponent;
 
 	/**
-	 * Input Player View. Anzeige für den Player.
+	 * Input Player View. View for the Input Player.
 	 */
 	public static InputPlayerView inputPlayerView;
 
 	/**
-	 * Parameter für die Media Player Factory {@link mediaInputPlayerFactory}
+	 * Parameters for the Media Player Factory {@link mediaInputPlayerFactory}.
 	 */
 	private static List<String> vlcArgs;
 
-	
+	/**
+	 * Input File Path.
+	 */
 	private static String filePath;
 
 	/**
-	 * Dateipfad zur Eingabedatei odd.mp4
+	 * File path to the input file odd.mp4.
 	 */
 	private static String fileOdd;
 
 	/**
-	 * Dateipfad zur Eingabedatei even.mp4
+	 * File path to the input file even.mp4.
 	 */
 	private static String fileEven;
 
 	/**
-	 * Dateipfad zur Ausgabedatei odd_stream.ts
+	 * File path to the input file odd_stream.ts.
 	 */
 	private static String streamFileOdd;
-	
-	/**
-	 * Dateipfad zur Ausgabedatei even_stream.ts
-	 */
-	private static String streamFileEven;
-	
-	
-	//private static List<PlayerInstance> players;
-	
 
 	/**
-	 * Initialisiert den Input Media Player
+	 * File path to the input file even_stream.ts.
+	 */
+	private static String streamFileEven;
+
+	/**
+	 * Initializes the Input Media Player
 	 */
 	public static void initInputPlayer() {
 		model = SimulatorViewController.getModel();
@@ -125,7 +123,7 @@ public class InputPlayerController {
 	}
 
 	/**
-	 * Initialisiert den Intervall Input Media Player.
+	 * Initializes the Intervall Input Media Player.
 	 */
 	public static void initIntervallInputPlayer() {
 		// init player
@@ -140,32 +138,31 @@ public class InputPlayerController {
 	}
 
 	/**
-	 * Zeigt den Input Media Player an.
+	 * View the Input Media Player.
 	 */
 	public static void getInputPlayer() {
 		InputPlayerView.getVideoInputF().setVisible(true);
 	}
-	
+
 	/**
-	 * Startet den Input Media Player anhand des aktuellen ECM Typs.
+	 * Run the Input Media Player based on the current ECM type.
 	 */
 	public static void runInputPlayer() {
 		// if odd
 		if (EncryptionController.isStateECMType()) {
 			streamInputPlayer().run();
 			startInputPlayerView(fileOdd);
-			// switch ECM Type
-			//EncryptionController.setStateECMType(false);
-		} 
+		}
 		// else even
 		else {
 			streamInputPlayer().run();
 			startInputPlayerView(fileEven);
-			// switch ECM Type
-			//EncryptionController.setStateECMType(true);
 		}
 	}
 
+	/**
+	 * Stop the Input Media Player.
+	 */
 	public static void stopInputPlayer() {
 
 		// TODO
@@ -178,14 +175,13 @@ public class InputPlayerController {
 	}
 
 	/**
-	 * Erzeugt den Stream Input Media Player.
+	 * Generates the Stream Input Media Player.
 	 * 
-	 * Setzt die Verschlüsselungsparameter für die ODD/EVEN Datei sowie die
-	 * Verschlüsselte Ausgabedatei. Startet den Stream Input Media Player anhand
-	 * des aktuellen ECM Typs mit den erzeugten Parametern.
+	 * Sets the encryption parameters for the ODD/EVEN file and Encrypted output
+	 * file. Starts the Stream Input Media Player from the current ECM type with
+	 * the generated parameters.
 	 * 
-	 * @return taskStreamInputPlayer - Gibt den erzeugten Task für den Start
-	 *         zurück.
+	 * @return The task Stream Input Player.
 	 */
 	public static Runnable streamInputPlayer() {
 		Task<Void> taskStreamInputPlayer = new Task<Void>() {
@@ -198,14 +194,10 @@ public class InputPlayerController {
 				// -------------------------------------------------
 				// if true = odd
 				if (EncryptionController.isStateECMType()) {
-
-					// vlcArgs.add("--sout=#duplicate{dst=file{mux=ts,dst=" +
-					// streamFileOdd + "}, dst=display}");
 					vlcArgs.add("--sout=#std{access=file,mux=ts,dst=" + streamFileOdd + "}");
 					vlcArgs.add("--sout-ts-crypt-video");
 					vlcArgs.add("--sout-ts-crypt-audio");
 					vlcArgs.add("--sout-ts-csa-use=1");
-					//vlcArgs.add("--sout-ts-csa-ck=0123456789ABCDEF");
 					vlcArgs.add("--sout-ts-csa-ck=" + encryptionECM.getEcmCwOdd());
 					vlcArgs.add("--sout-ts-csa2-ck=0000000000000000");
 					vlcArgs.add("vlc://quit");
@@ -216,15 +208,11 @@ public class InputPlayerController {
 				// -------------------------------------------------
 				// else false = even
 				else {
-
-					// vlcArgs.add("--sout=#duplicate{dst=file{mux=ts,dst=" +
-					// streamFileEven + "}, dst=display}");
 					vlcArgs.add("--sout=#std{access=file,mux=ts,dst=" + streamFileEven + "}");
 					vlcArgs.add("--sout-ts-crypt-video");
 					vlcArgs.add("--sout-ts-crypt-audio");
 					vlcArgs.add("--sout-ts-csa-use=2");
 					vlcArgs.add("--sout-ts-csa-ck=0000000000000000");
-					//vlcArgs.add("--sout-ts-csa2-ck=FEDABC9876543210");
 					vlcArgs.add("--sout-ts-csa2-ck=" + encryptionECM.getEcmCwEven());
 					vlcArgs.add("vlc://quit");
 
@@ -236,16 +224,15 @@ public class InputPlayerController {
 			} // end call
 		};
 		return taskStreamInputPlayer;
-
 	}
 
 	/**
-	 * Startet den Stream Input Media Player (keine View).
+	 * Run the Stream Input Media Player without view.
 	 * 
 	 * @param file
-	 *            - Datei zum Abspielen.
+	 *            File to play.
 	 * @param standardVlcOptions
-	 *            - Media Player Parameter
+	 *            Media Player Options.
 	 */
 	private static void runStreamInputPlayer(String file, String[] standardVlcOptions) {
 		mediaStreamPlayerFactory = new MediaPlayerFactory(standardVlcOptions);
@@ -261,13 +248,11 @@ public class InputPlayerController {
 		streamMediaPlayer.playMedia(file);
 	}
 
-
-
 	/**
-	 * Startet die Wiedergabe vom Input Media Player.
+	 * Run the Input Media Player with view.
 	 * 
 	 * @param file
-	 *            - Datei für die Wiedergabe.
+	 *            File to play.
 	 */
 	private static void startInputPlayerView(String file) {
 		mediaInputPlayerFactory = new MediaPlayerFactory();
@@ -302,122 +287,72 @@ public class InputPlayerController {
 			}
 		});
 
-//		controlsInputPanel = null;
-//		mediaInputPlayerComponent = null;
-//
-		//controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
-//		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
-		//mediaInputPlayerComponent.add(controlsInputPanel);
-//		controlsInputPanel.updateVolume(0);
-		
-		//controlsInputPanel.reInitPlayerControlsPanel(embeddedInputMediaPlayer);
-		
-		// TODO
-		//mediaInputPlayerComponent.release();
-		//mediaInputPlayerComponent.remove(controlsInputPanel);
-		
-		
 		embeddedInputMediaPlayer.prepareMedia(file);
-		
-		
-		//controlsInputPanel.reInitPlayerControlsPanel(embeddedInputMediaPlayer);
-		
+
 		// entferne alten Player
 		SimulatorViewController.getPlayers().remove(0);
-//		
 		// erstellen neuen Player
 		PlayerInstance playerInstance = new PlayerInstance(embeddedInputMediaPlayer);
 		SimulatorViewController.getPlayers().add(0, playerInstance);
-		
-		//mediaInputPlayerComponent.add(controlsInputPanel);
 
-		// View the Player
-//		inputPlayerView.reInitInputPlayerView(SimulatorViewController.getPlayers().get(0).mediaPlayer(), mediaInputPlayerFactory,
-//				mediaInputPlayerComponent, controlsInputPanel);
-		
 		inputPlayerView.reInitInputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory);
-		
-		
+
 		// Play the file
-		//embeddedInputMediaPlayer.play();
+		// embeddedInputMediaPlayer.play();
 		SimulatorViewController.getPlayers().get(0).mediaPlayer().play();
-		//embeddedInputMediaPlayer.playMedia(file);
 
 	}
 
 	/**
-	 * Streamt die angegebene Datei mittels RTP Protokoll.
+	 * Streams the file specified by RDP protocol.
 	 * 
 	 * @param outfile
-	 *            - Datei zum streamen.
+	 *            File to stream.
 	 */
 	public static void streamInputPlayerRTP(String outfile) {
-
 		// rtp = "rtp{proto=udp,mux=ts,dst=239.0.0.1,port=5004}"
 		String rtp = formatRtpStream(configModel.getServer());
 
 		vlcArgs.clear();
 		vlcArgs.add("--sout=#duplicate{dst=" + rtp + ",dst=display}");
-
 		vlcArgs.add("--sout-ts-crypt-video");
 		vlcArgs.add("--sout-ts-crypt-audio");
 		vlcArgs.add("--sout-ts-csa-use=1");
 		vlcArgs.add("--sout-ts-csa-ck=" + encryptionECM.getEcmCwOdd());
 		// vlcArgs.add("--sout-ts-csa2-ck=" + model.getEcmCwEven());
-
 		vlcArgs.add("--no-repeat");
 		vlcArgs.add("--no-loop");
 		vlcArgs.add("--ttl=1");
-
 		vlcArgs.add("--no-sout-rtp-sap");
 		vlcArgs.add("--no-sout-standard-sap");
 		vlcArgs.add("--sout-all");
 		vlcArgs.add("--sout-keep");
 		vlcArgs.add("--no-plugins-cache");
 		vlcArgs.add("vlc://quit");
-		
 
 		// erzeugt eine media player
 		mediaInputPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));
 		embeddedInputMediaPlayer = mediaInputPlayerFactory.newEmbeddedMediaPlayer();
-		
 		embeddedInputMediaPlayer.setVolume(0);
-		
-		//embeddedInputMediaPlayer.prepareMedia(outfile);
-
-		// erzeugt die Steuerelemente für den media player
-//		controlsInputPanel = new PlayerControlsPanel(embeddedInputMediaPlayer);
-//		mediaInputPlayerComponent = new EmbeddedMediaPlayerComponent();
-//		mediaInputPlayerComponent.add(controlsInputPanel);
-//
-//		// setze die Lautstärke auf null
-//		controlsInputPanel.updateVolume(0);
-//		mediaInputPlayerComponent.disable();
-//		controlsInputPanel.disable();
-		
 		embeddedInputMediaPlayer.prepareMedia(outfile);
-		
+
 		PlayerInstance playerInstance = new PlayerInstance(embeddedInputMediaPlayer);
 		SimulatorViewController.getPlayers().add(0, playerInstance);
-		
-		// erzeugt die GUI für den media player
-//		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory,
-//				mediaInputPlayerComponent, controlsInputPanel);
-		
+
 		inputPlayerView = new InputPlayerView(embeddedInputMediaPlayer, mediaInputPlayerFactory);
 
 		// streamt die Datei
+		// embeddedInputMediaPlayer.playMedia(outfile);
 		SimulatorViewController.getPlayers().get(0).mediaPlayer().play();
-		//embeddedInputMediaPlayer.playMedia(outfile);
 
 	}
 
 	/**
-	 * Formatiert den server String für die VLC input Parameter
+	 * Formats the server string for the VLC input parameters.
 	 * 
 	 * @param server
-	 *            Protokoll, Adresse und IP des Servers
-	 * @return String für VLC Parameter
+	 *            Protocol, address and IP of the server.
+	 * @return String for VLC parameters.
 	 */
 	private static String formatRtpStream(String server) {
 		// default server = rtp://239.0.0.1:5004
@@ -427,19 +362,25 @@ public class InputPlayerController {
 		String[] ip = ipPort.split(":");
 
 		StringBuilder sb = new StringBuilder(200);
-		// sb.append("rtp{proto=udp,mux=ts{use-key-frames},dst=");
 		sb.append("rtp{proto=udp,mux=ts,dst=");
 		sb.append(ip[0]);
 		sb.append(",port=");
 		sb.append(ip[1]);
 		sb.append("}");
+		
 		return sb.toString();
 	}
 
+	/**
+	 * @return The File path to odd.mp4
+	 */
 	public static String getInFileOdd() {
 		return fileOdd;
 	}
 
+	/**
+	 * @return The File path to even.mp4
+	 */
 	public static String getInFileEven() {
 		return fileEven;
 	}

@@ -13,33 +13,34 @@ import javafx.scene.control.Toggle;
 import javafx.stage.FileChooser;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.test.multi.PlayerInstance;
+import view.AboutView;
 import view.SimulatorView;
 
 /**
- * Input View Controller
+ * Simulator View Controller. Controls the Simulator.
  */
 public class SimulatorViewController {
 	
 	/**
-	 * Simulator Model
+	 * Simulator Model.
 	 */
 	private static SimulatorModel model;
 	
 	/**
-	 * Simulator View
+	 * Simulator View.
 	 */
 	private static SimulatorView view;
 	
 	/**
-	 * Player Instance List
+	 * Player Instance List.
 	 */
 	private static List<PlayerInstance> players;
 	
 	/**
-	 * Input View Controller
+	 * Input View Controller.
 	 * 
 	 * @param sModel
-	 *            - Simulator Model
+	 *           Simulator Model
 	 */
 	public SimulatorViewController(SimulatorModel sModel) {
 		model = sModel;
@@ -63,12 +64,11 @@ public class SimulatorViewController {
 		view.getSendEMMButton().setOnAction(casEventHandler);
 		
 		// Decryption Toggle Button registrieren
-		view.getDecryptionTB().setOnAction(casEventHandler);
+		view.getDecryption().setOnAction(casEventHandler);
 		
 		// Video Player
 		view.getVideoInputButton().setOnAction(casEventHandler);
 		view.getVideoOutputButton().setOnAction(casEventHandler);
-		
 		
 		// Radio Buttons
 		view.getRadioButtonGroup().selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
@@ -77,48 +77,20 @@ public class SimulatorViewController {
 			}
 		});
 
-		// Test Function
-		view.test().setOnAction(event -> {
-
-			// TODO
-			
-			//VlcServerController.streamVlcFile(model.getInputFile().toString());
-			
-			Runnable myRunnable = new Runnable(){
-			     @Override
-				public void run(){
-			    	 
-			    	 try {
-						OutputPlayerController.initIntervallOutputPlayer();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			     }
-			   };
-			   
-			//FFmpegController.runFFmpeg();
-			
-//			System.out.println(model.getInputFile().toString());
-//			
-//			System.out.println("error" + configModel.getServer());
-			
-			   myRunnable.run();
-			
-
-		});
+		// About Menu
+		view.getAbout().setOnAction(casEventHandler);
 		
 	}
 
 	/**
-	 * Zeigt die Simulator View an.
+	 * Show the Simulator View.
 	 */
 	public void show() {
 		view.show(SimulatorModel.getPrimaryStage());
 	}
 
 	/**
-	 * Cas Event Handler. Steuert alle Events im CAS-Simulator.
+	 * Cas Event Handler. Controls all events in CAS Simulator.
 	 */
 	public class CasEventHandler implements EventHandler<ActionEvent> {
 
@@ -176,16 +148,16 @@ public class SimulatorViewController {
 			}
 
 			// Decryption State ON (true) or OFF (false)
-			if (event.getSource() == view.getDecryptionTB()) {
-				if (view.getDecryptionTB().isSelected()) {
+			if (event.getSource() == view.getDecryption()) {
+				if (view.getDecryption().isSelected()) {
 					// run Decryption
 					System.out.println("Decryption run");
-					view.getDecryptionTB().setSelected(true);
+					view.getDecryption().setSelected(true);
 					DecryptionController.runDecryption();
 				} else {
 					// stop Decryption
 					System.out.println("Decryption stop");
-					view.getDecryptionTB().setSelected(false);
+					view.getDecryption().setSelected(false);
 					DecryptionController.stopDecryption();
 				}
 			}
@@ -209,6 +181,11 @@ public class SimulatorViewController {
 			if (event.getSource() == view.getConfig()) {
 				ConfigViewController.show();
 			}
+			
+			// About
+			if (event.getSource() == view.getAbout()) {
+				new AboutView();
+			}
 
 			// Exit
 			if (event.getSource() == view.getExit()) {
@@ -224,27 +201,27 @@ public class SimulatorViewController {
 
 
 	/**
-	 * Liefert die aktuelle Simulator View {@link view}.
+	 * Gets the current Simulator View {@link view}.
 	 * 
-	 * @return Gibt die aktuelle Simulator View zurück.
+	 * @return The current Simulator View.
 	 */
 	public static SimulatorView getView() {
 		return view;
 	}
 
 	/**
-	 * Liefert die aktuelle Simulator Model {@link model}.
+	 * Gets the current Simulator Model {@link model}.
 	 * 
-	 * @return Gibt das aktuelle Simulator Model zurück.
+	 * @return The current Simulator Model.
 	 */
 	public static SimulatorModel getModel() {
 		return model;
 	}
 
 	/**
-	 * Liefert die aktuelle Player Liste {@link players}.
+	 * Gets the current player list {@link players}.
 	 * 
-	 * @return Gibt das aktuelle Player Liste zurück.
+	 * @return The current player list.
 	 */
 	public static List<PlayerInstance> getPlayers() {
 		return players;
