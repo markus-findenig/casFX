@@ -299,6 +299,7 @@ public class InputPlayerController {
 
 		// Play the file
 		// embeddedInputMediaPlayer.play();
+		SimulatorViewController.getPlayers().get(0).mediaPlayer().setVolume(0);
 		SimulatorViewController.getPlayers().get(0).mediaPlayer().play();
 
 	}
@@ -343,6 +344,7 @@ public class InputPlayerController {
 
 		// streamt die Datei
 		// embeddedInputMediaPlayer.playMedia(outfile);
+		SimulatorViewController.getPlayers().get(0).mediaPlayer().setVolume(0);
 		SimulatorViewController.getPlayers().get(0).mediaPlayer().play();
 
 	}
