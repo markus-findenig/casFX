@@ -637,10 +637,10 @@ public class EncryptionController {
 
 		encryptionEMM.setEmmHeader("8400000000000000");
 		encryptionEMM.setEmmSmartcardId("111111111111");
-		encryptionEMM.setEmmLength("2D");
+		encryptionEMM.setEmmLength("36");
 		encryptionEMM.setEmmProtocol("CC");
 		encryptionEMM.setEmmBroadcastId("FF");
-		encryptionEMM.setEmmUpdateId("01");
+		encryptionEMM.setEmmUpdateId("0001");
 		encryptionEMM.setEmmExpirationDate(dateTime.format(formatter));
 		encryptionEMM.setEmmVariablePart(
 				model.getAuthorizationInputKey0() + model.getAuthorizationInputKey1() + "000000000000000000000000");

@@ -61,7 +61,7 @@ public class DecryptionController {
 	/**
 	 * Static EMM length
 	 */
-	private static int EMM_LENGTH = 144;
+	private static int EMM_LENGTH = 146;
 
 	/**
 	 * ecmHeader = ECM Section Header + Protocol number + Broadcast group id +
@@ -321,7 +321,7 @@ public class DecryptionController {
 			byte[] buffer = new byte[2048];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-			while (model.isEncryptionState()) {
+			while (model.isDecryptionState()) {
 				// Wait to receive a datagram
 				socket.receive(packet);
 				// Convert the contents to a string, and display them
@@ -372,19 +372,6 @@ public class DecryptionController {
 		msgEcmVariablePart = msg.substring(68, 78);
 		msgEcmMAC = msg.substring(78, 86);
 		msgEcmCRC = msg.substring(86, 94);
-
-		// System.out.println("msgHeader : " + msgEcmHeader);
-		// System.out.println("msgProtocol : " + msgEcmProtocol);
-		// System.out.println("msgBroadcastId : " + msgEcmBroadcastId);
-		// System.out.println("msgWorkKeyId : " + msgEcmWorkKeyId);
-		// System.out.println("msgCwOdd : " + msgEcmCwOdd);
-		// System.out.println("msgCwEven : " + msgEcmCwEven);
-		// System.out.println("msgProgramType : " + msgEcmProgramType);
-		// System.out.println("msgDateTime : " + msgEcmDateTime);
-		// System.out.println("msgRecordControl : " + msgEcmRecordControl);
-		// System.out.println("msgVariablePart : " + msgEcmVariablePart);
-		// System.out.println("msgMAC : " + msgEcmMAC);
-		// System.out.println("msgCRC : " + msgEcmCRC);
 
 		// set new Authorization Key 0 and 1 from the GUI
 		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
@@ -592,11 +579,11 @@ public class DecryptionController {
 		msgEmmLength = msg.substring(28, 30);
 		msgEcmProtocol = msg.substring(30, 32);
 		msgEcmBroadcastId = msg.substring(32, 34);
-		msgEmmUpdateId = msg.substring(34, 36);
-		msgEmmExpirationDate = msg.substring(36, 40);
-		msgEmmVariablePart = msg.substring(40, 128);
-		msgEmmMAC = msg.substring(128, 136);
-		msgEmmCRC = msg.substring(136, 144);
+		msgEmmUpdateId = msg.substring(34, 38);
+		msgEmmExpirationDate = msg.substring(38, 42);
+		msgEmmVariablePart = msg.substring(42, 130);
+		msgEmmMAC = msg.substring(130, 138);
+		msgEmmCRC = msg.substring(138, 146);
 
 		// check if EMM is update Authorization Keys, Protocol Type CC
 		if (!msgEcmProtocol.equals("CC")) {
@@ -625,9 +612,6 @@ public class DecryptionController {
 
 		// Decrypted ECM and separate Payload and MAC
 		String decrypted = decryptedMessage(emmPayload + msgEmmMAC, emmKey);
-
-		System.out.println("decrypted:" + decrypted);
-
 		emmPayloadDecrypted = decrypted.substring(0, 88);
 		String validMAC = decrypted.substring(88, 96);
 
@@ -657,6 +641,7 @@ public class DecryptionController {
 		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
 		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
 		view.getEmmDecryptedTA().setText(emmDecrypted);
+		view.getCwOutTF().setText("-- WAIT FOR ECM --");
 
 	}
 
