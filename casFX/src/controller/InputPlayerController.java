@@ -164,8 +164,6 @@ public class InputPlayerController {
 	 * Stop the Input Media Player.
 	 */
 	public static void stopInputPlayer() {
-
-		// TODO
 		if (embeddedInputMediaPlayer != null) {
 			embeddedInputMediaPlayer.stop();
 			embeddedInputMediaPlayer.release();
@@ -257,7 +255,6 @@ public class InputPlayerController {
 	private static void startInputPlayerView(String file) {
 		mediaInputPlayerFactory = new MediaPlayerFactory();
 		embeddedInputMediaPlayer = mediaInputPlayerFactory.newEmbeddedMediaPlayer();
-		// TODO
 		embeddedInputMediaPlayer.setVolume(0);
 		embeddedInputMediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
 
@@ -385,6 +382,20 @@ public class InputPlayerController {
 	 */
 	public static String getInFileEven() {
 		return fileEven;
+	}
+
+	/**
+	 * @return The File path to streamFileOdd.mp4
+	 */
+	public static String getStreamFileOdd() {
+		return streamFileOdd;
+	}
+
+	/**
+	 * @return The File path to streamFileEven.mp4
+	 */
+	public static String getStreamFileEven() {
+		return streamFileEven;
 	}
 
 }

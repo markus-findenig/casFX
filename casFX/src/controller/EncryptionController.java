@@ -409,11 +409,19 @@ public class EncryptionController {
 	 * Updates the parameters of the simulator GUI elements.
 	 */
 	private static void guiECMUpdate() {
-		// Input Player
+		// Input Player odd parameter
 		if (isStateECMType()) {
 			view.getCwInTF().setText("odd:" + model.getControlWordInput());
-		} else {
+			// update VLC GUI Parameter
+			view.getParameterVLCstream().setText("vlc " + InputPlayerController.getStreamFileOdd() + " --ts-csa-ck="
+					+ encryptionECM.getEcmCwOdd() + " --ts-csa2-ck=0000000000000000");
+		}
+		// Input Player even parameter
+		else {
 			view.getCwInTF().setText("even:" + model.getControlWordInput());
+			// update VLC GUI Parameter
+			view.getParameterVLCstream().setText("vlc " + InputPlayerController.getStreamFileEven()
+					+ " --ts-csa-ck=0000000000000000" + " --ts-csa2-ck=" + encryptionECM.getEcmCwEven());
 		}
 
 		// TS

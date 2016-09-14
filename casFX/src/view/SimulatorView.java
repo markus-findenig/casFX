@@ -491,7 +491,7 @@ public class SimulatorView {
 		parameterVLCstreamTA = new TextArea();
 		parameterVLCstreamTA.setEditable(true);
 		parameterVLCstreamTA.setStyle("-fx-background-color: transparent;");
-		parameterVLCstreamTA.setTooltip(new Tooltip("Only if Constant CW, Time (sec) = 0"));
+		parameterVLCstreamTA.setTooltip(new Tooltip("Parameters for VLC Media Player."));
 		parameterVLCstreamTA.setMaxSize(250, 45);
 		grid.add(parameterVLCstreamL, 1, 15);
 		grid.add(parameterVLCstreamTA, 2, 15);
