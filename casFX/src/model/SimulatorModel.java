@@ -18,7 +18,7 @@ public class SimulatorModel {
 	 * Encryption State ON (true) or OFF (false)
 	 */
 	private boolean encryptionState = false;
-	
+
 	/**
 	 * Decryption State ON (true) or OFF (false)
 	 */
@@ -38,7 +38,7 @@ public class SimulatorModel {
 	 * Actual Control Word (CW) for Input Media Player.
 	 */
 	private String controlWordInput;
-	
+
 	/**
 	 * Actual Control Word (CW) for Output Media Player.
 	 */
@@ -54,30 +54,41 @@ public class SimulatorModel {
 	 */
 	private String scramblingControl;
 
-
 	/**
 	 * Authorization Key 00 for Input Media Player
 	 */
 	private String authorizationInputKey0;
-	
+
 	/**
 	 * Authorization Key 01 for Input Media Player
 	 */
 	private String authorizationInputKey1;
-	
+
 	/**
 	 * Authorization Key 00 for Output Media Player
 	 */
 	private String authorizationOutputKey0;
-	
+
 	/**
 	 * Authorization Key 01 for Output Media Player
 	 */
 	private String authorizationOutputKey1;
 
 	/**
+	 * Master Private Key (256 bit) for Input Media Player
+	 */
+	private String masterPrivateKeyInput;
+
+	/**
+	 * Master Private Key (256 bit) for Output Media Player
+	 */
+	private String masterPrivateKeyOutput;
+
+	/**
 	 * Simulator Model
-	 * @param primaryStage Session Scope
+	 * 
+	 * @param primaryStage
+	 *            Session Scope
 	 */
 	public SimulatorModel(Stage primaryStage) {
 		PRIMARY_STAGE = primaryStage;
@@ -85,6 +96,7 @@ public class SimulatorModel {
 
 	/**
 	 * Get the primary Stage.
+	 * 
 	 * @return The primary Stage.
 	 */
 	public static Stage getPrimaryStage() {
@@ -99,7 +111,8 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param encryptionState the encryptionState to set
+	 * @param encryptionState
+	 *            the encryptionState to set
 	 */
 	public void setEncryptionState(boolean encryptionState) {
 		this.encryptionState = encryptionState;
@@ -113,10 +126,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param decryptionState the decryptionState to set
+	 * @param decState
+	 *            the decryptionState to set
 	 */
-	public void setDecryptionState(boolean decryptionState) {
-		SimulatorModel.decryptionState = decryptionState;
+	public void setDecryptionState(boolean decState) {
+		decryptionState = decState;
 	}
 
 	/**
@@ -127,10 +141,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param inputFile the inputFile to set
+	 * @param inFile
+	 *            the inputFile to set
 	 */
-	public void setInputFile(File inputFile) {
-		SimulatorModel.inputFile = inputFile;
+	public void setInputFile(File inFile) {
+		inputFile = inFile;
 	}
 
 	/**
@@ -141,10 +156,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param outputFile the outputFile to set
+	 * @param outFile
+	 *            the outputFile to set
 	 */
-	public void setOutputFile(File outputFile) {
-		this.outputFile = outputFile;
+	public void setOutputFile(File outFile) {
+		outputFile = outFile;
 	}
 
 	/**
@@ -155,10 +171,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param controlWordInput the controlWordInput to set
+	 * @param cWordInput
+	 *            the controlWordInput to set
 	 */
-	public void setControlWordInput(String controlWordInput) {
-		this.controlWordInput = controlWordInput;
+	public void setControlWordInput(String cWordInput) {
+		controlWordInput = cWordInput;
 	}
 
 	/**
@@ -169,10 +186,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param controlWordOutput the controlWordOutput to set
+	 * @param cWordOutput
+	 *            the controlWordOutput to set
 	 */
-	public void setControlWordOutput(String controlWordOutput) {
-		this.controlWordOutput = controlWordOutput;
+	public void setControlWordOutput(String cWordOutput) {
+		controlWordOutput = cWordOutput;
 	}
 
 	/**
@@ -183,10 +201,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param cwTime the cwTime to set
+	 * @param cwT
+	 *            the cwTime to set
 	 */
-	public void setCwTime(int cwTime) {
-		this.cwTime = cwTime;
+	public void setCwTime(int cwT) {
+		cwTime = cwT;
 	}
 
 	/**
@@ -197,10 +216,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param scramblingControl the scramblingControl to set
+	 * @param sControl
+	 *            the scramblingControl to set
 	 */
-	public void setScramblingControl(String scramblingControl) {
-		this.scramblingControl = scramblingControl;
+	public void setScramblingControl(String sControl) {
+		scramblingControl = sControl;
 	}
 
 	/**
@@ -211,10 +231,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param authorizationInputKey0 the authorizationInputKey0 to set
+	 * @param authInputKey0
+	 *            the authorizationInputKey0 to set
 	 */
-	public void setAuthorizationInputKey0(String authorizationInputKey0) {
-		this.authorizationInputKey0 = authorizationInputKey0;
+	public void setAuthorizationInputKey0(String authInputKey0) {
+		authorizationInputKey0 = authInputKey0;
 	}
 
 	/**
@@ -225,10 +246,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param authorizationInputKey1 the authorizationInputKey1 to set
+	 * @param authInputKey1
+	 *            the authorizationInputKey1 to set
 	 */
-	public void setAuthorizationInputKey1(String authorizationInputKey1) {
-		this.authorizationInputKey1 = authorizationInputKey1;
+	public void setAuthorizationInputKey1(String authInputKey1) {
+		authorizationInputKey1 = authInputKey1;
 	}
 
 	/**
@@ -239,10 +261,11 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param authorizationOutputKey0 the authorizationOutputKey0 to set
+	 * @param authOutputKey0
+	 *            the authorizationOutputKey0 to set
 	 */
-	public void setAuthorizationOutputKey0(String authorizationOutputKey0) {
-		this.authorizationOutputKey0 = authorizationOutputKey0;
+	public void setAuthorizationOutputKey0(String authOutputKey0) {
+		authorizationOutputKey0 = authOutputKey0;
 	}
 
 	/**
@@ -253,10 +276,41 @@ public class SimulatorModel {
 	}
 
 	/**
-	 * @param authorizationOutputKey1 the authorizationOutputKey1 to set
+	 * @param authOutputKey1
+	 *            the authorizationOutputKey1 to set
 	 */
-	public void setAuthorizationOutputKey1(String authorizationOutputKey1) {
-		this.authorizationOutputKey1 = authorizationOutputKey1;
+	public void setAuthorizationOutputKey1(String authOutputKey1) {
+		authorizationOutputKey1 = authOutputKey1;
+	}
+
+	/**
+	 * @return the inputMasterPrivateKey
+	 */
+	public String getMasterPrivateKeyInput() {
+		return masterPrivateKeyInput;
+	}
+
+	/**
+	 * @param inMasterPrivateKey
+	 *            the inputMasterPrivateKey to set
+	 */
+	public void setMasterPrivateKeyInput(String inMasterPrivateKey) {
+		masterPrivateKeyInput = inMasterPrivateKey;
+	}
+
+	/**
+	 * @return the masterPrivateKeyOutput
+	 */
+	public String getMasterPrivateKeyOutput() {
+		return masterPrivateKeyOutput;
+	}
+
+	/**
+	 * @param outMasterPrivateKey
+	 *            the masterPrivateKeyOutput to set
+	 */
+	public void setMasterPrivateKeyOutput(String outMasterPrivateKey) {
+		masterPrivateKeyOutput = outMasterPrivateKey;
 	}
 
 }

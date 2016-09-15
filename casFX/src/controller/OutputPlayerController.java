@@ -134,6 +134,10 @@ public class OutputPlayerController {
 	 */
 	@SuppressWarnings("deprecation")
 	public static void stopOutputPlayer() {
+		// unlock Keys
+		view.getAk0OutTF().setEditable(true);
+		view.getAk1OutTF().setEditable(true);
+		view.getMpkOutTA().setEditable(true);
 		if (embeddedOutputMediaPlayer != null) {
 			// media player stop
 			embeddedOutputMediaPlayer.stop();
@@ -194,8 +198,7 @@ public class OutputPlayerController {
 			view.getCwOutTF().setText("odd:" + decryptionECM.getEcmCwOdd());
 			// set VLC Parameter
 			vlcArgs.add("--ts-csa-ck=" + decryptionECM.getEcmCwOdd());
-			vlcArgs.add("--ts-csa2-ck=0000000000000000");
-
+			
 			runIntervallOutputPlayer(filePath + "\\odd_stream.ts", vlcArgs.toArray(new String[vlcArgs.size()]));
 
 		}
@@ -204,9 +207,8 @@ public class OutputPlayerController {
 			// update GUI
 			view.getCwOutTF().setText("even:" + decryptionECM.getEcmCwEven());
 			// set VLC Parameter
-			vlcArgs.add("--ts-csa-ck=0000000000000000");
-			vlcArgs.add("--ts-csa2-ck=" + decryptionECM.getEcmCwEven());
-
+			vlcArgs.add("--ts-csa-ck=" + decryptionECM.getEcmCwEven());
+			
 			runIntervallOutputPlayer(filePath + "\\even_stream.ts", vlcArgs.toArray(new String[vlcArgs.size()]));
 
 		} // end if else
@@ -276,6 +278,11 @@ public class OutputPlayerController {
 
 		// stop Decryption Receive Message
 		model.setDecryptionState(false);
+
+		// lock Keys
+		view.getAk0OutTF().setEditable(false);
+		view.getAk1OutTF().setEditable(false);
+		view.getMpkOutTA().setEditable(false);
 
 		// generate media player
 		mediaOutputPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));

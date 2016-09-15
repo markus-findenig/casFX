@@ -197,7 +197,6 @@ public class InputPlayerController {
 					vlcArgs.add("--sout-ts-crypt-audio");
 					vlcArgs.add("--sout-ts-csa-use=1");
 					vlcArgs.add("--sout-ts-csa-ck=" + encryptionECM.getEcmCwOdd());
-					vlcArgs.add("--sout-ts-csa2-ck=0000000000000000");
 					vlcArgs.add("vlc://quit");
 
 					runStreamInputPlayer(fileOdd, vlcArgs.toArray(new String[vlcArgs.size()]));
@@ -209,9 +208,8 @@ public class InputPlayerController {
 					vlcArgs.add("--sout=#std{access=file,mux=ts,dst=" + streamFileEven + "}");
 					vlcArgs.add("--sout-ts-crypt-video");
 					vlcArgs.add("--sout-ts-crypt-audio");
-					vlcArgs.add("--sout-ts-csa-use=2");
-					vlcArgs.add("--sout-ts-csa-ck=0000000000000000");
-					vlcArgs.add("--sout-ts-csa2-ck=" + encryptionECM.getEcmCwEven());
+					vlcArgs.add("--sout-ts-csa-use=1");
+					vlcArgs.add("--sout-ts-csa-ck=" + encryptionECM.getEcmCwEven());
 					vlcArgs.add("vlc://quit");
 
 					runStreamInputPlayer(fileEven, vlcArgs.toArray(new String[vlcArgs.size()]));

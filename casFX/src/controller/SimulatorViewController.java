@@ -20,34 +20,41 @@ import view.SimulatorView;
  * Simulator View Controller. Controls the Simulator.
  */
 public class SimulatorViewController {
-	
+
 	/**
 	 * Simulator Model.
 	 */
 	private static SimulatorModel model;
-	
+
 	/**
 	 * Simulator View.
 	 */
 	private static SimulatorView view;
-	
+
 	/**
 	 * Player Instance List.
 	 */
 	private static List<PlayerInstance> players;
-	
+
 	/**
 	 * Input View Controller.
 	 * 
 	 * @param sModel
-	 *           Simulator Model
+	 *            Simulator Model
 	 */
 	public SimulatorViewController(SimulatorModel sModel) {
 		model = sModel;
 		view = new SimulatorView();
-		
+
+		// set constant Master Private Keys for Input and Output
+		model.setMasterPrivateKeyInput("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
+		model.setMasterPrivateKeyOutput("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
+		// Update GUI Master Private Keys
+		view.getMpkInTA().setText(model.getMasterPrivateKeyInput());
+		view.getMpkOutTA().setText(model.getMasterPrivateKeyOutput());
+
 		players = new ArrayList<PlayerInstance>();
-		
+
 		CasEventHandler casEventHandler = new CasEventHandler();
 
 		// Cas Event handler registrieren
@@ -59,17 +66,17 @@ public class SimulatorViewController {
 
 		// Encryption Toggle Button registrieren
 		view.getEncryption().setOnAction(casEventHandler);
-		
+
 		// Send EMM Button registrieren
 		view.getSendEMMButton().setOnAction(casEventHandler);
-		
+
 		// Decryption Toggle Button registrieren
 		view.getDecryption().setOnAction(casEventHandler);
-		
+
 		// Video Player
 		view.getVideoInputButton().setOnAction(casEventHandler);
 		view.getVideoOutputButton().setOnAction(casEventHandler);
-		
+
 		// Radio Buttons
 		view.getRadioButtonGroup().selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			@Override
@@ -79,7 +86,7 @@ public class SimulatorViewController {
 
 		// About Menu
 		view.getAbout().setOnAction(casEventHandler);
-		
+
 	}
 
 	/**
@@ -96,7 +103,7 @@ public class SimulatorViewController {
 
 		@Override
 		public void handle(ActionEvent event) {
-			
+
 			// -------------------------------------------------------
 			// Input Video Open
 			if (event.getSource() == view.getOpen()) {
@@ -109,7 +116,10 @@ public class SimulatorViewController {
 					view.getEncryption().setDisable(false);
 					// Button Send EMM aktivieren
 					view.getSendEMMButton().setDisable(false);
-					
+
+					// Server aktivieren
+					EncryptionController.initServer();
+
 					// set 128 bit Authorization Keys input and output
 					String key0 = EncryptionController.getRandomHex(32);
 					String key1 = EncryptionController.getRandomHex(32);
@@ -117,17 +127,18 @@ public class SimulatorViewController {
 					// setze Authorizations Keys im Model
 					model.setAuthorizationInputKey0(key0);
 					model.setAuthorizationInputKey1(key1);
-					//model.setAuthorizationOutputKey0(key0);
-					//model.setAuthorizationOutputKey1(key1);
+					// model.setAuthorizationOutputKey0(key0);
+					// model.setAuthorizationOutputKey1(key1);
 
 					// GUI Update Autorisation Keys
 					view.getAk0InTF().setText(model.getAuthorizationInputKey0());
 					view.getAk1InTF().setText(model.getAuthorizationInputKey1());
-					//view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
-					//view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
+					// view.getAk0OutTF().setText(model.getAuthorizationInputKey0());
+					// view.getAk1OutTF().setText(model.getAuthorizationInputKey1());
+
 				} // end if
 			}
-			
+
 			// -------------------------------------------------------
 			// Encryption State ON (true) or OFF (false)
 			if (event.getSource() == view.getEncryption()) {
@@ -157,7 +168,7 @@ public class SimulatorViewController {
 					DecryptionController.stopDecryption();
 				}
 			}
-			
+
 			// -------------------------------------------------------
 			// Input Player
 			if (event.getSource() == view.getVideoInputButton()) {
@@ -169,19 +180,19 @@ public class SimulatorViewController {
 			if (event.getSource() == view.getVideoOutputButton()) {
 				OutputPlayerController.getOutputPlayer();
 			}
-			
+
 			// -------------------------------------------------------
 			// EMM Send Button
 			if (event.getSource() == view.getSendEMMButton()) {
 				EncryptionController.generateEMM();
 			}
-			
+
 			// -------------------------------------------------------
 			// Config Popup
 			if (event.getSource() == view.getConfig()) {
 				ConfigViewController.show();
 			}
-			
+
 			// -------------------------------------------------------
 			// About
 			if (event.getSource() == view.getAbout()) {
@@ -199,8 +210,6 @@ public class SimulatorViewController {
 		} // end handle
 
 	} // end casEventHandler
-
-
 
 	/**
 	 * Gets the current Simulator View {@link view}.

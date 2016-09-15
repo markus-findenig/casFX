@@ -1,5 +1,7 @@
 package view;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -134,6 +136,18 @@ public class ConfigView {
 		grid.add(constantCwL, 1, 5);
 		constantCwTF = new TextField();
 		constantCwTF.setTooltip(new Tooltip("If Timer 0, Constant CW in hex with 16 char."));
+		constantCwTF.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				if (!newValue.matches("[0-9a-fA-F]{0,7}")) {
+					constantCwTF.setText(newValue.replaceAll("[^0-9a-fA-F]", ""));
+				}
+				if (constantCwTF.getText().length() >= 16) {
+					String s = constantCwTF.getText().substring(0, 16);
+					constantCwTF.setText(s);
+				}
+			}
+		});
 		grid.add(constantCwTF, 2, 5);
 
 		okB = new Button("OK");

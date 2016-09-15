@@ -1,6 +1,8 @@
 package view;
 
 import javafx.stage.WindowEvent;
+import model.SimulatorModel;
+import controller.SimulatorViewController;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -46,6 +48,11 @@ public class SimulatorView {
 	 * Height of the Simulator View.
 	 */
 	private double height = 650;
+
+	/**
+	 * Simulator Model
+	 */
+	private static SimulatorModel model;
 
 	/**
 	 * Menu File.
@@ -279,7 +286,6 @@ public class SimulatorView {
 		MenuBar menuBar = new MenuBar();
 		menuBar.getMenus().addAll(menuFile, menuOptions, menuHelp);
 		GridPane.setColumnSpan(menuBar, 20);
-		// menuBar.prefWidthProperty().bind(SimulatorModel.getPrimaryStage().widthProperty());
 		grid.add(menuBar, 0, 0);
 
 		menuFile.getItems().add(open);
@@ -288,6 +294,9 @@ public class SimulatorView {
 		menuOptions.getItems().add(config);
 
 		menuHelp.getItems().add(about);
+
+		// Model für die User Input Validierung
+		model = SimulatorViewController.getModel();
 
 		initGUI();
 
@@ -341,7 +350,7 @@ public class SimulatorView {
 	public MenuItem getConfig() {
 		return config;
 	}
-	
+
 	/**
 	 * 
 	 * @return the about menu
@@ -364,8 +373,8 @@ public class SimulatorView {
 		encryptionTB = new ToggleButton("OFF");
 		encryptionTB.setDisable(true);
 		encryptionTB.setPrefWidth(80);
-		grid.add(encryptionL, 1, 2);
-		grid.add(encryptionTB, 2, 2);
+		grid.add(encryptionL, 2, 2);
+		grid.add(encryptionTB, 3, 2);
 
 		// --------------------------------------------------------------------
 		// Video Player Input
@@ -374,8 +383,8 @@ public class SimulatorView {
 		videoInputB = new Button("View");
 		videoInputB.setDisable(true);
 		videoInputB.setPrefWidth(80);
-		grid.add(videoInputL, 1, 4);
-		grid.add(videoInputB, 2, 4);
+		grid.add(videoInputL, 2, 4);
+		grid.add(videoInputB, 3, 4);
 
 		// --------------------------------------------------------------------
 		// EMM Button
@@ -383,8 +392,8 @@ public class SimulatorView {
 		sendEMMB = new Button("Send");
 		sendEMMB.setDisable(true);
 		sendEMMB.setPrefWidth(80);
-		grid.add(sendEMML, 1, 6);
-		grid.add(sendEMMB, 2, 6);
+		grid.add(sendEMML, 2, 6);
+		grid.add(sendEMMB, 3, 6);
 
 		// --------------------------------------------------------------------
 		// Time interval for ControlWord (CW)
@@ -401,8 +410,8 @@ public class SimulatorView {
 				}
 			}
 		});
-		grid.add(cwTimeL, 1, 8);
-		grid.add(cwTimeTF, 2, 8);
+		grid.add(cwTimeL, 2, 8);
+		grid.add(cwTimeTF, 3, 8);
 
 		// --------------------------------------------------------------------
 		// ECM Input Keys
@@ -411,8 +420,8 @@ public class SimulatorView {
 		cwInTF.setStyle("-fx-background-color: transparent;");
 		cwInTF.setEditable(false);
 		cwInTF.setTooltip(new Tooltip("Control Word (64 bit)"));
-		grid.add(cwInL, 1, 10);
-		grid.add(cwInTF, 2, 10);
+		grid.add(cwInL, 2, 10);
+		grid.add(cwInTF, 3, 10);
 
 		groupRB = new ToggleGroup();
 		RadioButton ak0InRB = new RadioButton();
@@ -422,8 +431,8 @@ public class SimulatorView {
 		ak0InRB.setUserData("00");
 		ak1InRB.setUserData("01");
 		ak0InRB.setSelected(true);
-		grid.add(ak0InRB, 0, 12);
-		grid.add(ak1InRB, 0, 13);
+		grid.add(ak0InRB, 1, 12);
+		grid.add(ak1InRB, 1, 13);
 
 		Label ak0InL = new Label("AK 00:");
 		ak0InTF = new TextField();
@@ -439,11 +448,16 @@ public class SimulatorView {
 					String s = ak0InTF.getText().substring(0, 32);
 					ak0InTF.setText(s);
 				}
+				if (!newValue.matches(model.getAuthorizationInputKey0())) {
+					ak0InTF.setStyle("-fx-text-fill: red;");
+				} else {
+					ak0InTF.setStyle("-fx-text-fill: black;");
+				}
 			}
 		});
 		ak0InTF.setMinWidth(230);
-		grid.add(ak0InL, 1, 12);
-		grid.add(ak0InTF, 2, 12);
+		grid.add(ak0InL, 2, 12);
+		grid.add(ak0InTF, 3, 12);
 
 		Label ak1InL = new Label("AK 01:");
 		ak1InTF = new TextField();
@@ -459,14 +473,19 @@ public class SimulatorView {
 					String s = ak1InTF.getText().substring(0, 32);
 					ak1InTF.setText(s);
 				}
+				if (!newValue.matches(model.getAuthorizationInputKey1())) {
+					ak1InTF.setStyle("-fx-text-fill: red;");
+				} else {
+					ak1InTF.setStyle("-fx-text-fill: black;");
+				}
 			}
 		});
 		ak1InTF.setMinWidth(230);
-		grid.add(ak1InL, 1, 13);
-		grid.add(ak1InTF, 2, 13);
+		grid.add(ak1InL, 2, 13);
+		grid.add(ak1InTF, 3, 13);
 
 		Label mpkInL = new Label("MPK:");
-		mpkInTA = new TextArea("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
+		mpkInTA = new TextArea();
 		mpkInTA.setWrapText(true);
 		mpkInTA.setTooltip(new Tooltip("Master Private Key (256 bit)."));
 		mpkInTA.textProperty().addListener(new ChangeListener<String>() {
@@ -479,11 +498,16 @@ public class SimulatorView {
 					String s = mpkInTA.getText().substring(0, 64);
 					mpkInTA.setText(s);
 				}
+				if (!newValue.matches(model.getMasterPrivateKeyInput())) {
+					mpkInTA.setStyle("-fx-text-fill: red;");
+				} else {
+					mpkInTA.setStyle("-fx-text-fill: black;");
+				}
 			}
 		});
 		mpkInTA.setMaxSize(250, 45);
-		grid.add(mpkInL, 1, 14);
-		grid.add(mpkInTA, 2, 14);
+		grid.add(mpkInL, 2, 14);
+		grid.add(mpkInTA, 3, 14);
 
 		// --------------------------------------------------------------------
 		// VLC
@@ -493,8 +517,8 @@ public class SimulatorView {
 		parameterVLCstreamTA.setStyle("-fx-background-color: transparent;");
 		parameterVLCstreamTA.setTooltip(new Tooltip("Parameters for VLC Media Player."));
 		parameterVLCstreamTA.setMaxSize(250, 45);
-		grid.add(parameterVLCstreamL, 1, 15);
-		grid.add(parameterVLCstreamTA, 2, 15);
+		grid.add(parameterVLCstreamL, 2, 15);
+		grid.add(parameterVLCstreamTA, 3, 15);
 
 		// --------------------------------------------------------------------
 		// Current ECM
@@ -505,8 +529,8 @@ public class SimulatorView {
 		ecmTA.setStyle("-fx-background-color: green;");
 		ecmTA.setTooltip(new Tooltip("Current ECM."));
 		ecmTA.setMaxSize(240, 60);
-		grid.add(ecmL, 1, 17);
-		grid.add(ecmTA, 2, 17);
+		grid.add(ecmL, 2, 17);
+		grid.add(ecmTA, 3, 17);
 
 		// --------------------------------------------------------------------
 		// Current EMM
@@ -517,8 +541,8 @@ public class SimulatorView {
 		emmTA.setStyle("-fx-background-color: yellow;");
 		emmTA.setTooltip(new Tooltip("Current EMM."));
 		emmTA.setMaxSize(240, 60);
-		grid.add(emmL, 1, 19);
-		grid.add(emmTA, 2, 19);
+		grid.add(emmL, 2, 19);
+		grid.add(emmTA, 3, 19);
 
 		// --------------------------------------------------------------------
 		// Transport Stream Header
@@ -649,7 +673,7 @@ public class SimulatorView {
 		ecmEncryptedTA = new TextArea("");
 		ecmEncryptedTA.setWrapText(true);
 		ecmEncryptedTA.setEditable(false);
-		ecmEncryptedTA.setStyle("-fx-background-color: green;");
+		ecmEncryptedTA.setStyle("-fx-background-color: green; -fx-text-fill: red;");
 		ecmEncryptedTA.setTooltip(new Tooltip("Encrypted ECM."));
 		ecmEncryptedTA.setMaxSize(240, 60);
 		grid.add(ecmEncryptedL, 8, 17);
@@ -661,7 +685,7 @@ public class SimulatorView {
 		emmEncryptedTA = new TextArea("");
 		emmEncryptedTA.setWrapText(true);
 		emmEncryptedTA.setEditable(false);
-		emmEncryptedTA.setStyle("-fx-background-color: yellow;");
+		emmEncryptedTA.setStyle("-fx-background-color: yellow; -fx-text-fill: red;");
 		emmEncryptedTA.setTooltip(new Tooltip("Encrypted EMM."));
 		emmEncryptedTA.setMaxSize(240, 60);
 		grid.add(emmEncryptedL, 8, 19);
@@ -709,6 +733,11 @@ public class SimulatorView {
 					String s = ak0OutTF.getText().substring(0, 32);
 					ak0OutTF.setText(s);
 				}
+				if (!newValue.matches(model.getAuthorizationOutputKey0())) {
+					ak0OutTF.setStyle("-fx-text-fill: red;");
+				} else {
+					ak0OutTF.setStyle("-fx-text-fill: black;");
+				}
 			}
 		});
 		ak0OutTF.setMinWidth(230);
@@ -729,6 +758,11 @@ public class SimulatorView {
 					String s = ak1OutTF.getText().substring(0, 32);
 					ak1OutTF.setText(s);
 				}
+				if (!newValue.matches(model.getAuthorizationOutputKey1())) {
+					ak1OutTF.setStyle("-fx-text-fill: red;");
+				} else {
+					ak1OutTF.setStyle("-fx-text-fill: black;");
+				}
 			}
 		});
 		ak1OutTF.setMinWidth(230);
@@ -736,7 +770,7 @@ public class SimulatorView {
 		grid.add(ak1OutTF, 17, 13);
 
 		Label mpkOutL = new Label("MPK:");
-		mpkOutTA = new TextArea("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
+		mpkOutTA = new TextArea();
 		mpkOutTA.setWrapText(true);
 		mpkOutTA.setTooltip(new Tooltip("Master Private Key (256 bit)"));
 		mpkOutTA.textProperty().addListener(new ChangeListener<String>() {
@@ -748,6 +782,11 @@ public class SimulatorView {
 				if (mpkOutTA.getText().length() >= 64) {
 					String s = mpkOutTA.getText().substring(0, 64);
 					mpkOutTA.setText(s);
+				}
+				if (!newValue.matches(model.getMasterPrivateKeyOutput())) {
+					mpkOutTA.setStyle("-fx-text-fill: red;");
+				} else {
+					mpkOutTA.setStyle("-fx-text-fill: black;");
 				}
 			}
 		});
@@ -1071,5 +1110,5 @@ public class SimulatorView {
 	public TextArea getErrorOutputTA() {
 		return errorOutputTA;
 	}
-	
+
 }

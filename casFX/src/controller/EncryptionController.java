@@ -1,8 +1,9 @@
 package controller;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -21,7 +22,6 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Hex;
 
-import javafx.application.Platform;
 import model.ConfigModel;
 import model.EncryptionECM;
 import model.EncryptionEMM;
@@ -138,6 +138,50 @@ public class EncryptionController {
 	private static String emm;
 
 	/**
+	 * Multicast Server Socket
+	 */
+	private static MulticastSocket serverSocket = null;
+
+	/**
+	 * IP Address of Multicast Group
+	 */
+	private static InetAddress group = null;
+
+	/**
+	 * Multicast Server Port
+	 */
+	private static int port;
+
+	/**
+	 * Initialize the Server.
+	 */
+	public static void initServer() {
+		configModel = ConfigViewController.getConfigModel();
+		try {
+			// default server = rtp://239.0.0.1:5004
+			String server = configModel.getServer();
+			String[] rtpSplit = server.split("://");
+			// rtp = rtpSplit[0]
+			String ipPort = rtpSplit[1];
+			String[] ip = ipPort.split(":");
+			// group = 239.0.0.1;
+			group = InetAddress.getByName(ip[0].trim());
+			// port = default server port + 1 (5005);
+			port = Integer.parseInt(ip[1].trim()) + 1;
+			serverSocket = new MulticastSocket();
+			serverSocket.joinGroup(group);
+		} catch (Exception e) {
+			try {
+				serverSocket.leaveGroup(group);
+				serverSocket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * Run the Encryption.
 	 */
 	public static void runEncryption() {
@@ -233,8 +277,6 @@ public class EncryptionController {
 		view.getScramblingControl().setText("00");
 		// Entsperre die CW Time
 		view.getCwTimeTF().setDisable(false);
-		// VLC reset
-		view.getParameterVLCstream().setText("");
 		InputPlayerController.stopInputPlayer();
 		sendECMExecutor.shutdownNow();
 
@@ -285,11 +327,19 @@ public class EncryptionController {
 
 		// ECM Scrambling Control Pointer for CW odd
 		if (isStateECMType()) {
-			encryptionECM.setEcmCwOdd(cw);
-			// encryptionECM.setEcmCwEven("0000000000000000");
-		} else {
-			// encryptionECM.setEcmCwOdd("0000000000000000");
-			encryptionECM.setEcmCwEven(cw);
+			encryptionECM.setEcmCwOdd(model.getControlWordInput());
+			view.getCwInTF().setText("odd:" + model.getControlWordInput());
+			// update VLC GUI Parameter
+			view.getParameterVLCstream().setText(
+					"vlc " + InputPlayerController.getStreamFileOdd() + "\n --ts-csa-ck=" + encryptionECM.getEcmCwOdd());
+		}
+		// ECM Scrambling Control Pointer for CW even
+		else {
+			encryptionECM.setEcmCwEven(model.getControlWordInput());
+			view.getCwInTF().setText("even:" + model.getControlWordInput());
+			// update VLC GUI Parameter
+			view.getParameterVLCstream().setText("vlc " + InputPlayerController.getStreamFileEven() + "\n --ts-csa-ck="
+					+ encryptionECM.getEcmCwEven());
 		}
 
 		// ECM Program type
@@ -325,12 +375,7 @@ public class EncryptionController {
 		}
 
 		// GUI updaten
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				guiECMUpdate();
-			}
-		});
+		guiECMUpdate();
 
 	}
 
@@ -391,17 +436,13 @@ public class EncryptionController {
 
 		// TS Scrambling Control auf odd
 		model.setScramblingControl("11");
+		view.getCwInTF().setText("odd:" + model.getControlWordInput());
 
 		// View Constant VLC input Stream Parameter
 		view.getParameterVLCstream().setText("vlc " + configModel.getServer().toString() + "\n --ts-csa-ck=" + cw);
 
-		// GUI updaten
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				guiECMUpdate();
-			}
-		});
+		// GUI update
+		guiECMUpdate();
 
 	}
 
@@ -409,21 +450,6 @@ public class EncryptionController {
 	 * Updates the parameters of the simulator GUI elements.
 	 */
 	private static void guiECMUpdate() {
-		// Input Player odd parameter
-		if (isStateECMType()) {
-			view.getCwInTF().setText("odd:" + model.getControlWordInput());
-			// update VLC GUI Parameter
-			view.getParameterVLCstream().setText("vlc " + InputPlayerController.getStreamFileOdd() + " --ts-csa-ck="
-					+ encryptionECM.getEcmCwOdd() + " --ts-csa2-ck=0000000000000000");
-		}
-		// Input Player even parameter
-		else {
-			view.getCwInTF().setText("even:" + model.getControlWordInput());
-			// update VLC GUI Parameter
-			view.getParameterVLCstream().setText("vlc " + InputPlayerController.getStreamFileEven()
-					+ " --ts-csa-ck=0000000000000000" + " --ts-csa2-ck=" + encryptionECM.getEcmCwEven());
-		}
-
 		// TS
 		view.getScramblingControl().setText(model.getScramblingControl());
 
@@ -551,26 +577,12 @@ public class EncryptionController {
 		// update GUI
 		view.getEcmTA().setText(ecm);
 		view.getEcmEncryptedTA().setText(ecmEncrypted);
-		// send Message
+		// send ECM
 		try {
-			// default server = rtp://239.0.0.1:5004
-			String server = configModel.getServer();
-			String[] rtpSplit = server.split("://");
-			// rtp = rtpSplit[0]
-			String ipPort = rtpSplit[1];
-			String[] ip = ipPort.split(":");
-			// group = 239.0.0.1;
-			InetAddress group = InetAddress.getByName(ip[0].trim());
-			// port = default server port + 1 (5005);
-			int port = Integer.parseInt(ip[1].trim()) + 1;
-
 			byte[] outbuf = ecmEncrypted.getBytes();
-
 			DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
-			DatagramSocket socket = new DatagramSocket();
-			socket.send(packet);
-			socket.close();
-		} catch (Exception e) {
+			serverSocket.send(packet);
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -693,33 +705,17 @@ public class EncryptionController {
 		// get emm and emmEncrypted
 		emm = emmHeader + emmPayload + encryptionEMM.getEmmMAC() + encryptionEMM.getEmmCRC();
 		emmEncrypted = emmHeader + emmPayloadEncrypted + encryptionEMM.getEmmCRC();
-
 		// update GUI
 		view.getEmmTA().setText(emm);
 		view.getEmmEncryptedTA().setText(emmEncrypted);
-
+		// send EMM
 		try {
-			// default server = rtp://239.0.0.1:5004
-			String server = configModel.getServer();
-			String[] rtpSplit = server.split("://");
-			// rtp = rtpSplit[0]
-			String ipPort = rtpSplit[1];
-			String[] ip = ipPort.split(":");
-			// group = 239.0.0.1;
-			InetAddress group = InetAddress.getByName(ip[0].trim());
-			// port = default server port + 1 (5005);
-			int port = Integer.parseInt(ip[1].trim()) + 1;
-
 			byte[] outbuf = emmEncrypted.getBytes();
-
 			DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
-			DatagramSocket socket = new DatagramSocket();
-			socket.send(packet);
-			socket.close();
-		} catch (Exception e) {
+			serverSocket.send(packet);
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 }

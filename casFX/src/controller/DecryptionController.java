@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -242,6 +243,11 @@ public class DecryptionController {
 	private static Thread thReceiveMessage;
 
 	/**
+	 * Error Message.
+	 */
+	private static String errorMessage;
+
+	/**
 	 * Run the decryption.
 	 */
 	public static void runDecryption() {
@@ -255,6 +261,8 @@ public class DecryptionController {
 		decryptionECM = new DecryptionECM();
 
 		decryptionEMM = new DecryptionEMM();
+
+		errorMessage = new String();
 
 		OutputPlayerController.initOutputPlayer();
 
@@ -311,19 +319,21 @@ public class DecryptionController {
 		String ipPort = rtpSplit[1];
 		String[] ip = ipPort.split(":");
 
-		// port = 5005
-		MulticastSocket socket;
+		MulticastSocket clientSocket = null;
+		InetAddress group = null;
 		try {
-			socket = new MulticastSocket(Integer.parseInt(ip[1].trim()) + 1);
+			// port = 5005
+			int port = Integer.parseInt(ip[1].trim()) + 1;
+			clientSocket = new MulticastSocket(port);
 			// group = 239.0.0.1
-			InetAddress group = InetAddress.getByName(ip[0].trim());
-			socket.joinGroup(group);
+			group = InetAddress.getByName(ip[0].trim());
+			clientSocket.joinGroup(group);
 			byte[] buffer = new byte[2048];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
 			while (model.isDecryptionState()) {
 				// Wait to receive a datagram
-				socket.receive(packet);
+				clientSocket.receive(packet);
 				// Convert the contents to a string, and display them
 				String msg = new String(buffer, 0, packet.getLength());
 
@@ -340,12 +350,16 @@ public class DecryptionController {
 				// Reset the length of the packet before reusing it.
 				packet.setLength(buffer.length);
 			}
-			socket.leaveGroup(group);
-			socket.close();
 
 		} catch (Exception e) {
 			view.getErrorOutputTA().setText("Receive Message, " + e.getMessage());
-			stopDecryption();
+			try {
+				clientSocket.leaveGroup(group);
+				clientSocket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
 		}
 	}
 
@@ -358,6 +372,7 @@ public class DecryptionController {
 	private static void receivedECM(String msg) {
 		// reset Error Messages
 		view.getErrorOutputTA().setText("");
+		errorMessage = "";
 
 		// spit msg into substrings
 		msgEcmHeader = msg.substring(0, 16);
@@ -374,19 +389,19 @@ public class DecryptionController {
 		msgEcmCRC = msg.substring(86, 94);
 
 		// set new Authorization Key 0 and 1 from the GUI
-		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
-		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
+//		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
+//		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
 
-		// get the current Authorization Key
+		// get the current Authorization Key from the GUI
 		if (msgEcmWorkKeyId.equals("00")) {
-			ecmWorkKey = model.getAuthorizationOutputKey0();
+			ecmWorkKey = view.getAk0OutTF().getText();
 		} else {
-			ecmWorkKey = model.getAuthorizationOutputKey1();
+			ecmWorkKey = view.getAk1OutTF().getText();
 		}
 
 		// GUI update current Authorization Key 0 and 1
-		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
-		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
+//		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
+//		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
 
 		// set ECM Header
 		ecmHeader = msgEcmHeader + msgEcmProtocol + msgEcmBroadcastId + msgEcmWorkKeyId;
@@ -400,9 +415,7 @@ public class DecryptionController {
 
 		// check CRC
 		if (!validateCRC(message, msgEcmCRC)) {
-			System.err.println("ECM CRC Mismatch!");
-			view.getErrorOutputTA().setText("ECM CRC Mismatch!");
-			return;
+			errorMessage = errorMessage.concat("ECM CRC Mismatch! \n");
 		}
 
 		// Decrypted ECM and separate Payload and MAC
@@ -412,38 +425,37 @@ public class DecryptionController {
 
 		// check MAC
 		if (!validateMAC(ecmHeader + ecmPayloadDecrypted, validMAC, ecmWorkKey)) {
-			System.err.println("ECM MAC Mismatch!");
-			view.getErrorOutputTA().setText("ECM MAC Mismatch!");
-			return;
+			errorMessage = errorMessage.concat("ECM MAC Mismatch! \n");
 		}
 
 		ecmDecrypted = ecmHeader + decrypted + msgEcmCRC;
 
 		// check Date/Time save only new ecm
-		String ecmDateTime = ecmPayloadDecrypted.substring(34, 44);
-		if (Integer.parseInt(ecmDateTime.trim()) > Integer.parseInt(decryptionECM.getEcmDateTime().trim())) {
+		// String ecmDateTime = ecmPayloadDecrypted.substring(34, 44);
+		// if (Integer.parseInt(ecmDateTime.trim()) >
+		// Integer.parseInt(decryptionECM.getEcmDateTime().trim())) {
 
-			System.out.println("SAVE ECM : ");
-			// save valid ecm
-			decryptionECM.setEcmHeader(msgEcmHeader);
-			decryptionECM.setEcmProtocol(msgEcmProtocol);
-			decryptionECM.setEcmBroadcastId(msgEcmBroadcastId);
-			decryptionECM.setEcmWorkKeyId(msgEcmWorkKeyId);
-			decryptionECM.setEcmCwOdd(ecmPayloadDecrypted.substring(0, 16));
-			decryptionECM.setEcmCwEven(ecmPayloadDecrypted.substring(16, 32));
-			decryptionECM.setEcmProgramType(ecmPayloadDecrypted.substring(32, 34));
-			decryptionECM.setEcmDateTime(ecmPayloadDecrypted.substring(34, 44));
-			decryptionECM.setEcmRecordControl(ecmPayloadDecrypted.substring(44, 46));
-			decryptionECM.setEcmVariablePart(ecmPayloadDecrypted.substring(46, 56));
-			decryptionECM.setEcmMAC(validMAC);
-			decryptionECM.setEcmCRC(msgEcmCRC);
+		// Speichere jede ECM, egal ob sie Korrekt ist oder Fehlerhaft
+		decryptionECM.setEcmHeader(msgEcmHeader);
+		decryptionECM.setEcmProtocol(msgEcmProtocol);
+		decryptionECM.setEcmBroadcastId(msgEcmBroadcastId);
+		decryptionECM.setEcmWorkKeyId(msgEcmWorkKeyId);
+		decryptionECM.setEcmCwOdd(ecmPayloadDecrypted.substring(0, 16));
+		decryptionECM.setEcmCwEven(ecmPayloadDecrypted.substring(16, 32));
+		decryptionECM.setEcmProgramType(ecmPayloadDecrypted.substring(32, 34));
+		decryptionECM.setEcmDateTime(ecmPayloadDecrypted.substring(34, 44));
+		decryptionECM.setEcmRecordControl(ecmPayloadDecrypted.substring(44, 46));
+		decryptionECM.setEcmVariablePart(ecmPayloadDecrypted.substring(46, 56));
+		decryptionECM.setEcmMAC(validMAC);
+		decryptionECM.setEcmCRC(msgEcmCRC);
 
-			// GUI updates, Video Player View Button freigeben
-			view.getVideoOutputButton().setDisable(false);
-			// view decrypted ECM
-			view.getEcmDecryptedTA().setText(ecmDecrypted);
+		// GUI updates, Video Player View Button freigeben
+		view.getVideoOutputButton().setDisable(false);
+		// view decrypted ECM
+		view.getEcmDecryptedTA().setText(ecmDecrypted);
+		view.getErrorOutputTA().setText(errorMessage);
 
-		} // end if
+		// } // end if
 
 	}
 
@@ -489,8 +501,7 @@ public class DecryptionController {
 			cipher.init(Cipher.DECRYPT_MODE, secretKey);
 			result = cipher.doFinal(DatatypeConverter.parseHexBinary(message));
 		} catch (Exception e) {
-			view.getErrorOutputTA().setText("Decrypted ECM " + e.getMessage());
-			stopDecryption();
+			errorMessage = errorMessage.concat("Decrypted ECM " + e.getMessage() + "\n");
 		}
 		return DatatypeConverter.printHexBinary(result);
 	}
@@ -545,11 +556,9 @@ public class DecryptionController {
 			// cut first 4 bytes in hex
 			macString = String.valueOf(Hex.encodeHex(digest)).substring(0, 8).toUpperCase();
 		} catch (NoSuchAlgorithmException e) {
-			view.getErrorOutputTA().setText("No Such Algorithm:" + e.getMessage());
-			stopDecryption();
+			errorMessage = errorMessage.concat("No Such Algorithm:" + e.getMessage() + "\n");
 		} catch (InvalidKeyException e) {
-			view.getErrorOutputTA().setText("Invalid Key:" + e.getMessage());
-			stopDecryption();
+			errorMessage = errorMessage.concat("Invalid Key:" + e.getMessage() + "\n");
 		}
 		return macString;
 	}
@@ -572,6 +581,7 @@ public class DecryptionController {
 	private static void receivedEMM(String msg) {
 		// reset Error Messages
 		view.getErrorOutputTA().setText("");
+		errorMessage = "";
 
 		// spit msg into substrings
 		msgEmmHeader = msg.substring(0, 16);
@@ -587,8 +597,7 @@ public class DecryptionController {
 
 		// check if EMM is update Authorization Keys, Protocol Type CC
 		if (!msgEcmProtocol.equals("CC")) {
-			view.getErrorOutputTA().setText("EMM not Valid!");
-			return;
+			errorMessage = errorMessage.concat("EMM not Valid! \n");
 		}
 
 		// set EMM Header
@@ -603,8 +612,7 @@ public class DecryptionController {
 
 		// check CRC
 		if (!validateCRC(message, msgEmmCRC)) {
-			view.getErrorOutputTA().setText("EMM CRC Mismatch!");
-			return;
+			errorMessage = errorMessage.concat("EMM CRC Mismatch! \n");
 		}
 
 		// hohle EMM Key
@@ -617,8 +625,8 @@ public class DecryptionController {
 
 		// check MAC
 		if (!validateMAC(emmHeader + emmPayloadDecrypted, validMAC, emmKey)) {
-			view.getErrorOutputTA().setText("EMM MAC Mismatch!");
-			return;
+			System.out.println(emmKey);
+			errorMessage = errorMessage.concat("EMM MAC Mismatch! \n");
 		}
 
 		emmDecrypted = emmHeader + decrypted + msgEmmCRC;
@@ -642,6 +650,7 @@ public class DecryptionController {
 		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
 		view.getEmmDecryptedTA().setText(emmDecrypted);
 		view.getCwOutTF().setText("-- WAIT FOR ECM --");
+		view.getErrorOutputTA().setText(errorMessage);
 
 	}
 
