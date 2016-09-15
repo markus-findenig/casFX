@@ -259,9 +259,7 @@ public class DecryptionController {
 		model.setDecryptionState(true);
 
 		decryptionECM = new DecryptionECM();
-
 		decryptionEMM = new DecryptionEMM();
-
 		errorMessage = new String();
 
 		OutputPlayerController.initOutputPlayer();
@@ -352,14 +350,13 @@ public class DecryptionController {
 			}
 
 		} catch (Exception e) {
-			view.getErrorOutputTA().setText("Receive Message, " + e.getMessage());
 			try {
 				clientSocket.leaveGroup(group);
 				clientSocket.close();
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				view.getErrorOutputTA().setText("Receive Message, " + e1.getMessage());
 			}
-			e.printStackTrace();
+			view.getErrorOutputTA().setText("Receive Message, " + e.getMessage());
 		}
 	}
 
@@ -388,20 +385,12 @@ public class DecryptionController {
 		msgEcmMAC = msg.substring(78, 86);
 		msgEcmCRC = msg.substring(86, 94);
 
-		// set new Authorization Key 0 and 1 from the GUI
-//		model.setAuthorizationOutputKey0(view.getAk0OutTF().getText());
-//		model.setAuthorizationOutputKey1(view.getAk1OutTF().getText());
-
 		// get the current Authorization Key from the GUI
 		if (msgEcmWorkKeyId.equals("00")) {
 			ecmWorkKey = view.getAk0OutTF().getText();
 		} else {
 			ecmWorkKey = view.getAk1OutTF().getText();
 		}
-
-		// GUI update current Authorization Key 0 and 1
-//		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
-//		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
 
 		// set ECM Header
 		ecmHeader = msgEcmHeader + msgEcmProtocol + msgEcmBroadcastId + msgEcmWorkKeyId;
@@ -435,7 +424,7 @@ public class DecryptionController {
 		// if (Integer.parseInt(ecmDateTime.trim()) >
 		// Integer.parseInt(decryptionECM.getEcmDateTime().trim())) {
 
-		// Speichere jede ECM, egal ob sie Korrekt ist oder Fehlerhaft
+		// Save each ECM, whether it is correct or incorrect
 		decryptionECM.setEcmHeader(msgEcmHeader);
 		decryptionECM.setEcmProtocol(msgEcmProtocol);
 		decryptionECM.setEcmBroadcastId(msgEcmBroadcastId);
@@ -625,7 +614,6 @@ public class DecryptionController {
 
 		// check MAC
 		if (!validateMAC(emmHeader + emmPayloadDecrypted, validMAC, emmKey)) {
-			System.out.println(emmKey);
 			errorMessage = errorMessage.concat("EMM MAC Mismatch! \n");
 		}
 
