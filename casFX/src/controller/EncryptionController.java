@@ -173,11 +173,11 @@ public class EncryptionController {
 		} catch (Exception e) {
 			try {
 				serverSocket.leaveGroup(group);
-				serverSocket.close();
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				System.err.println("Error Group, " + e1.getMessage());
 			}
-			e.printStackTrace();
+			serverSocket.close();
+			System.err.println("Error Socket, " + e.getMessage());
 		}
 	}
 

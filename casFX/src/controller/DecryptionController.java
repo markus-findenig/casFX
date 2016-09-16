@@ -327,7 +327,7 @@ public class DecryptionController {
 			group = InetAddress.getByName(ip[0].trim());
 			clientSocket.joinGroup(group);
 			byte[] buffer = new byte[2048];
-			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+			DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
 
 			while (model.isDecryptionState()) {
 				// Wait to receive a datagram
@@ -352,11 +352,11 @@ public class DecryptionController {
 		} catch (Exception e) {
 			try {
 				clientSocket.leaveGroup(group);
-				clientSocket.close();
 			} catch (IOException e1) {
-				view.getErrorOutputTA().setText("Receive Message, " + e1.getMessage());
+				view.getErrorOutputTA().setText("Group, " + e1.getMessage());
 			}
-			view.getErrorOutputTA().setText("Receive Message, " + e.getMessage());
+			clientSocket.close();
+			view.getErrorOutputTA().setText("Socket, " + e.getMessage());
 		}
 	}
 
