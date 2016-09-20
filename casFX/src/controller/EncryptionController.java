@@ -22,6 +22,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Hex;
 
+import javafx.application.Platform;
 import model.ConfigModel;
 import model.EncryptionECM;
 import model.EncryptionEMM;
@@ -168,16 +169,16 @@ public class EncryptionController {
 			group = InetAddress.getByName(ip[0].trim());
 			// port = default server port + 1 (5005);
 			port = Integer.parseInt(ip[1].trim()) + 1;
-			serverSocket = new MulticastSocket();
+			serverSocket = new MulticastSocket(port);
 			serverSocket.joinGroup(group);
 		} catch (Exception e) {
 			try {
 				serverSocket.leaveGroup(group);
 			} catch (IOException e1) {
-				System.err.println("Error Group, " + e1.getMessage());
+				System.err.println("Error Group: " + e1.getMessage());
 			}
 			serverSocket.close();
-			System.err.println("Error Socket, " + e.getMessage());
+			System.err.println("Error Socket: " + e.getMessage());
 		}
 	}
 
@@ -229,6 +230,9 @@ public class EncryptionController {
 
 		// Constant CW
 		if (model.getCwTime() == 0) {
+			// sperre bei constant cw die AK
+			view.getAk0InTF().setEditable(false);
+			view.getAk1InTF().setEditable(false);
 			constantECM();
 			InputPlayerController.streamInputPlayerRTP(model.getInputFile().toString());
 		}
@@ -254,6 +258,8 @@ public class EncryptionController {
 		Runnable sendECMRunnable = new Runnable() {
 			@Override
 			public void run() {
+				// alle weiteren GUI Updates müssen ab hier mit
+				// Platform.runLater aktualisiert werden
 				sendECM();
 			}
 		};
@@ -277,6 +283,9 @@ public class EncryptionController {
 		view.getScramblingControl().setText("00");
 		// Entsperre die CW Time
 		view.getCwTimeTF().setDisable(false);
+		// Entsperrt die AK
+		view.getAk0InTF().setEditable(true);
+		view.getAk1InTF().setEditable(true);
 		InputPlayerController.stopInputPlayer();
 		sendECMExecutor.shutdownNow();
 
@@ -330,8 +339,8 @@ public class EncryptionController {
 			encryptionECM.setEcmCwOdd(model.getControlWordInput());
 			view.getCwInTF().setText("odd:" + model.getControlWordInput());
 			// update VLC GUI Parameter
-			view.getParameterVLCstream().setText(
-					"vlc " + InputPlayerController.getStreamFileOdd() + "\n --ts-csa-ck=" + encryptionECM.getEcmCwOdd());
+			view.getParameterVLCstream().setText("vlc " + InputPlayerController.getStreamFileOdd() + "\n --ts-csa-ck="
+					+ encryptionECM.getEcmCwOdd());
 		}
 		// ECM Scrambling Control Pointer for CW even
 		else {
@@ -349,7 +358,6 @@ public class EncryptionController {
 		mp.parseMedia();
 		// ECM Date/Time setzen
 		int durationInSeconds = (int) (mp.getMediaMeta().getLength() / 1000);
-		System.out.println("durationInSeconds : " + durationInSeconds);
 		// aktuelle Zeit plus file duration Länge
 		dateTime = LocalDateTime.now().plusSeconds(durationInSeconds);
 		encryptionECM.setEcmDateTime(dateTime.format(formatter));
@@ -375,7 +383,12 @@ public class EncryptionController {
 		}
 
 		// GUI updaten
-		guiECMUpdate();
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				guiECMUpdate();
+			}
+		});
 
 	}
 
@@ -436,13 +449,20 @@ public class EncryptionController {
 
 		// TS Scrambling Control auf odd
 		model.setScramblingControl("11");
-		view.getCwInTF().setText("odd:" + model.getControlWordInput());
 
-		// View Constant VLC input Stream Parameter
-		view.getParameterVLCstream().setText("vlc " + configModel.getServer().toString() + "\n --ts-csa-ck=" + cw);
+		// GUI updaten
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				view.getCwInTF().setText("odd:" + model.getControlWordInput());
 
-		// GUI update
-		guiECMUpdate();
+				// View Constant VLC input Stream Parameter
+				view.getParameterVLCstream()
+						.setText("vlc " + configModel.getServer().toString() + "\n --ts-csa-ck=" + model.getControlWordInput());
+
+				guiECMUpdate();
+			}
+		});
 
 	}
 
@@ -500,6 +520,9 @@ public class EncryptionController {
 		ecmPayload = encryptionECM.getEcmCwOdd() + encryptionECM.getEcmCwEven() + encryptionECM.getEcmProgramType()
 				+ encryptionECM.getEcmDateTime() + encryptionECM.getEcmRecordControl()
 				+ encryptionECM.getEcmVariablePart();
+		// update Authorization Keys
+		model.setAuthorizationInputKey0(view.getAk0InTF().getText());
+		model.setAuthorizationInputKey1(view.getAk1InTF().getText());
 		// get Authorization Key
 		if (encryptionECM.getEcmWorkKeyId().equals("00")) {
 			ecmWorkKey = model.getAuthorizationInputKey0();
@@ -521,7 +544,6 @@ public class EncryptionController {
 	private static String getMAC(String message, String key) {
 		// generate a mac key
 		SecretKeySpec macKey = new SecretKeySpec(key.getBytes(), "HmacSHA1");
-
 		String macString = null;
 		// ALG_DES_MAC4_ISO9797_M1 for SmartCards
 		try {
@@ -536,9 +558,9 @@ public class EncryptionController {
 			// cut first 4 bytes in hex
 			macString = String.valueOf(Hex.encodeHex(digest)).substring(0, 8).toUpperCase();
 		} catch (NoSuchAlgorithmException e) {
-			System.out.println("No Such Algorithm:" + e.getMessage());
+			System.err.println("No Such Algorithm: " + e.getMessage());
 		} catch (InvalidKeyException e) {
-			System.out.println("Invalid Key:" + e.getMessage());
+			System.err.println("Invalid Key: " + e.getMessage());
 		}
 		return macString;
 	}
@@ -564,7 +586,7 @@ public class EncryptionController {
 		java.util.zip.CRC32 x = new java.util.zip.CRC32();
 		byte[] bytes = getCRC.getBytes(Charset.forName("UTF-8"));
 		x.update(bytes);
-		return String.format("%02X", x.getValue());
+		return String.format("%08X", x.getValue());
 	}
 
 	/**
@@ -574,16 +596,21 @@ public class EncryptionController {
 		// get ecm and ecmEncrypted
 		ecm = ecmHeader + ecmPayload + encryptionECM.getEcmMAC() + encryptionECM.getEcmCRC();
 		ecmEncrypted = ecmHeader + ecmPayloadEncrypted + encryptionECM.getEcmCRC();
-		// update GUI
-		view.getEcmTA().setText(ecm);
-		view.getEcmEncryptedTA().setText(ecmEncrypted);
+		// GUI updaten
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				view.getEcmTA().setText(ecm);
+				view.getEcmEncryptedTA().setText(ecmEncrypted);
+			}
+		});
 		// send ECM
 		try {
 			byte[] outbuf = ecmEncrypted.getBytes();
 			DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
 			serverSocket.send(packet);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("sendECM: " + e.getMessage());
 		}
 	}
 
@@ -605,7 +632,7 @@ public class EncryptionController {
 			result = cipher.doFinal(DatatypeConverter.parseHexBinary(message));
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println("encryptedMessage: " + e.getMessage());
 		}
 		return DatatypeConverter.printHexBinary(result);
 	}
@@ -710,11 +737,11 @@ public class EncryptionController {
 		view.getEmmEncryptedTA().setText(emmEncrypted);
 		// send EMM
 		try {
-			byte[] outbuf = emmEncrypted.getBytes();
-			DatagramPacket packet = new DatagramPacket(outbuf, outbuf.length, group, port);
+			byte[] buffer = emmEncrypted.getBytes();
+			DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
 			serverSocket.send(packet);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("sendEMM: " + e.getMessage());
 		}
 	}
 

@@ -111,13 +111,16 @@ public class OutputPlayerController {
 					if (decryptionECM.getEcmProtocol().equals("BB")) {
 						initConstantOutputPlayer();
 					}
-					// Intervall CW Protocol Type = AA
-					else {
+					// Intervall CW Protocol Type = AA and local Intervall
+					// Encryption is enabled
+					else if (decryptionECM.getEcmProtocol().equals("AA") && model.isEncryptionState()) {
 						initIntervallOutputPlayer();
-					} // end if else
+					} else {
+						view.getCwOutTF().setText("Run local Intervall Encryption Mode.");
+					}
 
 				} catch (Exception e) {
-					e.printStackTrace();
+					System.err.println("getOutputPlayer: " + e.getMessage());
 				}
 			}
 		};
@@ -198,7 +201,7 @@ public class OutputPlayerController {
 			view.getCwOutTF().setText("odd:" + decryptionECM.getEcmCwOdd());
 			// set VLC Parameter
 			vlcArgs.add("--ts-csa-ck=" + decryptionECM.getEcmCwOdd());
-			
+
 			runIntervallOutputPlayer(filePath + "\\odd_stream.ts", vlcArgs.toArray(new String[vlcArgs.size()]));
 
 		}
@@ -208,7 +211,7 @@ public class OutputPlayerController {
 			view.getCwOutTF().setText("even:" + decryptionECM.getEcmCwEven());
 			// set VLC Parameter
 			vlcArgs.add("--ts-csa-ck=" + decryptionECM.getEcmCwEven());
-			
+
 			runIntervallOutputPlayer(filePath + "\\even_stream.ts", vlcArgs.toArray(new String[vlcArgs.size()]));
 
 		} // end if else
@@ -228,14 +231,9 @@ public class OutputPlayerController {
 		mediaOutputPlayerFactory = new MediaPlayerFactory(standardVlcOptions);
 		embeddedOutputMediaPlayer = mediaOutputPlayerFactory.newEmbeddedMediaPlayer();
 		embeddedOutputMediaPlayer.addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
-			@Override
-			public void playing(MediaPlayer mediaPlayer) {
-				System.out.println("Intervall playing: " + stream);
-			}
 
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
-				System.out.println("Intervall finished: " + stream);
 				// lösche alte Parameter
 				mediaPlayer.release();
 				embeddedOutputMediaPlayer.release();
@@ -244,6 +242,7 @@ public class OutputPlayerController {
 				streamOutputPlayer();
 			}
 		});
+
 		// Bereite Datei für den Player vor
 		embeddedOutputMediaPlayer.prepareMedia(stream);
 

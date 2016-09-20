@@ -5,11 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Toggle;
 import javafx.stage.FileChooser;
 import model.SimulatorModel;
 import uk.co.caprica.vlcj.test.multi.PlayerInstance;
@@ -46,6 +43,11 @@ public class SimulatorViewController {
 		model = sModel;
 		view = new SimulatorView();
 
+		// set dummy Authorizations Keys
+		model.setAuthorizationInputKey0("00112233445566778899AABBCCDDEEFF");
+		model.setAuthorizationInputKey1("FFEEDDCCBBAA99887766554433221100");
+		model.setAuthorizationOutputKey0("00112233445566778899AABBCCDDEEFF");
+		model.setAuthorizationOutputKey1("FFEEDDCCBBAA99887766554433221100");
 		// set constant Master Private Keys for Input and Output
 		model.setMasterPrivateKeyInput("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
 		model.setMasterPrivateKeyOutput("00112233445566778899AABBCCDDEEFFFFEEDDCCBBAA99887766554433221100");
@@ -76,13 +78,6 @@ public class SimulatorViewController {
 		// Video Player
 		view.getVideoInputButton().setOnAction(casEventHandler);
 		view.getVideoOutputButton().setOnAction(casEventHandler);
-
-		// Radio Buttons
-		view.getRadioButtonGroup().selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-			@Override
-			public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
-			}
-		});
 
 		// About Menu
 		view.getAbout().setOnAction(casEventHandler);
@@ -156,16 +151,16 @@ public class SimulatorViewController {
 			// -------------------------------------------------------
 			// Decryption State ON (true) or OFF (false)
 			if (event.getSource() == view.getDecryption()) {
-				if (view.getDecryption().isSelected()) {
-					// run Decryption
-					System.out.println("Decryption run");
-					view.getDecryption().setSelected(true);
-					DecryptionController.runDecryption();
-				} else {
-					// stop Decryption
-					System.out.println("Decryption stop");
-					view.getDecryption().setSelected(false);
-					DecryptionController.stopDecryption();
+				if (ConfigViewController.checkPath()) {
+					if (view.getDecryption().isSelected()) {
+						// run Decryption
+						view.getDecryption().setSelected(true);
+						DecryptionController.runDecryption();
+					} else {
+						// stop Decryption
+						view.getDecryption().setSelected(false);
+						DecryptionController.stopDecryption();
+					}
 				}
 			}
 

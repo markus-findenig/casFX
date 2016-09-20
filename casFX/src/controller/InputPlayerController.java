@@ -2,7 +2,6 @@ package controller;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.concurrent.Task;
 import model.ConfigModel;
 import model.EncryptionECM;
@@ -169,7 +168,6 @@ public class InputPlayerController {
 			embeddedInputMediaPlayer.release();
 			mediaInputPlayerFactory.release();
 		}
-
 	}
 
 	/**
@@ -185,7 +183,6 @@ public class InputPlayerController {
 		Task<Void> taskStreamInputPlayer = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
-
 				// löschte die alten VLC Argumente
 				vlcArgs.clear();
 

@@ -72,9 +72,8 @@ public class FFmpegController {
 		fileOdd = model.getInputFile().getParent() + "\\odd.mp4";
 		fileEven = model.getInputFile().getParent() + "\\even.mp4";
 
-		// init Timer TODO
-		// setStartTime(5);
-		setStartTime(300);
+		// init Timer
+		setStartTime(5);
 
 		// get max Time
 		MediaPlayerFactory factory = new MediaPlayerFactory();
@@ -93,7 +92,6 @@ public class FFmpegController {
 	 * odd.mp4 or even.mp4 and stores them in the input video path.
 	 */
 	public static void runFFmpeg() {
-
 		// überprüft ob die Input Video Datei zu ende ist
 		if (getStartTime() > getMaxTime()) {
 			EncryptionController.stopEncryption();

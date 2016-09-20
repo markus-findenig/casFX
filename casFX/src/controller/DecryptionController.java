@@ -16,6 +16,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Hex;
 
+import javafx.application.Platform;
 import model.ConfigModel;
 import model.DecryptionECM;
 import model.DecryptionEMM;
@@ -55,12 +56,12 @@ public class DecryptionController {
 	private static DecryptionEMM decryptionEMM;
 
 	/**
-	 * Static ECM length
+	 * Static ECM length (94 character)
 	 */
 	private static int ECM_LENGTH = 94;
 
 	/**
-	 * Static EMM length
+	 * Static EMM length (146 character)
 	 */
 	private static int EMM_LENGTH = 146;
 
@@ -273,6 +274,8 @@ public class DecryptionController {
 		Runnable runReceiveMessage = new Runnable() {
 			@Override
 			public void run() {
+				// alle weiteren GUI Updates müssen ab hier mit
+				// Platform.runLater aktualisiert werden
 				receiveMessage();
 			}
 		};
@@ -306,10 +309,6 @@ public class DecryptionController {
 	 * (ECM / EMM) continues.
 	 */
 	private static void receiveMessage() {
-		model = SimulatorViewController.getModel();
-		view = SimulatorViewController.getView();
-		configModel = ConfigViewController.getConfigModel();
-
 		// default server = rtp://239.0.0.1:5004
 		String client = configModel.getClient();
 		String[] rtpSplit = client.split("://");
@@ -326,7 +325,7 @@ public class DecryptionController {
 			// group = 239.0.0.1
 			group = InetAddress.getByName(ip[0].trim());
 			clientSocket.joinGroup(group);
-			byte[] buffer = new byte[2048];
+			byte[] buffer = new byte[4096];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
 
 			while (model.isDecryptionState()) {
@@ -334,10 +333,8 @@ public class DecryptionController {
 				clientSocket.receive(packet);
 				// Convert the contents to a string, and display them
 				String msg = new String(buffer, 0, packet.getLength());
-
-				// ECM Message, Prüfe ob Keys vorhanden sind
-				if (msg.length() == ECM_LENGTH && (!model.getAuthorizationOutputKey0().equals("")
-						|| !model.getAuthorizationOutputKey1().equals(""))) {
+				// ECM Message
+				if (msg.length() == ECM_LENGTH){
 					receivedECM(msg);
 				}
 				// EMM Message
@@ -353,10 +350,10 @@ public class DecryptionController {
 			try {
 				clientSocket.leaveGroup(group);
 			} catch (IOException e1) {
-				view.getErrorOutputTA().setText("Group, " + e1.getMessage());
+				System.err.println("Group, " + e1.getMessage());
 			}
 			clientSocket.close();
-			view.getErrorOutputTA().setText("Socket, " + e.getMessage());
+			System.err.println("Socket, " + e.getMessage());
 		}
 	}
 
@@ -367,8 +364,14 @@ public class DecryptionController {
 	 *            Current ECM message.
 	 */
 	private static void receivedECM(String msg) {
-		// reset Error Messages
-		view.getErrorOutputTA().setText("");
+		// GUI updaten
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				// reset Error Messages
+				view.getErrorOutputTA().setText("");
+			}
+		});
 		errorMessage = "";
 
 		// spit msg into substrings
@@ -404,6 +407,7 @@ public class DecryptionController {
 
 		// check CRC
 		if (!validateCRC(message, msgEcmCRC)) {
+			System.err.println("ECM CRC Mismatch!");
 			errorMessage = errorMessage.concat("ECM CRC Mismatch! \n");
 		}
 
@@ -414,6 +418,7 @@ public class DecryptionController {
 
 		// check MAC
 		if (!validateMAC(ecmHeader + ecmPayloadDecrypted, validMAC, ecmWorkKey)) {
+			System.err.println("ECM MAC Mismatch!");
 			errorMessage = errorMessage.concat("ECM MAC Mismatch! \n");
 		}
 
@@ -438,11 +443,17 @@ public class DecryptionController {
 		decryptionECM.setEcmMAC(validMAC);
 		decryptionECM.setEcmCRC(msgEcmCRC);
 
-		// GUI updates, Video Player View Button freigeben
-		view.getVideoOutputButton().setDisable(false);
-		// view decrypted ECM
-		view.getEcmDecryptedTA().setText(ecmDecrypted);
-		view.getErrorOutputTA().setText(errorMessage);
+		// GUI updaten
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				// GUI updates, Video Player View Button freigeben
+				view.getVideoOutputButton().setDisable(false);
+				// view decrypted ECM
+				view.getEcmDecryptedTA().setText(ecmDecrypted);
+				view.getErrorOutputTA().setText(errorMessage);
+			}
+		});
 
 		// } // end if
 
@@ -462,7 +473,7 @@ public class DecryptionController {
 		java.util.zip.CRC32 x = new java.util.zip.CRC32();
 		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
 		x.update(bytes);
-		String check = String.format("%02X", x.getValue());
+		String check = String.format("%08X", x.getValue());
 
 		// check crc with message
 		if (check.equals(crc)) {
@@ -490,6 +501,7 @@ public class DecryptionController {
 			cipher.init(Cipher.DECRYPT_MODE, secretKey);
 			result = cipher.doFinal(DatatypeConverter.parseHexBinary(message));
 		} catch (Exception e) {
+			System.err.println("decryptedMessage: " + e.getMessage());
 			errorMessage = errorMessage.concat("Decrypted ECM " + e.getMessage() + "\n");
 		}
 		return DatatypeConverter.printHexBinary(result);
@@ -568,8 +580,14 @@ public class DecryptionController {
 	 *            Current EMM message.
 	 */
 	private static void receivedEMM(String msg) {
-		// reset Error Messages
-		view.getErrorOutputTA().setText("");
+		// GUI updaten
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				// reset Error Messages
+				view.getErrorOutputTA().setText("");
+			}
+		});
 		errorMessage = "";
 
 		// spit msg into substrings
@@ -633,12 +651,17 @@ public class DecryptionController {
 		decryptionEMM.setEmmMAC(validMAC);
 		decryptionEMM.setEmmCRC(msgEmmCRC);
 
-		// GUI Updates
-		view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
-		view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
-		view.getEmmDecryptedTA().setText(emmDecrypted);
-		view.getCwOutTF().setText("-- WAIT FOR ECM --");
-		view.getErrorOutputTA().setText(errorMessage);
+		// GUI updaten
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				view.getAk0OutTF().setText(model.getAuthorizationOutputKey0());
+				view.getAk1OutTF().setText(model.getAuthorizationOutputKey1());
+				view.getEmmDecryptedTA().setText(emmDecrypted);
+				view.getCwOutTF().setText("-- WAIT FOR ECM --");
+				view.getErrorOutputTA().setText(errorMessage);
+			}
+		});
 
 	}
 

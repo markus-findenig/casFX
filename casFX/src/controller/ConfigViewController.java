@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.File;
+
 import com.sun.jna.NativeLibrary;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -28,18 +29,16 @@ public class ConfigViewController {
 	/**
 	 * Config View Controller
 	 * 
-	 * @param cModel The Config Model.
+	 * @param cModel
+	 *            The Config Model.
 	 */
 	public ConfigViewController(ConfigModel cModel) {
 		configModel = cModel;
 		configView = new ConfigView();
 
 		// set default Config parameter
-		 configModel.setFFmpegPath("D:\\Securety\\Programms\\ffmpeg\\bin");
-		 configModel.setVlcPath("C:\\ProgLoc\\VideoLAN\\VLC");
-		// TODO default
-//		configModel.setVlcPath("C:\\Program Files\\VideoLAN\\VLC");
-//		configModel.setFFmpegPath("C:\\FFmpeg\\bin");
+		configModel.setVlcPath("C:\\Program Files\\VideoLAN\\VLC");
+		configModel.setFFmpegPath("C:\\ffmpeg\\bin");
 		configModel.setServer("rtp://239.0.0.1:5004");
 		configModel.setClient("rtp://239.0.0.1:5004");
 
@@ -48,8 +47,16 @@ public class ConfigViewController {
 		// set VLC Native Library
 		NativeLibrary.addSearchPath("libvlc", configModel.getVlcPath());
 		System.setProperty("VLC_PLUGIN_PATH", configModel.getVlcPath() + "\\plugins");
-
 		// System.setProperty("jna.library.path", "");
+
+		// remove Cryptography Restrictions
+		try {
+			java.lang.reflect.Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
+			field.setAccessible(true);
+			field.set(null, java.lang.Boolean.FALSE);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 
 		ConfigEventHandler configEventHandler = new ConfigEventHandler();
 
